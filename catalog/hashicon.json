@@ -1,0 +1,75 @@
+{
+  "id": "hashicon",
+  "version": "0.0.0-draft",
+  "name": "Hashicon",
+  "description": "Isometric shaded-cube identicons from a hash (canvas based).",
+  "category": "identicon",
+  "role": "generator",
+  "upstream": {
+    "name": "hashicon",
+    "url": "https://github.com/emeraldpay/hashicon",
+    "npm": "hashicon",
+    "lastRelease": "2019-08-14",
+    "maintenance": "stale"
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "mitCompatible": true,
+    "restrictions": [
+      "Apache-2.0 notice/attribution required when redistributing"
+    ],
+    "notes": "npm package 'hashicon' 0.3.0 (ETCDEVTeam); repo moved to emeraldpay/hashicon, last push 2022-02."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": ""
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": false,
+    "edge": false,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Draws to a canvas, so Node needs a canvas shim."
+  },
+  "requiresSecret": false,
+  "style": "geometric",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": 48,
+    "maxPx": 256,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "png",
+    "svg"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 5,
+    "basis": "estimate"
+  },
+  "params": [
+    {
+      "name": "size",
+      "type": "number",
+      "default": 64,
+      "description": "px"
+    },
+    {
+      "name": "hash",
+      "type": "string",
+      "default": "",
+      "description": "input hash"
+    }
+  ],
+  "examples": [],
+  "verdict": "study",
+  "verdictReason": "Distinctive look, but stale, canvas-dependent and a poor fit at 16-32 px."
+}

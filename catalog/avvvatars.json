@@ -1,0 +1,72 @@
+{
+  "id": "avvvatars",
+  "version": "0.0.0-draft",
+  "name": "Avvvatars",
+  "description": "Avatars from a hash: gradient-less shape avatars or initials ('character') variants; React component only.",
+  "category": "identicon",
+  "role": "generator",
+  "upstream": {
+    "name": "avvvatars-react",
+    "url": "https://github.com/nusu/avvvatars",
+    "npm": "avvvatars-react",
+    "lastRelease": "2022-03-18",
+    "maintenance": "stale"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": "There is no package named 'avvvatars'; the real one is avvvatars-react (React-only). Repo URL not in npm metadata; unverified here."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": ""
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": false,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": ""
+  },
+  "requiresSecret": false,
+  "style": "geometric",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": 24,
+    "maxPx": 96,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 2,
+    "basis": "estimate"
+  },
+  "params": [
+    {
+      "name": "style",
+      "type": "string",
+      "default": "shape",
+      "description": "'character' or 'shape'"
+    },
+    {
+      "name": "displayValue",
+      "type": "string",
+      "default": "",
+      "description": "text for character style"
+    }
+  ],
+  "examples": [],
+  "verdict": "study",
+  "verdictReason": "React-only and stale since 2022; the 'shape or initials' idea is better done in-house."
+}

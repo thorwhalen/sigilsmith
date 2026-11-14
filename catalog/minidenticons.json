@@ -1,0 +1,72 @@
+{
+  "id": "minidenticons",
+  "version": "0.0.0-draft",
+  "name": "Minidenticons",
+  "description": "Tiny GitHub-style 5x5 mirrored SVG identicons, coloured by a hash-derived HSL hue.",
+  "category": "identicon",
+  "role": "generator",
+  "upstream": {
+    "name": "minidenticons",
+    "url": "https://github.com/laurentpayot/minidenticons",
+    "npm": "minidenticons",
+    "lastRelease": "2024-03-01",
+    "maintenance": "stale"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": "Repo MIT; last npm release 2024-03."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "README badges quote ~269-453 B brotli and ~311-552 B zip (two badge pairs; not measured by us)"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": ""
+  },
+  "requiresSecret": false,
+  "style": "geometric",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": 16,
+    "maxPx": 128,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 1,
+    "basis": "estimate"
+  },
+  "params": [
+    {
+      "name": "saturation",
+      "type": "number",
+      "default": 50,
+      "description": "HSL saturation %"
+    },
+    {
+      "name": "lightness",
+      "type": "number",
+      "default": 50,
+      "description": "HSL lightness %"
+    }
+  ],
+  "examples": [],
+  "verdict": "mvp",
+  "verdictReason": "MIT, tiny, zero-dependency, covers the small-geometric point; proves the third-party wrap pattern."
+}

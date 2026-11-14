@@ -1,0 +1,59 @@
+{
+  "id": "transformers-js",
+  "version": "0.0.0-draft",
+  "name": "Transformers.js",
+  "description": "Hugging Face's JS library running ONNX models in browser (WASM/WebGPU) and Node via onnxruntime; v4 is current (@huggingface/transformers).",
+  "category": "ai-runtime",
+  "role": "runtime",
+  "upstream": {
+    "name": "@huggingface/transformers",
+    "url": "https://github.com/huggingface/transformers.js",
+    "npm": "@huggingface/transformers",
+    "lastRelease": "2026-10-27",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "mitCompatible": true,
+    "restrictions": [
+      "Each model has its own licence (all-MiniLM-L6-v2: Apache-2.0)"
+    ],
+    "notes": "Old package @xenova/transformers 2.17.2 (2024-05) is superseded."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "library plus model files: all-MiniLM-L6-v2 quantised ~23 MB (HF repo listing)"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": false,
+    "webgpu": true,
+    "network": true
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Model download on first use, cached by browser."
+  },
+  "requiresSecret": false,
+  "style": "abstract",
+  "semanticLevel": "embedding",
+  "sizeRange": {
+    "minPx": null,
+    "maxPx": null,
+    "basis": "estimate"
+  },
+  "outputFormat": [],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": null,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "optional-peer",
+  "verdictReason": "Standard way to do local embeddings; loads models from HF Hub (network once) so keep it an optional peer."
+}

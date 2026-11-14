@@ -1,0 +1,81 @@
+{
+  "id": "dicebear",
+  "version": "0.0.0-draft",
+  "name": "DiceBear",
+  "description": "Modular deterministic SVG avatar library with 61 styles (core @dicebear/core + styles); also a free HTTP API.",
+  "category": "pattern",
+  "role": "generator",
+  "upstream": {
+    "name": "dicebear",
+    "url": "https://github.com/dicebear/dicebear",
+    "npm": "@dicebear/core",
+    "lastRelease": "2026-08-26",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [
+      "Code is MIT but each style has its own licence: 42 CC0 1.0, 14 CC BY 4.0 (attribution), 1 MIT (Icons), 4 'artist's own terms' (Avataaars, Avataaars Neutral, Bottts, Bottts Neutral)",
+      "Only bundle/recommend CC0 styles by default; CC BY styles need credit, artist-terms styles need a manual read"
+    ],
+    "notes": "@dicebear/core 10.7.0 (2026-08-26); @dicebear/collection 9.4.2 (2026-03-19) on the previous major. Counts from the DiceBear licences page, 2026-11-14."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "Not quoted by README"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Local use free; HTTP API see dicebear-http-api."
+  },
+  "requiresSecret": false,
+  "style": "illustrative",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": 24,
+    "maxPx": 256,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 3,
+    "basis": "estimate"
+  },
+  "params": [
+    {
+      "name": "seed",
+      "type": "string",
+      "default": "",
+      "description": "hash input"
+    },
+    {
+      "name": "style",
+      "type": "string",
+      "default": "shapes",
+      "description": "one of 61 styles"
+    },
+    {
+      "name": "backgroundColor",
+      "type": "string[]",
+      "default": [],
+      "description": "hex list"
+    }
+  ],
+  "examples": [],
+  "verdict": "later",
+  "verdictReason": "Richest ecosystem, MIT code, but style licences vary; wrap per-style with CC0-only allow-list after MVP (size to be measured)."
+}

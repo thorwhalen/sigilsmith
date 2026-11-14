@@ -1,0 +1,78 @@
+{
+  "id": "oklch-hash-palette",
+  "version": "0.0.0-draft",
+  "name": "Hash-to-OKLCH palette (in-house)",
+  "description": "Maps a hash to hue and fixed-lightness/chroma in OKLCH, with gamut clamping; guarantees even perceptual spacing and contrast.",
+  "category": "palette",
+  "role": "helper",
+  "upstream": {
+    "name": "sigilsmith in-house",
+    "url": null,
+    "npm": null,
+    "lastRelease": null,
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": "Hand-rolled (OKLab matrices ~30 lines); culori is the validating reference."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "in-house; to be measured"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": ""
+  },
+  "requiresSecret": false,
+  "style": "abstract",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": null,
+    "maxPx": null,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 0.01,
+    "basis": "estimate"
+  },
+  "params": [
+    {
+      "name": "lightness",
+      "type": "number",
+      "default": 0.7,
+      "description": "OKLCH L"
+    },
+    {
+      "name": "chroma",
+      "type": "number",
+      "default": 0.12,
+      "description": "OKLCH C"
+    },
+    {
+      "name": "hueSteps",
+      "type": "number",
+      "default": 360,
+      "description": ""
+    }
+  ],
+  "examples": [],
+  "verdict": "mvp",
+  "verdictReason": "Colour drives distinguishability; tiny, no dependency; shared by every in-house generator."
+}

@@ -1,0 +1,59 @@
+{
+  "id": "iris-3b",
+  "version": "0.0.0-draft",
+  "name": "Iris-3B",
+  "description": "Sperid Labs 3B pixel-space (no VAE) text-to-image model, Apache-2.0, released October 2026; the author's 'Iris-3B'.",
+  "category": "ai-model",
+  "role": "generator",
+  "upstream": {
+    "name": "speridlabs/iris-3b",
+    "url": "https://huggingface.co/speridlabs/iris-3b",
+    "npm": null,
+    "lastRelease": "2026-10-07",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": "Release date per secondary reports (Oct 7-8, 2026); weights ~12 GB plus a 4B text encoder."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "~12 GB (model card via search)"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": false,
+    "node": true,
+    "edge": false,
+    "webgpu": true,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Local only; ~12 GB download."
+  },
+  "requiresSecret": false,
+  "style": "photorealistic",
+  "semanticLevel": "llm",
+  "sizeRange": {
+    "minPx": 512,
+    "maxPx": 1024,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "png"
+  ],
+  "determinism": "cached-nondeterministic",
+  "latency": {
+    "typicalMs": null,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "study",
+  "verdictReason": "Real and openly licensed but ~12 GB; the author's 'about 2-3 GB at Q4' is only true for community quantisations."
+}

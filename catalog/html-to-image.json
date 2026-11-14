@@ -1,0 +1,74 @@
+{
+  "id": "html-to-image",
+  "version": "0.0.0-draft",
+  "name": "html-to-image",
+  "description": "Browser DOM to PNG/SVG/canvas via SVG foreignObject; dom-to-image is its stale ancestor (2017).",
+  "category": "html-to-image",
+  "role": "generator",
+  "upstream": {
+    "name": "html-to-image",
+    "url": "https://github.com/bubkoo/html-to-image",
+    "npm": "html-to-image",
+    "lastRelease": "2025-02-14",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": "dom-to-image (2017-10) is stale; use this fork or dom-to-image-more / modern-screenshot."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": ""
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": false,
+    "edge": false,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Browser only."
+  },
+  "requiresSecret": false,
+  "style": "illustrative",
+  "semanticLevel": "metadata",
+  "sizeRange": {
+    "minPx": 64,
+    "maxPx": 1200,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "png",
+    "svg",
+    "jpeg"
+  ],
+  "determinism": "cached-nondeterministic",
+  "latency": {
+    "typicalMs": 100,
+    "basis": "estimate"
+  },
+  "params": [
+    {
+      "name": "pixelRatio",
+      "type": "number",
+      "default": 1,
+      "description": ""
+    },
+    {
+      "name": "backgroundColor",
+      "type": "string",
+      "default": "",
+      "description": ""
+    }
+  ],
+  "examples": [],
+  "verdict": "optional-peer",
+  "verdictReason": "Only browser path for arbitrary HTML cards, but fonts/CSS differ per browser so output is not byte-stable."
+}

@@ -1,0 +1,67 @@
+{
+  "id": "simplex-noise",
+  "version": "0.0.0-draft",
+  "name": "simplex-noise",
+  "description": "Seedable 2D/3D/4D simplex noise (PRNG-injectable); building block for flow fields and marble textures.",
+  "category": "gradient-noise",
+  "role": "helper",
+  "upstream": {
+    "name": "simplex-noise",
+    "url": "https://github.com/jwagner/simplex-noise.js",
+    "npm": "simplex-noise",
+    "lastRelease": "2024-07-26",
+    "maintenance": "maintained"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": ""
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": ""
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": ""
+  },
+  "requiresSecret": false,
+  "style": "abstract",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": 32,
+    "maxPx": 512,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg",
+    "canvas"
+  ],
+  "determinism": "seeded",
+  "latency": {
+    "typicalMs": 2,
+    "basis": "estimate"
+  },
+  "params": [
+    {
+      "name": "random",
+      "type": "function",
+      "default": "Math.random",
+      "description": "inject a seeded PRNG (never Math.random in sigilsmith)"
+    }
+  ],
+  "examples": [],
+  "verdict": "later",
+  "verdictReason": "Tiny and seedable, a good helper for organic in-house generators."
+}

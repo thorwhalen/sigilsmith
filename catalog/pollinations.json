@@ -1,0 +1,62 @@
+{
+  "id": "pollinations",
+  "version": "0.0.0-draft",
+  "name": "Pollinations image endpoint",
+  "description": "Keyless text-to-image GET endpoint (image.pollinations.ai); newer gen.pollinations.ai API reportedly needs a key.",
+  "category": "hosted-image-api",
+  "role": "generator",
+  "upstream": {
+    "name": "Pollinations",
+    "url": "https://pollinations.ai",
+    "npm": null,
+    "lastRelease": null,
+    "maintenance": "unknown"
+  },
+  "license": {
+    "spdx": null,
+    "mitCompatible": false,
+    "restrictions": [
+      "Anonymous tier reportedly ~1 request per 15 s and may watermark; no SLA; terms not read from the official site"
+    ],
+    "notes": "Only third-party descriptions retrieved; endpoint returned HTTP 200 on 2026-11-14."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "n/a"
+  },
+  "lazyLoadable": false,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": true
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Keyless but throttled."
+  },
+  "requiresSecret": false,
+  "style": "photorealistic",
+  "semanticLevel": "llm",
+  "sizeRange": {
+    "minPx": 256,
+    "maxPx": 1024,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "jpeg",
+    "png"
+  ],
+  "determinism": "cached-nondeterministic",
+  "latency": {
+    "typicalMs": 10000,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "avoid",
+  "verdictReason": "Only keyless AI image endpoint seen, but throttled, unofficial terms and no SLA; use a mock instead."
+}

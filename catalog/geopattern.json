@@ -1,0 +1,78 @@
+{
+  "id": "geopattern",
+  "version": "0.0.0-draft",
+  "name": "GeoPattern",
+  "description": "GitHub's repo-header generator: 16 SVG patterns (chevrons, hexagons, sine waves, ...) from a string hash.",
+  "category": "pattern",
+  "role": "generator",
+  "upstream": {
+    "name": "geopattern",
+    "url": "https://github.com/btmills/geopattern",
+    "npm": "geopattern",
+    "lastRelease": "2014-12-03",
+    "maintenance": "stale"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": "Last release 2014; last commit 2021."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": ""
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": ""
+  },
+  "requiresSecret": false,
+  "style": "geometric",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": 64,
+    "maxPx": 512,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 5,
+    "basis": "estimate"
+  },
+  "params": [
+    {
+      "name": "generator",
+      "type": "string",
+      "default": "",
+      "description": "pattern name"
+    },
+    {
+      "name": "baseColor",
+      "type": "string",
+      "default": "#933c3c",
+      "description": ""
+    },
+    {
+      "name": "color",
+      "type": "string",
+      "default": "",
+      "description": ""
+    }
+  ],
+  "examples": [],
+  "verdict": "later",
+  "verdictReason": "Distinct banner-style patterns under MIT; old code, but a clean port of a few patterns is cheap."
+}

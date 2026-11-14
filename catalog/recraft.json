@@ -1,0 +1,63 @@
+{
+  "id": "recraft",
+  "version": "0.0.0-draft",
+  "name": "Recraft API",
+  "description": "Hosted raster and true vector (SVG) generation, including icon-like styles; 1 USD = 1000 API units.",
+  "category": "hosted-image-api",
+  "role": "generator",
+  "upstream": {
+    "name": "Recraft API",
+    "url": "https://www.recraft.ai/docs/api-reference/pricing",
+    "npm": null,
+    "lastRelease": null,
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "LicenseRef-Recraft-Terms",
+    "mitCompatible": false,
+    "restrictions": [
+      "Commercial usage terms not confirmed in the pricing page; read terms before shipping",
+      "Official MCP server repo recraft-ai/mcp-recraft-server is archived (MIT)"
+    ],
+    "notes": "No official JS SDK; OpenAI-compatible REST."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "n/a"
+  },
+  "lazyLoadable": false,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": true
+  },
+  "cost": {
+    "model": "paid",
+    "notes": "2026-11-14: raster USD 0.007-0.04/image (V4.1 Flash V2 0.007); vector USD 0.05-0.08/image; no free tier listed."
+  },
+  "requiresSecret": true,
+  "style": "illustrative",
+  "semanticLevel": "llm",
+  "sizeRange": {
+    "minPx": 64,
+    "maxPx": 2048,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg",
+    "png"
+  ],
+  "determinism": "cached-nondeterministic",
+  "latency": {
+    "typicalMs": 8000,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "later",
+  "verdictReason": "Only mainstream API returning real SVG, a fit for tiny scalable icons; paid and BYOK/proxy."
+}

@@ -1,0 +1,62 @@
+{
+  "id": "patternpad",
+  "version": "0.0.0-draft",
+  "name": "PatternPad",
+  "description": "Web-based geometric pattern design tool exporting SVG/PNG/JPG; not a library.",
+  "category": "pattern",
+  "role": "generator",
+  "upstream": {
+    "name": "PatternPad",
+    "url": "https://www.producthunt.com/products/patternpad",
+    "npm": null,
+    "lastRelease": null,
+    "maintenance": "unknown"
+  },
+  "license": {
+    "spdx": null,
+    "mitCompatible": false,
+    "restrictions": [
+      "No public API or licence terms found; SaaS aggregator pages say there is no API"
+    ],
+    "notes": "Not an npm package. Likely intended alternatives: svg.js (grid primitives) or hand-written pattern modules."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": ""
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": false,
+    "edge": false,
+    "webgpu": false,
+    "network": true
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Pricing unverified"
+  },
+  "requiresSecret": false,
+  "style": "geometric",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": null,
+    "maxPx": null,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg",
+    "png"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": null,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "avoid",
+  "verdictReason": "A hosted design tool without an API or documented licence; cannot be a generator."
+}

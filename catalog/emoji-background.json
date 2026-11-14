@@ -1,0 +1,74 @@
+{
+  "id": "emoji-background",
+  "version": "0.0.0-draft",
+  "name": "Emoji + background colour (in-house)",
+  "description": "Emoji chosen by hash (or keyword) over a coloured background, as in Notion/Slack icons; emoji list from unicode-emoji-json.",
+  "category": "emoji",
+  "role": "generator",
+  "upstream": {
+    "name": "sigilsmith in-house + unicode-emoji-json",
+    "url": "https://github.com/muan/unicode-emoji-json",
+    "npm": "unicode-emoji-json",
+    "lastRelease": "2026-04-18",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [
+      "Emoji glyphs rendered by the platform font; Noto Emoji (OFL/Apache) or Twemoji (CC-BY 4.0 graphics) if images are embedded"
+    ],
+    "notes": "emoji-mart (MIT, 2024-04) offers search data."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "emoji list data ~ tens of kB; subset it"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Glyphs differ per OS, so pixels are not stable; the chosen emoji is."
+  },
+  "requiresSecret": false,
+  "style": "illustrative",
+  "semanticLevel": "metadata",
+  "sizeRange": {
+    "minPx": 24,
+    "maxPx": 128,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 1,
+    "basis": "estimate"
+  },
+  "params": [
+    {
+      "name": "emojiSet",
+      "type": "string[]",
+      "default": [],
+      "description": "allow-list"
+    },
+    {
+      "name": "keywordMap",
+      "type": "object",
+      "default": {},
+      "description": "keyword to emoji"
+    }
+  ],
+  "examples": [],
+  "verdict": "mvp",
+  "verdictReason": "Concrete and instantly distinguishable at small sizes; keyword mapping gives metadata semantics."
+}

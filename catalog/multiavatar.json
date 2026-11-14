@@ -1,0 +1,71 @@
+{
+  "id": "multiavatar",
+  "version": "0.0.0-draft",
+  "name": "Multiavatar",
+  "description": "Multicultural avatar generator: 12 character 'cultures' with SHA-256-chosen parts, SVG output.",
+  "category": "identicon",
+  "role": "generator",
+  "upstream": {
+    "name": "@multiavatar/multiavatar",
+    "url": "https://github.com/multiavatar/Multiavatar",
+    "npm": "@multiavatar/multiavatar",
+    "lastRelease": "2021-10-09",
+    "maintenance": "stale"
+  },
+  "license": {
+    "spdx": "LicenseRef-Multiavatar-1.0",
+    "mitCompatible": false,
+    "restrictions": [
+      "Custom 'Multiavatar License v1.0': free incl. commercial, but may not re-package or re-brand the design assets",
+      "May not be used to build a competing product/service",
+      "Must be treated as an addition to the product, not the product itself",
+      "Attribution appreciated, not mandatory"
+    ],
+    "notes": "GitHub reports NOASSERTION; npm says 'SEE LICENSE IN LICENSE'. Not MIT: do not bundle; optional user-installed only."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": ""
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": ""
+  },
+  "requiresSecret": false,
+  "style": "illustrative",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": 32,
+    "maxPx": 256,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 3,
+    "basis": "estimate"
+  },
+  "params": [
+    {
+      "name": "version",
+      "type": "string",
+      "default": "",
+      "description": "optional version id of the 12 characters"
+    }
+  ],
+  "examples": [],
+  "verdict": "optional-peer",
+  "verdictReason": "Appealing characters but custom licence forbids re-packaging assets, so never bundle; offer as user-installed adapter."
+}

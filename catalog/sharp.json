@@ -1,0 +1,65 @@
+{
+  "id": "sharp",
+  "version": "0.0.0-draft",
+  "name": "sharp",
+  "description": "Fast Node.js image resize, tint, composite and SVG text overlay on libvips; Pillow is the Python analogue.",
+  "category": "stock-photo",
+  "role": "helper",
+  "upstream": {
+    "name": "sharp",
+    "url": "https://github.com/lovell/sharp",
+    "npm": "sharp",
+    "lastRelease": "2026-09-27",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "mitCompatible": true,
+    "restrictions": [
+      "libvips (LGPL-3.0) binaries are shipped as prebuilt packages by sharp; check for static-linking obligations if redistributing"
+    ],
+    "notes": "Pillow (Python) is HPND-style and out of scope for a TS package."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "native"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": false,
+    "node": true,
+    "edge": false,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Node only; native binaries."
+  },
+  "requiresSecret": false,
+  "style": "photorealistic",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": 16,
+    "maxPx": 4096,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "png",
+    "jpeg",
+    "webp",
+    "avif",
+    "svg"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 20,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "optional-peer",
+  "verdictReason": "Best compositing/resizing helper for server-side stored images; keep behind a processor seam."
+}

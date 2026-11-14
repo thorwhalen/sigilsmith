@@ -1,0 +1,64 @@
+{
+  "id": "openai-gpt-image",
+  "version": "0.0.0-draft",
+  "name": "OpenAI gpt-image",
+  "description": "Hosted image generation/editing API (gpt-image family; newest listed 2026-11-14: gpt-image-2.6 variants).",
+  "category": "hosted-image-api",
+  "role": "generator",
+  "upstream": {
+    "name": "OpenAI Images API",
+    "url": "https://developers.openai.com/api/docs/pricing",
+    "npm": "openai",
+    "lastRelease": "2026-11-13",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "mitCompatible": true,
+    "restrictions": [
+      "API terms apply; check output ownership and usage policies",
+      "gpt-image-1 retired 2026-10-23; gpt-image-1.5 and -mini retiring 2026-12-01 per secondary sources"
+    ],
+    "notes": "SDK is Apache-2.0."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "n/a"
+  },
+  "lazyLoadable": false,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": true
+  },
+  "cost": {
+    "model": "paid",
+    "notes": "Token billing: image output USD 30 per 1M tokens (official pricing page 2026-11-14); per-image USD ~0.01-0.2 depending on quality (secondary sources)."
+  },
+  "requiresSecret": true,
+  "style": "photorealistic",
+  "semanticLevel": "llm",
+  "sizeRange": {
+    "minPx": 256,
+    "maxPx": 1536,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "png",
+    "webp",
+    "jpeg"
+  ],
+  "determinism": "cached-nondeterministic",
+  "latency": {
+    "typicalMs": 15000,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "later",
+  "verdictReason": "Highest quality and text rendering, paid and slow; BYOK/proxy only, cache per item."
+}

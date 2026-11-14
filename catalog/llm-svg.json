@@ -1,0 +1,61 @@
+{
+  "id": "llm-svg",
+  "version": "0.0.0-draft",
+  "name": "LLM-written SVG",
+  "description": "A language model emits SVG source directly from item title/description (e.g. via hosted or in-browser LLM).",
+  "category": "llm-svg",
+  "role": "generator",
+  "upstream": {
+    "name": "technique",
+    "url": null,
+    "npm": null,
+    "lastRelease": null,
+    "maintenance": "unknown"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [
+      "Licence of output depends on provider terms; sanitise SVG (scripts, foreignObject, external refs) before use"
+    ],
+    "notes": "Technique, not a package. Needs SVG sanitiser (e.g. DOMPurify, MIT/Apache) and moderation."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "n/a"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": true
+  },
+  "cost": {
+    "model": "byok",
+    "notes": "Cost per call depends on model; cache per item."
+  },
+  "requiresSecret": true,
+  "style": "illustrative",
+  "semanticLevel": "llm",
+  "sizeRange": {
+    "minPx": 32,
+    "maxPx": 512,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg"
+  ],
+  "determinism": "cached-nondeterministic",
+  "latency": {
+    "typicalMs": 3000,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "later",
+  "verdictReason": "Cheap, resolution-independent semantic images; needs strict sanitising and caching, plus a placeholder while waiting."
+}

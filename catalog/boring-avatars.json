@@ -1,0 +1,78 @@
+{
+  "id": "boring-avatars",
+  "version": "0.0.0-draft",
+  "name": "Boring Avatars",
+  "description": "Seeded SVG avatars in six styles (marble, beam, pixel, sunset, ring, bauhaus) from a colour palette; React component.",
+  "category": "pattern",
+  "role": "generator",
+  "upstream": {
+    "name": "boring-avatars",
+    "url": "https://github.com/boringdesigners/boring-avatars",
+    "npm": "boring-avatars",
+    "lastRelease": "2025-09-28",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": "Code and designs MIT."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": ""
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Also offers a hosted API (not surveyed)."
+  },
+  "requiresSecret": false,
+  "style": "abstract",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": 24,
+    "maxPx": 256,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 2,
+    "basis": "estimate"
+  },
+  "params": [
+    {
+      "name": "variant",
+      "type": "string",
+      "default": "marble",
+      "description": "marble|beam|pixel|sunset|ring|bauhaus"
+    },
+    {
+      "name": "colors",
+      "type": "string[]",
+      "default": [],
+      "description": "palette"
+    },
+    {
+      "name": "square",
+      "type": "boolean",
+      "default": false,
+      "description": ""
+    }
+  ],
+  "examples": [],
+  "verdict": "later",
+  "verdictReason": "Best abstract set under MIT and actively released, but React-only API; wrap by server-rendering or re-implement templates after MVP."
+}

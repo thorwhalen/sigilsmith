@@ -1,0 +1,82 @@
+{
+  "id": "satori",
+  "version": "0.0.0-draft",
+  "name": "Satori",
+  "description": "Vercel's JSX/CSS (flexbox subset) to SVG renderer, runs in Node, edge and WASM; the engine behind OG-image generators.",
+  "category": "html-to-image",
+  "role": "generator",
+  "upstream": {
+    "name": "satori",
+    "url": "https://github.com/vercel/satori",
+    "npm": "satori",
+    "lastRelease": "2026-10-20",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "MPL-2.0",
+    "mitCompatible": true,
+    "restrictions": [
+      "MPL-2.0 is file-level copyleft: fine as an unmodified dependency, modifications to Satori files must be shared",
+      "Needs fonts supplied by caller; check each font's licence"
+    ],
+    "notes": "Do not vendor/modify without keeping MPL files separate."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "Wasm yoga + fonts; not quoted"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": ""
+  },
+  "requiresSecret": false,
+  "style": "illustrative",
+  "semanticLevel": "metadata",
+  "sizeRange": {
+    "minPx": 256,
+    "maxPx": 1200,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg",
+    "png"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 60,
+    "basis": "estimate"
+  },
+  "params": [
+    {
+      "name": "width",
+      "type": "number",
+      "default": 1200,
+      "description": ""
+    },
+    {
+      "name": "height",
+      "type": "number",
+      "default": 630,
+      "description": ""
+    },
+    {
+      "name": "fonts",
+      "type": "object[]",
+      "default": [],
+      "description": "font data"
+    }
+  ],
+  "examples": [],
+  "verdict": "later",
+  "verdictReason": "Right tool for template cards and OG images from metadata; larger and needs fonts, so after MVP."
+}

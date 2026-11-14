@@ -1,0 +1,61 @@
+{
+  "id": "web-txt2img",
+  "version": "0.0.0-draft",
+  "name": "web-txt2img (WebSD / SD-Turbo in browser)",
+  "description": "Browser library running SD-Turbo via WebGPU; closest real match to the author's 'WebSD / sd-1-5-webgpu', which could not be verified as named.",
+  "category": "ai-runtime",
+  "role": "runtime",
+  "upstream": {
+    "name": "web-txt2img",
+    "url": "https://github.com/lacerbi/web-txt2img",
+    "npm": "web-txt2img",
+    "lastRelease": "2025-09-01",
+    "maintenance": "maintained"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": false,
+    "restrictions": [
+      "Library MIT, but SD-Turbo weights carry the Stability community licence"
+    ],
+    "notes": "'WebSD' exists only as a Hugging Face space (silait/sd-web); no 'sd-1-5-webgpu' package found. Microsoft's onnxruntime-inference-examples js/sd-turbo is the official demo."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "~2.3 GB weights (README via search)"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": false,
+    "edge": false,
+    "webgpu": true,
+    "network": true
+  },
+  "cost": {
+    "model": "free",
+    "notes": "~2.3 GB weights downloaded to the browser; requires WebGPU."
+  },
+  "requiresSecret": false,
+  "style": "photorealistic",
+  "semanticLevel": "llm",
+  "sizeRange": {
+    "minPx": 512,
+    "maxPx": 512,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "png"
+  ],
+  "determinism": "cached-nondeterministic",
+  "latency": {
+    "typicalMs": 5000,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "study",
+  "verdictReason": "Proves in-browser diffusion is feasible; far too heavy and licence-encumbered for default use."
+}

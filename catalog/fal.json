@@ -1,0 +1,63 @@
+{
+  "id": "fal",
+  "version": "0.0.0-draft",
+  "name": "fal.ai (client)",
+  "description": "Hosted model marketplace/inference with @fal-ai/client; runs FLUX, Recraft and others with proxy support for keeping keys server-side.",
+  "category": "hosted-image-api",
+  "role": "runtime",
+  "upstream": {
+    "name": "@fal-ai/client",
+    "url": "https://github.com/fal-ai/fal-js",
+    "npm": "@fal-ai/client",
+    "lastRelease": "2026-11-14",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [
+      "Each hosted model has its own terms"
+    ],
+    "notes": "Provides a proxy mode so browsers never hold the API key."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "n/a"
+  },
+  "lazyLoadable": false,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": true
+  },
+  "cost": {
+    "model": "paid",
+    "notes": "Pay per use; per-model prices on fal.ai (not retrieved)."
+  },
+  "requiresSecret": true,
+  "style": "photorealistic",
+  "semanticLevel": "llm",
+  "sizeRange": {
+    "minPx": 256,
+    "maxPx": 2048,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "png",
+    "jpeg",
+    "svg"
+  ],
+  "determinism": "cached-nondeterministic",
+  "latency": {
+    "typicalMs": 5000,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "later",
+  "verdictReason": "One BYOK/proxy integration reaches many models, including FLUX and Recraft."
+}

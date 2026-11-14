@@ -1,0 +1,59 @@
+{
+  "id": "chroma-js",
+  "version": "0.0.0-draft",
+  "name": "chroma.js",
+  "description": "Colour manipulation and scales, including ColorBrewer palettes.",
+  "category": "palette",
+  "role": "helper",
+  "upstream": {
+    "name": "chroma-js",
+    "url": "https://github.com/gka/chroma.js",
+    "npm": "chroma-js",
+    "lastRelease": "2026-11-09",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "(BSD-3-Clause AND Apache-2.0)",
+    "mitCompatible": true,
+    "restrictions": [
+      "Notices for BSD-3-Clause and Apache-2.0 (ColorBrewer) parts"
+    ],
+    "notes": "GitHub reports NOASSERTION; npm gives the expression."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": ""
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Larger than culori."
+  },
+  "requiresSecret": false,
+  "style": "abstract",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": null,
+    "maxPx": null,
+    "basis": "estimate"
+  },
+  "outputFormat": [],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 0.05,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "study",
+  "verdictReason": "Useful scales but heavier and less OKLCH-native than the in-house helper."
+}

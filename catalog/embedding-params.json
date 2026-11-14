@@ -1,0 +1,61 @@
+{
+  "id": "embedding-params",
+  "version": "0.0.0-draft",
+  "name": "Text embedding to generator parameters",
+  "description": "Embed title/description (Transformers.js MiniLM, ~384 dims), project to a few numbers (hue, shape id, density) to drive a deterministic generator.",
+  "category": "embedding",
+  "role": "generator",
+  "upstream": {
+    "name": "technique",
+    "url": null,
+    "npm": null,
+    "lastRelease": null,
+    "maintenance": "unknown"
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "mitCompatible": true,
+    "restrictions": [
+      "Depends on the embedding model licence (all-MiniLM-L6-v2: Apache-2.0)"
+    ],
+    "notes": "Model files ~23 MB quantised; first-run download; vectors can differ across runtimes/quantisation, so cache the derived params per item."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "model ~23 MB (HF repo listing)"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": false,
+    "webgpu": true,
+    "network": true
+  },
+  "cost": {
+    "model": "free",
+    "notes": "One-time model download."
+  },
+  "requiresSecret": false,
+  "style": "abstract",
+  "semanticLevel": "embedding",
+  "sizeRange": {
+    "minPx": 16,
+    "maxPx": 512,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg"
+  ],
+  "determinism": "cached-nondeterministic",
+  "latency": {
+    "typicalMs": 50,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "later",
+  "verdictReason": "Gives similar items similar colours and shapes with no per-call cost; the model download is the hurdle."
+}

@@ -1,0 +1,62 @@
+{
+  "id": "sd-turbo",
+  "version": "0.0.0-draft",
+  "name": "SD-Turbo",
+  "description": "Stability AI's 1-4 step distilled Stable Diffusion 2.1 text-to-image model (512 px).",
+  "category": "ai-model",
+  "role": "generator",
+  "upstream": {
+    "name": "stabilityai/sd-turbo",
+    "url": "https://huggingface.co/stabilityai/sd-turbo",
+    "npm": null,
+    "lastRelease": null,
+    "maintenance": "unknown"
+  },
+  "license": {
+    "spdx": "LicenseRef-Stability-AI-Community",
+    "mitCompatible": false,
+    "restrictions": [
+      "Model card: non-commercial/research under the licence; commercial use via Stability community licence (free under USD 1M annual revenue) or Enterprise",
+      "Revenue test applies to the deploying organisation, not to this package"
+    ],
+    "notes": "Could not confirm a dedicated SD-Turbo licence page; stability.ai/license read via search. Re-verify."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "weights ~2.3 GB (web-txt2img README)"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": true,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Weights download ~2.3 GB via web-txt2img; on-device."
+  },
+  "requiresSecret": false,
+  "style": "photorealistic",
+  "semanticLevel": "llm",
+  "sizeRange": {
+    "minPx": 512,
+    "maxPx": 512,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "png"
+  ],
+  "determinism": "cached-nondeterministic",
+  "latency": {
+    "typicalMs": 3000,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "study",
+  "verdictReason": "Weights licence blocks bundling and complicates commercial users; good only as a user-chosen local backend."
+}

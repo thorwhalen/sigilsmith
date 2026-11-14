@@ -1,0 +1,61 @@
+{
+  "id": "flux2-klein-4b",
+  "version": "0.0.0-draft",
+  "name": "FLUX.2 [klein] 4B",
+  "description": "Black Forest Labs' compact open-weight FLUX.2 text-to-image model, sub-second on a good GPU; Apache-2.0.",
+  "category": "ai-model",
+  "role": "generator",
+  "upstream": {
+    "name": "black-forest-labs/FLUX.2-klein-4B",
+    "url": "https://huggingface.co/black-forest-labs/FLUX.2-klein-4B",
+    "npm": null,
+    "lastRelease": "2026-01-15",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "mitCompatible": true,
+    "restrictions": [
+      "The 9B klein models use the FLUX Non-Commercial License; only the 4B is Apache-2.0"
+    ],
+    "notes": "Release date from Vercel AI Gateway page only (single source). BFL repo black-forest-labs/flux2 Apache-2.0 code."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "README: ~8 GB VRAM; 4B weights several GB"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": false,
+    "node": true,
+    "edge": false,
+    "webgpu": true,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Local weights; hosted at USD 0.014 first megapixel via BFL (2026-11-14)."
+  },
+  "requiresSecret": false,
+  "style": "photorealistic",
+  "semanticLevel": "llm",
+  "sizeRange": {
+    "minPx": 256,
+    "maxPx": 1024,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "png"
+  ],
+  "determinism": "cached-nondeterministic",
+  "latency": {
+    "typicalMs": 2000,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "study",
+  "verdictReason": "Best-licensed open model of the set, but ~8 GB VRAM and multi-GB weights rule out in-browser use; use hosted or user-installed."
+}

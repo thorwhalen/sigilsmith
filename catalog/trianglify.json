@@ -1,0 +1,94 @@
+{
+  "id": "trianglify",
+  "version": "0.0.0-draft",
+  "name": "Trianglify",
+  "description": "Low-poly Delaunay triangle meshes coloured by a ColorBrewer scale, seeded.",
+  "category": "pattern",
+  "role": "generator",
+  "upstream": {
+    "name": "trianglify",
+    "url": "https://github.com/qrohlf/trianglify",
+    "npm": "trianglify",
+    "lastRelease": "2020-11-01",
+    "maintenance": "stale"
+  },
+  "license": {
+    "spdx": "GPL-3.0",
+    "mitCompatible": false,
+    "restrictions": [
+      "GPL-3.0 is copyleft: incompatible with bundling in an MIT package",
+      "Could only be an optional, user-installed peer; any distribution of a combined work would be GPL"
+    ],
+    "notes": "npm and GitHub both report GPL-3.0 (checked 2026-11-14). Last push 2025-05, last release 2020-11."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": ""
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": ""
+  },
+  "requiresSecret": false,
+  "style": "abstract",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": 64,
+    "maxPx": 1024,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg",
+    "canvas"
+  ],
+  "determinism": "seeded",
+  "latency": {
+    "typicalMs": 30,
+    "basis": "estimate"
+  },
+  "params": [
+    {
+      "name": "width",
+      "type": "number",
+      "default": 600,
+      "description": ""
+    },
+    {
+      "name": "height",
+      "type": "number",
+      "default": 400,
+      "description": ""
+    },
+    {
+      "name": "cellSize",
+      "type": "number",
+      "default": 75,
+      "description": ""
+    },
+    {
+      "name": "variance",
+      "type": "number",
+      "default": 0.75,
+      "description": ""
+    },
+    {
+      "name": "seed",
+      "type": "string",
+      "default": "",
+      "description": ""
+    }
+  ],
+  "examples": [],
+  "verdict": "avoid",
+  "verdictReason": "GPL-3.0 conflicts with the MIT package; same look reachable with an in-house jittered-grid triangulation."
+}

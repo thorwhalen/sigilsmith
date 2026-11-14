@@ -1,0 +1,59 @@
+{
+  "id": "glsl-canvas",
+  "version": "0.0.0-draft",
+  "name": "glsl-canvas",
+  "description": "Tiny WebGL fragment-shader runner for aurora/fluid gradient shaders.",
+  "category": "gradient-noise",
+  "role": "runtime",
+  "upstream": {
+    "name": "glsl-canvas-js",
+    "url": "https://github.com/actarian/glsl-canvas",
+    "npm": "glsl-canvas-js",
+    "lastRelease": "2022-01-30",
+    "maintenance": "stale"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": "Last npm release 2022; repo push 2023-04. Another unrelated 'glsl-canvas' npm package also exists."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": ""
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": false,
+    "edge": false,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "WebGL"
+  },
+  "requiresSecret": false,
+  "style": "abstract",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": 64,
+    "maxPx": 512,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "canvas"
+  ],
+  "determinism": "seeded",
+  "latency": {
+    "typicalMs": 20,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "avoid",
+  "verdictReason": "Unmaintained and WebGL-only; shaders can run on a plain WebGL canvas without it."
+}

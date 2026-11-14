@@ -1,0 +1,79 @@
+{
+  "id": "jdenticon",
+  "version": "0.0.0-draft",
+  "name": "Jdenticon",
+  "description": "Sharp geometric identicons from a hash, as SVG or PNG.",
+  "category": "identicon",
+  "role": "generator",
+  "upstream": {
+    "name": "jdenticon",
+    "url": "https://github.com/dmester/jdenticon",
+    "npm": "jdenticon",
+    "lastRelease": "2024-05-10",
+    "maintenance": "stale"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": "Repo licence MIT; no new release since 2024-05 (npm)."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "README links a Bundlephobia badge; no figure quoted"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Local, no network."
+  },
+  "requiresSecret": false,
+  "style": "geometric",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": 16,
+    "maxPx": 256,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg",
+    "png"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 1,
+    "basis": "estimate"
+  },
+  "params": [
+    {
+      "name": "saturation",
+      "type": "number",
+      "default": 0.5,
+      "description": "colour saturation 0..1"
+    },
+    {
+      "name": "padding",
+      "type": "number",
+      "default": 0.08,
+      "description": "padding fraction"
+    },
+    {
+      "name": "hues",
+      "type": "number[]",
+      "default": [],
+      "description": "restrict hues"
+    }
+  ],
+  "examples": [],
+  "verdict": "later",
+  "verdictReason": "Mature, MIT, hue/saturation/lightness params; wrap right after MVP set (larger than minidenticons)."
+}

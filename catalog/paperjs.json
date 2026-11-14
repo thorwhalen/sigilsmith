@@ -1,0 +1,60 @@
+{
+  "id": "paperjs",
+  "version": "0.0.0-draft",
+  "name": "Paper.js",
+  "description": "Vector graphics scripting (paths, booleans, curves) on Canvas, with PaperScript.",
+  "category": "creative-runtime",
+  "role": "runtime",
+  "upstream": {
+    "name": "paper",
+    "url": "https://github.com/paperjs/paper.js",
+    "npm": "paper",
+    "lastRelease": "2026-11-03",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": "GitHub reports NOASSERTION; npm MIT."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": ""
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": false,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Node needs canvas/jsdom."
+  },
+  "requiresSecret": false,
+  "style": "geometric",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": 48,
+    "maxPx": 512,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg",
+    "canvas"
+  ],
+  "determinism": "seeded",
+  "latency": {
+    "typicalMs": 20,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "study",
+  "verdictReason": "Strong path boolean and curve tools; heavy and canvas-centric."
+}

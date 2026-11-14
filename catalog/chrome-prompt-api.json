@@ -1,0 +1,62 @@
+{
+  "id": "chrome-prompt-api",
+  "version": "0.0.0-draft",
+  "name": "Chrome Prompt API (Gemini Nano)",
+  "description": "Built-in on-device LLM in Chrome via LanguageModel; shipped in Chrome 148 (May 2026) per secondary reports.",
+  "category": "in-browser-llm",
+  "role": "runtime",
+  "upstream": {
+    "name": "Chrome built-in AI",
+    "url": "https://developer.chrome.com/docs/ai/prompt-api",
+    "npm": null,
+    "lastRelease": "2026-05-05",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": null,
+    "mitCompatible": false,
+    "restrictions": [
+      "Not a library; on-device Gemini Nano model governed by Google terms and Prohibited Use Policy",
+      "Mozilla, Apple, Microsoft and the W3C TAG formally opposed; other browsers do not ship it"
+    ],
+    "notes": "Docs updated 2026-05-19 list Chrome 148; whether core API is stable vs origin trial for sampling params is reported inconsistently."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "n/a (browser built-in)"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": false,
+    "edge": false,
+    "webgpu": true,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Needs ~22 GB free disk and >4 GB VRAM or 16 GB RAM; model ~4.27 GB downloaded once (secondary report)."
+  },
+  "requiresSecret": false,
+  "style": "illustrative",
+  "semanticLevel": "llm",
+  "sizeRange": {
+    "minPx": null,
+    "maxPx": null,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg"
+  ],
+  "determinism": "cached-nondeterministic",
+  "latency": {
+    "typicalMs": 2000,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "optional-peer",
+  "verdictReason": "Free, private, but Chrome-desktop-only and heavy; progressive-enhancement tier behind capability check."
+}

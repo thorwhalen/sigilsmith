@@ -1,0 +1,60 @@
+{
+  "id": "thumbhash",
+  "version": "0.0.0-draft",
+  "name": "ThumbHash",
+  "description": "Evan Wallace's improved placeholder hash, ~25 bytes, preserves aspect and alpha.",
+  "category": "placeholder",
+  "role": "placeholder",
+  "upstream": {
+    "name": "thumbhash",
+    "url": "https://github.com/evanw/thumbhash",
+    "npm": "thumbhash",
+    "lastRelease": "2023-03-22",
+    "maintenance": "stale"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": "Stable single-file algorithm; repo push 2024-05."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": ""
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": ""
+  },
+  "requiresSecret": false,
+  "style": "abstract",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": 16,
+    "maxPx": 64,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "png",
+    "canvas"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 1,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "later",
+  "verdictReason": "Better colour and alpha than BlurHash at similar size; same role."
+}

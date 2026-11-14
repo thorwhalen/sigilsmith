@@ -1,0 +1,99 @@
+{
+  "name": "sigilsmith",
+  "version": "0.0.0",
+  "description": "Agent-first builder for deterministic identity images (identicons, avatars, thumbnails, favicons): a catalog of generators behind one facade, an SSOT config, and a CLI that chooses, previews, explains and checks.",
+  "author": "Thor Whalen",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "sigilsmith": "./dist/cli/main.js"
+  },
+  "files": [
+    "dist",
+    "skills",
+    "catalog",
+    "schema",
+    "AGENTS.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./generators/*": {
+      "types": "./dist/generators/*.d.ts",
+      "import": "./dist/generators/*.js"
+    },
+    "./remote": {
+      "types": "./dist/remote.d.ts",
+      "import": "./dist/remote.js"
+    },
+    "./delivery": {
+      "types": "./dist/delivery.d.ts",
+      "import": "./dist/delivery.js"
+    },
+    "./targets": {
+      "types": "./dist/targets.d.ts",
+      "import": "./dist/targets.js"
+    },
+    "./schema": {
+      "types": "./dist/schema/index.d.ts",
+      "import": "./dist/schema/index.js"
+    },
+    "./zodal": {
+      "types": "./dist/zodal/index.d.ts",
+      "import": "./dist/zodal/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.js"
+    },
+    "./node": {
+      "types": "./dist/node/index.d.ts",
+      "import": "./dist/node/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "measure": "node scripts/measure-sizes.mjs",
+    "golden": "vitest run tests/golden.test.ts --update"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@zodal/core": "^0.2.0",
+    "@zodal/dials-codegen": "^0.1.0",
+    "@zodal/dials-core": "^0.1.0",
+    "@zodal/dials-store-secret": "^0.1.0",
+    "@zodal/dials-ui": "^0.1.0",
+    "@zodal/dials-ui-shadcn": "^0.1.0",
+    "@zodal/store": "^0.2.0",
+    "@zodal/store-http": "^0.1.0",
+    "@zodal/ui": "^0.2.0",
+    "esbuild": "^0.28.2",
+    "minidenticons": "^4.2.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.12",
+    "zod": "^4.6.7"
+  },
+  "overrides": {
+    "@zodal/core": "0.2.0",
+    "@zodal/store": "0.2.0",
+    "@zodal/ui": "0.2.0"
+  }
+}

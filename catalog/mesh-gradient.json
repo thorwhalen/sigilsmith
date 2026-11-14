@@ -1,0 +1,67 @@
+{
+  "id": "mesh-gradient",
+  "version": "0.0.0-draft",
+  "name": "Mesh gradient (@mesh-gradient/core)",
+  "description": "WebGL multi-point mesh gradient renderer; 'MeshGradient.js' is ambiguous, this is the closest maintained match.",
+  "category": "gradient-noise",
+  "role": "generator",
+  "upstream": {
+    "name": "@mesh-gradient/core",
+    "url": "https://github.com/mikhailmogilnikov/mesh-gradient",
+    "npm": "@mesh-gradient/core",
+    "lastRelease": "2026-05-05",
+    "maintenance": "maintained"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": "Name 'MeshGradient.js' maps to several packages (mesh-gradient.js, stripe-gradient 2022, @mesh-gradient/core, @paper-design/shaders); no single canonical one."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "Repository README states ~8 kB gzipped (unverified)"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": false,
+    "edge": false,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "WebGL."
+  },
+  "requiresSecret": false,
+  "style": "abstract",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": 48,
+    "maxPx": 512,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "canvas",
+    "png"
+  ],
+  "determinism": "seeded",
+  "latency": {
+    "typicalMs": 20,
+    "basis": "estimate"
+  },
+  "params": [
+    {
+      "name": "colors",
+      "type": "string[]",
+      "default": [],
+      "description": "4+ stops"
+    }
+  ],
+  "examples": [],
+  "verdict": "later",
+  "verdictReason": "Pretty soft gradients but needs WebGL; static output is better done with SVG radial gradients in-house."
+}

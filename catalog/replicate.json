@@ -1,0 +1,62 @@
+{
+  "id": "replicate",
+  "version": "0.0.0-draft",
+  "name": "Replicate (client)",
+  "description": "Hosted model API with official JS client; FLUX and many community models.",
+  "category": "hosted-image-api",
+  "role": "runtime",
+  "upstream": {
+    "name": "replicate",
+    "url": "https://github.com/replicate/replicate-javascript",
+    "npm": "replicate",
+    "lastRelease": "2025-11-17",
+    "maintenance": "maintained"
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "mitCompatible": true,
+    "restrictions": [
+      "Per-model licences apply"
+    ],
+    "notes": "Last release 2025-11 (modified 2026-06)."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "n/a"
+  },
+  "lazyLoadable": false,
+  "runtime": {
+    "browser": false,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": true
+  },
+  "cost": {
+    "model": "paid",
+    "notes": "Per-second/per-run billing."
+  },
+  "requiresSecret": true,
+  "style": "photorealistic",
+  "semanticLevel": "llm",
+  "sizeRange": {
+    "minPx": 256,
+    "maxPx": 2048,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "png",
+    "webp"
+  ],
+  "determinism": "cached-nondeterministic",
+  "latency": {
+    "typicalMs": 6000,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "later",
+  "verdictReason": "Same role as fal; add only if users ask."
+}

@@ -1,0 +1,61 @@
+{
+  "id": "lcm",
+  "version": "0.0.0-draft",
+  "name": "Latent Consistency Models (LCM)",
+  "description": "4-step distilled diffusion approach; LCM and LCM-LoRA adapters for SD1.5/SDXL.",
+  "category": "ai-model",
+  "role": "generator",
+  "upstream": {
+    "name": "luosiallen/latent-consistency-model",
+    "url": "https://github.com/luosiallen/latent-consistency-model",
+    "npm": null,
+    "lastRelease": null,
+    "maintenance": "stale"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": false,
+    "restrictions": [
+      "Core LCM repo and LCM_Dreamshaper_v7 card are MIT, but LCM-LoRA-SDXL weights are CreativeML OpenRAIL++ with use restrictions and the underlying SD base models carry their own licences"
+    ],
+    "notes": "Repo licence read from a third-party aggregator; verify at source."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "adapters tens-hundreds of MB"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": false,
+    "webgpu": true,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Local."
+  },
+  "requiresSecret": false,
+  "style": "photorealistic",
+  "semanticLevel": "llm",
+  "sizeRange": {
+    "minPx": 512,
+    "maxPx": 1024,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "png"
+  ],
+  "determinism": "cached-nondeterministic",
+  "latency": {
+    "typicalMs": 4000,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "avoid",
+  "verdictReason": "A technique, not a product: superseded by SD-Turbo/FLUX klein for this use, with mixed licensing."
+}

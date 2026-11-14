@@ -1,0 +1,72 @@
+{
+  "id": "native-svg",
+  "version": "0.0.0-draft",
+  "name": "Native SVG/Canvas (in-house)",
+  "description": "Zero-dependency SVG string builders using seeded PRNG and the OKLCH palette; sigilsmith's own tiny abstract/geometric generators.",
+  "category": "creative-runtime",
+  "role": "generator",
+  "upstream": {
+    "name": "sigilsmith in-house",
+    "url": null,
+    "npm": null,
+    "lastRelease": null,
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": "Written in-house; no upstream."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "in-house; to be measured"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": ""
+  },
+  "requiresSecret": false,
+  "style": "abstract",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": 16,
+    "maxPx": 512,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 1,
+    "basis": "estimate"
+  },
+  "params": [
+    {
+      "name": "shape",
+      "type": "string",
+      "default": "bauhaus",
+      "description": "pattern template id"
+    },
+    {
+      "name": "palette",
+      "type": "string",
+      "default": "oklch-hash",
+      "description": "palette strategy"
+    }
+  ],
+  "examples": [],
+  "verdict": "mvp",
+  "verdictReason": "Zero dependencies, sub-kilobyte, fully deterministic: the in-house anchor of the MVP."
+}

@@ -1,0 +1,57 @@
+{
+  "id": "culori",
+  "version": "0.0.0-draft",
+  "name": "culori",
+  "description": "Tree-shakeable colour library with OKLCH, gamut mapping and interpolation.",
+  "category": "palette",
+  "role": "helper",
+  "upstream": {
+    "name": "culori",
+    "url": "https://github.com/Evercoder/culori",
+    "npm": "culori",
+    "lastRelease": "2025-06-27",
+    "maintenance": "maintained"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": ""
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": ""
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": ""
+  },
+  "requiresSecret": false,
+  "style": "abstract",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": null,
+    "maxPx": null,
+    "basis": "estimate"
+  },
+  "outputFormat": [],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 0.05,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "optional-peer",
+  "verdictReason": "Excellent but unneeded at runtime if the in-house palette suffices; use in spikes and tests as the reference."
+}

@@ -1,0 +1,62 @@
+{
+  "id": "p5js",
+  "version": "0.0.0-draft",
+  "name": "p5.js",
+  "description": "2D algorithmic drawing framework (setup/draw model), instance mode usable headless in the browser.",
+  "category": "creative-runtime",
+  "role": "runtime",
+  "upstream": {
+    "name": "p5",
+    "url": "https://github.com/processing/p5.js",
+    "npm": "p5",
+    "lastRelease": "2026-11-11",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "LGPL-2.1",
+    "mitCompatible": false,
+    "restrictions": [
+      "LGPL-2.1: bundling into an MIT package is problematic; dynamic optional peer only"
+    ],
+    "notes": "p5 2.x (2.4.0 on 2026-11-11). Large relative to need."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": ""
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": false,
+    "edge": false,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": ""
+  },
+  "requiresSecret": false,
+  "style": "abstract",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": 64,
+    "maxPx": 512,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "canvas",
+    "svg"
+  ],
+  "determinism": "seeded",
+  "latency": {
+    "typicalMs": 30,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "avoid",
+  "verdictReason": "LGPL and a heavy runtime for what plain Canvas/SVG does; keep as an optional peer for user-written sketches."
+}

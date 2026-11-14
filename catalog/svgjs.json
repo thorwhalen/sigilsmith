@@ -1,0 +1,59 @@
+{
+  "id": "svgjs",
+  "version": "0.0.0-draft",
+  "name": "SVG.js",
+  "description": "Lightweight SVG manipulation/animation library (builder for grid shapes and constrained palettes).",
+  "category": "creative-runtime",
+  "role": "runtime",
+  "upstream": {
+    "name": "@svgdotjs/svg.js",
+    "url": "https://github.com/svgdotjs/svg.js",
+    "npm": "@svgdotjs/svg.js",
+    "lastRelease": "2026-08-04",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": "npm MIT; GitHub reports NOASSERTION (licence file format)."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": ""
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": false,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Needs a DOM (svgdom in Node)."
+  },
+  "requiresSecret": false,
+  "style": "geometric",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": null,
+    "maxPx": null,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": null,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "study",
+  "verdictReason": "DOM dependency is unnecessary when generators emit SVG strings; useful only as a reference."
+}

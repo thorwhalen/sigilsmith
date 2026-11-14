@@ -1,0 +1,59 @@
+{
+  "id": "stripe-gradient",
+  "version": "0.0.0-draft",
+  "name": "Stripe-style WebGL gradient (stripe-gradient)",
+  "description": "npm packaging of the animated Stripe.com WebGL gradient.",
+  "category": "gradient-noise",
+  "role": "generator",
+  "upstream": {
+    "name": "stripe-gradient",
+    "url": "https://github.com/khasty720/stripe-gradient",
+    "npm": "stripe-gradient",
+    "lastRelease": "2022-12-26",
+    "maintenance": "stale"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": "Derived from Stripe's site script; provenance of original code unclear."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": ""
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": false,
+    "edge": false,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "WebGL"
+  },
+  "requiresSecret": false,
+  "style": "abstract",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": 128,
+    "maxPx": 1024,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "canvas"
+  ],
+  "determinism": "seeded",
+  "latency": {
+    "typicalMs": 30,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "avoid",
+  "verdictReason": "Animated hero effect, stale, murky provenance; not an identity-thumbnail tool."
+}

@@ -1,0 +1,73 @@
+{
+  "id": "blurhash",
+  "version": "0.0.0-draft",
+  "name": "BlurHash",
+  "description": "Compact string encoding of a blurred image preview (Wolt).",
+  "category": "placeholder",
+  "role": "placeholder",
+  "upstream": {
+    "name": "blurhash",
+    "url": "https://github.com/woltapp/blurhash",
+    "npm": "blurhash",
+    "lastRelease": "2023-02-17",
+    "maintenance": "stale"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": "Reference TS decoder is tiny; repo push 2024-07."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": ""
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Encoding needs pixel data."
+  },
+  "requiresSecret": false,
+  "style": "abstract",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": 16,
+    "maxPx": 64,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "png",
+    "canvas"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 1,
+    "basis": "estimate"
+  },
+  "params": [
+    {
+      "name": "componentX",
+      "type": "number",
+      "default": 4,
+      "description": ""
+    },
+    {
+      "name": "componentY",
+      "type": "number",
+      "default": 3,
+      "description": ""
+    }
+  ],
+  "examples": [],
+  "verdict": "later",
+  "verdictReason": "Stores a ~20-30 char string per item to show before the real image; helpful for slow generators."
+}

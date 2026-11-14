@@ -1,0 +1,73 @@
+{
+  "id": "rough-js",
+  "version": "0.0.0-draft",
+  "name": "Rough.js",
+  "description": "Hand-drawn, sketchy SVG/Canvas primitives with seed for repeatable wobble.",
+  "category": "creative-runtime",
+  "role": "helper",
+  "upstream": {
+    "name": "roughjs",
+    "url": "https://github.com/rough-stuff/rough",
+    "npm": "roughjs",
+    "lastRelease": "2023-11-20",
+    "maintenance": "stale"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": "Last push 2024-07."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": ""
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": false,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Needs DOM/SVG; Node via svgdom or canvas."
+  },
+  "requiresSecret": false,
+  "style": "illustrative",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": 48,
+    "maxPx": 512,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg",
+    "canvas"
+  ],
+  "determinism": "seeded",
+  "latency": {
+    "typicalMs": 10,
+    "basis": "estimate"
+  },
+  "params": [
+    {
+      "name": "seed",
+      "type": "number",
+      "default": 1,
+      "description": "makes jitter repeatable"
+    },
+    {
+      "name": "roughness",
+      "type": "number",
+      "default": 1,
+      "description": ""
+    }
+  ],
+  "examples": [],
+  "verdict": "later",
+  "verdictReason": "Gives a hand-drawn finish to any shape-based generator and is seedable."
+}

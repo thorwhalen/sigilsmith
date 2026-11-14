@@ -1,0 +1,60 @@
+{
+  "id": "twojs",
+  "version": "0.0.0-draft",
+  "name": "Two.js",
+  "description": "Renderer-agnostic 2D scene graph (SVG, Canvas, WebGL).",
+  "category": "creative-runtime",
+  "role": "runtime",
+  "upstream": {
+    "name": "two.js",
+    "url": "https://github.com/jonobr1/two.js",
+    "npm": "two.js",
+    "lastRelease": "2026-08-29",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": ""
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": ""
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": false,
+    "edge": false,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": ""
+  },
+  "requiresSecret": false,
+  "style": "geometric",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": 48,
+    "maxPx": 512,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg",
+    "canvas"
+  ],
+  "determinism": "seeded",
+  "latency": {
+    "typicalMs": 10,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "study",
+  "verdictReason": "Active and MIT but a scene graph adds weight over direct SVG strings."
+}

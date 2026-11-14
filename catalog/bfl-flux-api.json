@@ -1,0 +1,62 @@
+{
+  "id": "bfl-flux-api",
+  "version": "0.0.0-draft",
+  "name": "Black Forest Labs FLUX API",
+  "description": "BFL's hosted FLUX.2 / FLUX.1 models, billed per megapixel; klein 4B from USD 0.014 per first megapixel.",
+  "category": "hosted-image-api",
+  "role": "generator",
+  "upstream": {
+    "name": "BFL API",
+    "url": "https://bfl.ai/pricing",
+    "npm": null,
+    "lastRelease": null,
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "LicenseRef-BFL-API-Terms",
+    "mitCompatible": false,
+    "restrictions": [
+      "API terms apply; weights for FLUX.2 [dev]/9B under FLUX Non-Commercial License, only klein 4B is Apache-2.0"
+    ],
+    "notes": "No official JS SDK found on npm (@bfl/api does not exist); plain REST or via fal/Replicate."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "n/a"
+  },
+  "lazyLoadable": false,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": true
+  },
+  "cost": {
+    "model": "paid",
+    "notes": "2026-11-14: FLUX.2 pro USD 0.03 first MP; flex 0.05; klein 9B 0.015; klein 4B 0.014."
+  },
+  "requiresSecret": true,
+  "style": "photorealistic",
+  "semanticLevel": "llm",
+  "sizeRange": {
+    "minPx": 256,
+    "maxPx": 2048,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "png",
+    "jpeg"
+  ],
+  "determinism": "cached-nondeterministic",
+  "latency": {
+    "typicalMs": 4000,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "later",
+  "verdictReason": "Cheapest quality hosted option; REST only, so a thin fetch wrapper through a proxy."
+}

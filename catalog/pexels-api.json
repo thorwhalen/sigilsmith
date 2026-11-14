@@ -1,0 +1,64 @@
+{
+  "id": "pexels-api",
+  "version": "0.0.0-draft",
+  "name": "Pexels API",
+  "description": "Keyword photo and video search with free API key.",
+  "category": "stock-photo",
+  "role": "generator",
+  "upstream": {
+    "name": "Pexels API",
+    "url": "https://www.pexels.com/api/documentation/",
+    "npm": "pexels",
+    "lastRelease": "2022-09-19",
+    "maintenance": "stale"
+  },
+  "license": {
+    "spdx": "LicenseRef-Pexels-API-Terms",
+    "mitCompatible": false,
+    "restrictions": [
+      "Visible link back to Pexels requested on API use",
+      "Default 200 req/h and 20,000 req/month; raising limits currently paused",
+      "Bulk/systematic copying and automated extraction forbidden",
+      "Hotlinking rule not found in official text"
+    ],
+    "notes": "npm client 'pexels' last release 2022-09 but the REST API works without it."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "n/a (network)"
+  },
+  "lazyLoadable": false,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": true
+  },
+  "cost": {
+    "model": "free-tier",
+    "notes": "Free key."
+  },
+  "requiresSecret": true,
+  "style": "photorealistic",
+  "semanticLevel": "metadata",
+  "sizeRange": {
+    "minPx": 64,
+    "maxPx": 1200,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "jpeg"
+  ],
+  "determinism": "cached-nondeterministic",
+  "latency": {
+    "typicalMs": 300,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "later",
+  "verdictReason": "Simple REST API, but terms discourage caching in bulk; same proxy requirement as Unsplash."
+}

@@ -1,0 +1,61 @@
+{
+  "id": "icons-iconify",
+  "version": "0.0.0-draft",
+  "name": "Iconify",
+  "description": "Icon set usable for hash/keyword/embedding/LLM-chosen glyph on a coloured tile: pick an icon by metadata, draw its SVG on a palette background.",
+  "category": "icon-mapping",
+  "role": "generator",
+  "upstream": {
+    "name": "Iconify",
+    "url": "https://github.com/iconify/iconify",
+    "npm": "@iconify/utils",
+    "lastRelease": "2026-09-06",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [
+      "Framework MIT but ~200 icon sets each with own licence (some CC BY, GPL): filter by set licence"
+    ],
+    "notes": "Data via @iconify-json/* packages or api.iconify.design (network)."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "per-icon ~0.3-1 kB gz (estimate); full set not bundled"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Import individual icons to avoid bundling the full set."
+  },
+  "requiresSecret": false,
+  "style": "illustrative",
+  "semanticLevel": "metadata",
+  "sizeRange": {
+    "minPx": 24,
+    "maxPx": 256,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 1,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "later",
+  "verdictReason": "Largest catalogue, so it needs a licence-filtered allow-list; wrap later."
+}

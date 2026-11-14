@@ -1,0 +1,59 @@
+{
+  "id": "icons-tabler",
+  "version": "0.0.0-draft",
+  "name": "Tabler Icons",
+  "description": "Icon set usable for hash/keyword/embedding/LLM-chosen glyph on a coloured tile: pick an icon by metadata, draw its SVG on a palette background.",
+  "category": "icon-mapping",
+  "role": "generator",
+  "upstream": {
+    "name": "Tabler Icons",
+    "url": "https://github.com/tabler/tabler-icons",
+    "npm": "@tabler/icons",
+    "lastRelease": "2026-11-08",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": "5,900+ icons claimed upstream (not verified)."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "per-icon ~0.3-1 kB gz (estimate); full set not bundled"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Import individual icons to avoid bundling the full set."
+  },
+  "requiresSecret": false,
+  "style": "illustrative",
+  "semanticLevel": "metadata",
+  "sizeRange": {
+    "minPx": 24,
+    "maxPx": 256,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 1,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "later",
+  "verdictReason": "Very large and active; good for keyword coverage; per-icon import only."
+}

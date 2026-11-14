@@ -1,0 +1,77 @@
+{
+  "id": "dicebear-http-api",
+  "version": "0.0.0-draft",
+  "name": "DiceBear HTTP API",
+  "description": "Keyless hosted endpoint returning deterministic avatars (SVG, PNG, JPG, WebP, AVIF) from a seed in the URL.",
+  "category": "pattern",
+  "role": "generator",
+  "upstream": {
+    "name": "DiceBear API",
+    "url": "https://www.dicebear.com/how-to-use/http-api/",
+    "npm": null,
+    "lastRelease": null,
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [
+      "API free for non-commercial use only; commercial use or higher limits: self-host",
+      "Style licences still apply to output",
+      "No availability guarantee; may change output"
+    ],
+    "notes": "Service terms from the DiceBear docs, fetched 2026-11-14."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "n/a (network)"
+  },
+  "lazyLoadable": false,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": true
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Limits 2026-11: 50 req/s SVG, 10 req/s raster (raster capped at 256 px). Self-hosting recommended for commercial use."
+  },
+  "requiresSecret": false,
+  "style": "illustrative",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": 24,
+    "maxPx": 256,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg",
+    "png"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 150,
+    "basis": "estimate"
+  },
+  "params": [
+    {
+      "name": "seed",
+      "type": "string",
+      "default": "",
+      "description": "hash input"
+    },
+    {
+      "name": "style",
+      "type": "string",
+      "default": "shapes",
+      "description": ""
+    }
+  ],
+  "examples": [],
+  "verdict": "mvp",
+  "verdictReason": "Only genuinely keyless, free, deterministic remote service found; ideal real remote/async path for the MVP (with self-host seam)."
+}

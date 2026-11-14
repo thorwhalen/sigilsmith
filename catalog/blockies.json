@@ -1,0 +1,73 @@
+{
+  "id": "blockies",
+  "version": "0.0.0-draft",
+  "name": "Blockies (blockies-ts)",
+  "description": "Ethereum-style pixelated mirrored 8x8 grid identicons (original ethereum/blockies is archived; blockies-ts is a TS port).",
+  "category": "identicon",
+  "role": "generator",
+  "upstream": {
+    "name": "blockies-ts",
+    "url": "https://github.com/pedrouid/blockies-ts",
+    "npm": "blockies-ts",
+    "lastRelease": "2020-04-02",
+    "maintenance": "stale"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": "Original ethereum/blockies repo is archived on GitHub; npm 'ethereum-blockies' last published 2017."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": ""
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": ""
+  },
+  "requiresSecret": false,
+  "style": "geometric",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": 24,
+    "maxPx": 128,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg",
+    "png"
+  ],
+  "determinism": "seeded",
+  "latency": {
+    "typicalMs": 1,
+    "basis": "estimate"
+  },
+  "params": [
+    {
+      "name": "size",
+      "type": "number",
+      "default": 8,
+      "description": "grid cells"
+    },
+    {
+      "name": "scale",
+      "type": "number",
+      "default": 4,
+      "description": "px per cell"
+    }
+  ],
+  "examples": [],
+  "verdict": "study",
+  "verdictReason": "Recognisable but pixel-art look and unmaintained; the algorithm is ~60 lines and can be re-implemented in-house."
+}

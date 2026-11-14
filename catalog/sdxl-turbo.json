@@ -1,0 +1,61 @@
+{
+  "id": "sdxl-turbo",
+  "version": "0.0.0-draft",
+  "name": "SDXL-Turbo",
+  "description": "Stability AI's 1-step distilled SDXL (512 px).",
+  "category": "ai-model",
+  "role": "generator",
+  "upstream": {
+    "name": "stabilityai/sdxl-turbo",
+    "url": "https://huggingface.co/stabilityai/sdxl-turbo",
+    "npm": null,
+    "lastRelease": null,
+    "maintenance": "unknown"
+  },
+  "license": {
+    "spdx": "LicenseRef-Stability-AI-Community",
+    "mitCompatible": false,
+    "restrictions": [
+      "Same Stability community licence as SD-Turbo; 2023 launch post said not for commercial use, current framing is the $1M revenue tier"
+    ],
+    "notes": "Too large for browsers in practice."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "several GB; not quoted"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": false,
+    "node": true,
+    "edge": false,
+    "webgpu": true,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Local GPU."
+  },
+  "requiresSecret": false,
+  "style": "photorealistic",
+  "semanticLevel": "llm",
+  "sizeRange": {
+    "minPx": 512,
+    "maxPx": 1024,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "png"
+  ],
+  "determinism": "cached-nondeterministic",
+  "latency": {
+    "typicalMs": 5000,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "avoid",
+  "verdictReason": "Larger than SD-Turbo with the same licence issues; not a browser target."
+}

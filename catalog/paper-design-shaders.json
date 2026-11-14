@@ -1,0 +1,62 @@
+{
+  "id": "paper-design-shaders",
+  "version": "0.0.0-draft",
+  "name": "Paper Design Shaders",
+  "description": "Zero-dependency WebGL shader components (mesh gradient, swirl, grain, warp ...), with React wrappers.",
+  "category": "gradient-noise",
+  "role": "generator",
+  "upstream": {
+    "name": "@paper-design/shaders",
+    "url": "https://github.com/paper-design/shaders",
+    "npm": "@paper-design/shaders",
+    "lastRelease": "2026-10-21",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "mitCompatible": true,
+    "restrictions": [
+      "Apache-2.0 notice required"
+    ],
+    "notes": "Pre-1.0 (0.0.82), fast-moving API."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": ""
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": false,
+    "edge": false,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "WebGL"
+  },
+  "requiresSecret": false,
+  "style": "abstract",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": 64,
+    "maxPx": 512,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "canvas",
+    "png"
+  ],
+  "determinism": "seeded",
+  "latency": {
+    "typicalMs": 20,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "study",
+  "verdictReason": "Active and attractive, pre-1.0 and WebGL-bound; study the shader recipes."
+}

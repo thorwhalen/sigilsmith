@@ -1,0 +1,59 @@
+{
+  "id": "icons-phosphor",
+  "version": "0.0.0-draft",
+  "name": "Phosphor Icons",
+  "description": "Icon set usable for hash/keyword/embedding/LLM-chosen glyph on a coloured tile: pick an icon by metadata, draw its SVG on a palette background.",
+  "category": "icon-mapping",
+  "role": "generator",
+  "upstream": {
+    "name": "Phosphor Icons",
+    "url": "https://github.com/phosphor-icons/core",
+    "npm": "@phosphor-icons/core",
+    "lastRelease": "2024-03-29",
+    "maintenance": "maintained"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": "npm last release 2024-03; repo push 2026-01."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "per-icon ~0.3-1 kB gz (estimate); full set not bundled"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Import individual icons to avoid bundling the full set."
+  },
+  "requiresSecret": false,
+  "style": "illustrative",
+  "semanticLevel": "metadata",
+  "sizeRange": {
+    "minPx": 24,
+    "maxPx": 256,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 1,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "later",
+  "verdictReason": "Six weights per icon is a neat variation axis; similar role to Lucide."
+}

@@ -1,0 +1,72 @@
+{
+  "id": "initials-avatar",
+  "version": "0.0.0-draft",
+  "name": "Initials / letter avatar (in-house)",
+  "description": "Initials on a hash-coloured background (OKLCH), the Gmail/Slack default; DiceBear 'initials' (CC0) and gr2m/initials are third-party equivalents.",
+  "category": "initials",
+  "role": "generator",
+  "upstream": {
+    "name": "sigilsmith in-house",
+    "url": null,
+    "npm": null,
+    "lastRelease": null,
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": "DiceBear initials style is CC0; gr2m/initials npm package MIT (2021)."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "in-house; to be measured"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Needs font stack; use system-ui to avoid bundling fonts."
+  },
+  "requiresSecret": false,
+  "style": "geometric",
+  "semanticLevel": "metadata",
+  "sizeRange": {
+    "minPx": 16,
+    "maxPx": 128,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 1,
+    "basis": "estimate"
+  },
+  "params": [
+    {
+      "name": "maxChars",
+      "type": "number",
+      "default": 2,
+      "description": ""
+    },
+    {
+      "name": "shape",
+      "type": "string",
+      "default": "circle",
+      "description": "circle|square|squircle"
+    }
+  ],
+  "examples": [],
+  "verdict": "mvp",
+  "verdictReason": "Highest recognition for people lists; needs name field (metadata level); tiny and in-house."
+}

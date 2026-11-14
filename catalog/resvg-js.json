@@ -1,0 +1,61 @@
+{
+  "id": "resvg-js",
+  "version": "0.0.0-draft",
+  "name": "resvg-js",
+  "description": "Rust SVG renderer with Node and WASM bindings; turns generator SVG into PNG for crawlers (og:image, apple-touch-icon).",
+  "category": "html-to-image",
+  "role": "helper",
+  "upstream": {
+    "name": "@resvg/resvg-js",
+    "url": "https://github.com/yisibl/resvg-js",
+    "npm": "@resvg/resvg-js",
+    "lastRelease": "2024-03-26",
+    "maintenance": "maintained"
+  },
+  "license": {
+    "spdx": "MPL-2.0",
+    "mitCompatible": true,
+    "restrictions": [
+      "MPL-2.0 file-level copyleft; use as unmodified dependency"
+    ],
+    "notes": ""
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": ""
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "@resvg/resvg-wasm for browser/edge."
+  },
+  "requiresSecret": false,
+  "style": "geometric",
+  "semanticLevel": "hash",
+  "sizeRange": {
+    "minPx": null,
+    "maxPx": null,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "png"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 15,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "optional-peer",
+  "verdictReason": "Needed to rasterise SVG for targets that reject SVG; deterministic across platforms unlike canvas."
+}

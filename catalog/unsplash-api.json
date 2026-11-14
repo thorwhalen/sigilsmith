@@ -1,0 +1,64 @@
+{
+  "id": "unsplash-api",
+  "version": "0.0.0-draft",
+  "name": "Unsplash API",
+  "description": "Keyword photo search; returns hotlinked CDN photo URLs.",
+  "category": "stock-photo",
+  "role": "generator",
+  "upstream": {
+    "name": "Unsplash API",
+    "url": "https://unsplash.com/documentation",
+    "npm": "unsplash-js",
+    "lastRelease": "2026-08-14",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "LicenseRef-Unsplash-API-Terms",
+    "mitCompatible": false,
+    "restrictions": [
+      "API guidelines: must hotlink the photo URLs returned by the API (no re-hosting)",
+      "Must credit photographer and Unsplash with UTM links",
+      "Must call the download-tracking endpoint when a photo is used",
+      "Demo apps limited to 50 req/h; production up to 5000 req/h after approval"
+    ],
+    "notes": "Photo licence is Unsplash's own; guidelines read from help.unsplash.com via search, full text not retrieved: re-verify before shipping."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "n/a (network); unsplash-js MIT wrapper"
+  },
+  "lazyLoadable": false,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": true
+  },
+  "cost": {
+    "model": "free-tier",
+    "notes": "Free API key required; hotlink + attribution + tracking."
+  },
+  "requiresSecret": true,
+  "style": "photorealistic",
+  "semanticLevel": "metadata",
+  "sizeRange": {
+    "minPx": 64,
+    "maxPx": 1200,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "jpeg"
+  ],
+  "determinism": "cached-nondeterministic",
+  "latency": {
+    "typicalMs": 300,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "later",
+  "verdictReason": "Hotlinking and attribution rules conflict with the generate-once-and-store strategy; needs a proxy, never a client key."
+}

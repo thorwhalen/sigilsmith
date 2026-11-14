@@ -1,0 +1,59 @@
+{
+  "id": "bonsai-image",
+  "version": "0.0.0-draft",
+  "name": "Bonsai Image 4B (PrismML)",
+  "description": "1-bit and ternary quantised FLUX.2 klein 4B derivative (0.93-1.21 GB transformer).",
+  "category": "ai-model",
+  "role": "generator",
+  "upstream": {
+    "name": "prismml/bonsai-image",
+    "url": "https://prismml.com/news/bonsai-image-4b",
+    "npm": null,
+    "lastRelease": "2026-05-26",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": "Licence per PrismML docs table; runtimes MLX (Apple Silicon), Gemlite (CUDA), iOS app; no browser/WebGPU runtime documented as of 2026-11-14."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "transformer 0.93 GB (1-bit) / 1.21 GB (ternary), vendor docs"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": false,
+    "node": true,
+    "edge": false,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "On-device; ~3.4-3.9 GB full MLX payload."
+  },
+  "requiresSecret": false,
+  "style": "photorealistic",
+  "semanticLevel": "llm",
+  "sizeRange": {
+    "minPx": 512,
+    "maxPx": 1024,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "png"
+  ],
+  "determinism": "cached-nondeterministic",
+  "latency": {
+    "typicalMs": 6000,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "study",
+  "verdictReason": "Promising small footprint, but vendor-reported numbers and no web runtime yet."
+}

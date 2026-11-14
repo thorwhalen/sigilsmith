@@ -1,0 +1,57 @@
+{
+  "id": "onnxruntime-web",
+  "version": "0.0.0-draft",
+  "name": "ONNX Runtime Web",
+  "description": "Microsoft's browser inference engine (WASM, WebGL, WebGPU) for ONNX models.",
+  "category": "ai-runtime",
+  "role": "runtime",
+  "upstream": {
+    "name": "onnxruntime-web",
+    "url": "https://github.com/microsoft/onnxruntime",
+    "npm": "onnxruntime-web",
+    "lastRelease": "2026-10-26",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "MIT",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": "Models loaded through it carry their own licences."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "WASM binaries several MB"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": false,
+    "edge": false,
+    "webgpu": true,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "WASM/WebGPU on device."
+  },
+  "requiresSecret": false,
+  "style": "photorealistic",
+  "semanticLevel": "embedding",
+  "sizeRange": {
+    "minPx": null,
+    "maxPx": null,
+    "basis": "estimate"
+  },
+  "outputFormat": [],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": null,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "optional-peer",
+  "verdictReason": "Underlying engine for embeddings and diffusion; consume through Transformers.js rather than directly."
+}

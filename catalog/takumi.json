@@ -1,0 +1,61 @@
+{
+  "id": "takumi",
+  "version": "0.0.0-draft",
+  "name": "Takumi",
+  "description": "Rust HTML/CSS (flexbox, grid) to raster image engine with Node native and WASM bindings; Satori alternative.",
+  "category": "html-to-image",
+  "role": "generator",
+  "upstream": {
+    "name": "@takumi-rs/core",
+    "url": "https://github.com/kane50613/takumi",
+    "npm": "@takumi-rs/core",
+    "lastRelease": "2026-11-08",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "MIT OR Apache-2.0",
+    "mitCompatible": true,
+    "restrictions": [],
+    "notes": "Dual licence on npm; GitHub reports Apache-2.0."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "Native/WASM binary; not quoted"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": false,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Browser/edge via @takumi-rs/wasm; core package is a native Node addon."
+  },
+  "requiresSecret": false,
+  "style": "illustrative",
+  "semanticLevel": "metadata",
+  "sizeRange": {
+    "minPx": 256,
+    "maxPx": 1200,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "png",
+    "webp",
+    "jpeg"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 30,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "later",
+  "verdictReason": "Fast and active, raster only (no SVG); consider as server-side option behind the same template interface."
+}

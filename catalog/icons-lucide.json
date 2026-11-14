@@ -1,0 +1,61 @@
+{
+  "id": "icons-lucide",
+  "version": "0.0.0-draft",
+  "name": "Lucide",
+  "description": "Icon set usable for hash/keyword/embedding/LLM-chosen glyph on a coloured tile: pick an icon by metadata, draw its SVG on a palette background.",
+  "category": "icon-mapping",
+  "role": "generator",
+  "upstream": {
+    "name": "Lucide",
+    "url": "https://github.com/lucide-icons/lucide",
+    "npm": "lucide",
+    "lastRelease": "2026-11-14",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "ISC",
+    "mitCompatible": true,
+    "restrictions": [
+      "ISC; some icons derive from Feather (MIT): keep both notices"
+    ],
+    "notes": "1.x line (1.73.0 on 2026-11-14)."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "per-icon ~0.3-1 kB gz (estimate); full set not bundled"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": false
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Import individual icons to avoid bundling the full set."
+  },
+  "requiresSecret": false,
+  "style": "illustrative",
+  "semanticLevel": "metadata",
+  "sizeRange": {
+    "minPx": 24,
+    "maxPx": 256,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg"
+  ],
+  "determinism": "pure",
+  "latency": {
+    "typicalMs": 1,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "mvp",
+  "verdictReason": "Clean consistent set, ISC, per-icon ESM; best default for keyword to icon mapping."
+}

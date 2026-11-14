@@ -1,0 +1,62 @@
+{
+  "id": "google-gemini-image",
+  "version": "0.0.0-draft",
+  "name": "Google Gemini image (Nano Banana) and Imagen",
+  "description": "Gemini image models ('Nano Banana' family) via @google/genai; Imagen 4 retired in 2026.",
+  "category": "hosted-image-api",
+  "role": "generator",
+  "upstream": {
+    "name": "Gemini API",
+    "url": "https://ai.google.dev/gemini-api/docs/pricing",
+    "npm": "@google/genai",
+    "lastRelease": "2026-11-12",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "mitCompatible": true,
+    "restrictions": [
+      "Imagen 4 endpoints retired (Firebase page says 2026-06-24; Gemini API table via secondary sources says 2026-08-17)",
+      "gemini-2.5-flash-image scheduled shutdown 2027-03-15"
+    ],
+    "notes": "SDK Apache-2.0."
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "n/a"
+  },
+  "lazyLoadable": false,
+  "runtime": {
+    "browser": true,
+    "node": true,
+    "edge": true,
+    "webgpu": false,
+    "network": true
+  },
+  "cost": {
+    "model": "paid",
+    "notes": "No free tier for image models (pricing page 2026-11-14): Nano Banana 2.1 USD 0.0336 per 1K image, Flash Lite Image USD 0.0336."
+  },
+  "requiresSecret": true,
+  "style": "photorealistic",
+  "semanticLevel": "llm",
+  "sizeRange": {
+    "minPx": 256,
+    "maxPx": 2048,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "png"
+  ],
+  "determinism": "cached-nondeterministic",
+  "latency": {
+    "typicalMs": 8000,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "later",
+  "verdictReason": "Cheap and good, but models churn fast; the author's 'Imagen' is retired, use the Gemini image models."
+}

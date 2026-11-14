@@ -1,0 +1,61 @@
+{
+  "id": "web-llm",
+  "version": "0.0.0-draft",
+  "name": "WebLLM",
+  "description": "MLC's in-browser LLM engine on WebGPU with OpenAI-compatible API.",
+  "category": "in-browser-llm",
+  "role": "runtime",
+  "upstream": {
+    "name": "@mlc-ai/web-llm",
+    "url": "https://github.com/mlc-ai/web-llm",
+    "npm": "@mlc-ai/web-llm",
+    "lastRelease": "2026-11-10",
+    "maintenance": "active"
+  },
+  "license": {
+    "spdx": "Apache-2.0",
+    "mitCompatible": true,
+    "restrictions": [
+      "Model weights carry their own licences (Llama, Gemma, Qwen terms vary)"
+    ],
+    "notes": ""
+  },
+  "bundleSize": {
+    "minGzipBytes": null,
+    "brotliBytes": null,
+    "measured": false,
+    "source": "library plus model weights, hundreds of MB to GB"
+  },
+  "lazyLoadable": true,
+  "runtime": {
+    "browser": true,
+    "node": false,
+    "edge": false,
+    "webgpu": true,
+    "network": true
+  },
+  "cost": {
+    "model": "free",
+    "notes": "Downloads 0.5-several GB model on first use."
+  },
+  "requiresSecret": false,
+  "style": "illustrative",
+  "semanticLevel": "llm",
+  "sizeRange": {
+    "minPx": null,
+    "maxPx": null,
+    "basis": "estimate"
+  },
+  "outputFormat": [
+    "svg"
+  ],
+  "determinism": "cached-nondeterministic",
+  "latency": {
+    "typicalMs": 5000,
+    "basis": "estimate"
+  },
+  "params": [],
+  "examples": [],
+  "verdict": "optional-peer",
+  "verdictReason": "Cross-browser WebGPU path for LLM-chosen icons/SVG; model size makes it opt-in only."
+}
