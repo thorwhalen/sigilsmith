@@ -52,7 +52,14 @@ export const KeyConfigSchema = z.union([
 
 export const RemoteSpecSchema = z.union([
   z.object({ transport: z.literal('proxy'), url: z.string().min(1) }).strict(),
-  z.object({ transport: z.literal('dicebear'), style: z.string().default('shapes'), baseUrl: z.string().url().optional() }).strict(),
+  z
+    .object({
+      transport: z.literal('dicebear'),
+      style: z.string().default('shapes'),
+      baseUrl: z.string().url().optional().describe('A self-hosted DiceBear API: required for commercial use.'),
+      use: z.enum(['non-commercial']).optional().describe('Acknowledge that the public api.dicebear.com is used for a non-commercial app (its terms).'),
+    })
+    .strict(),
   z.object({ transport: z.literal('mock'), latencyMs: z.number().int().nonnegative().default(300) }).strict(),
   z.object({ transport: z.literal('module'), module: z.string().regex(/#/) }).strict().describe('A custom transport exported by your code, e.g. BYOK.'),
 ]);

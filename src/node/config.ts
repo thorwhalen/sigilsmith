@@ -69,6 +69,18 @@ export function validateSemantics(cfg: Config, file: string): Diagnostic[] {
       if (cfg.remote[ref] || (b && b.module.determinism !== 'pure')) out.push(diag('SGS0303', 'error', `\`${ref}\` cannot be used with derived delivery`, { where: { file, path: 'delivery.strategy' }, fix: { summary: 'use "hybrid" or "materialized"', applicability: 'maybe-incorrect', edits: [{ file, path: 'delivery.strategy', set: 'hybrid' }] } }));
     }
   }
+  for (const [ref, spec] of Object.entries(cfg.remote)) {
+    if (spec.transport !== 'dicebear' || spec.baseUrl) continue;
+    const ack = spec.use === 'non-commercial';
+    out.push(
+      diag('SGS0107', ack ? 'info' : 'warning', `\`${ref}\` uses the public DiceBear API, which is free for non-commercial use only${ack ? ' (acknowledged)' : ''}; style \`${spec.style}\` has its own licence`, {
+        where: { file, path: `remote.${ref}` },
+        fix: ack
+          ? { summary: 'if the app becomes commercial, self-host DiceBear and set baseUrl', applicability: 'unspecified' }
+          : { summary: 'commercial app: set baseUrl to a self-hosted DiceBear API; non-commercial app: acknowledge with "use": "non-commercial"', applicability: 'has-placeholders', edits: [{ file, path: `remote.${ref}.use`, set: 'non-commercial' }] },
+      }),
+    );
+  }
   for (const path of findSecrets(cfg)) out.push(diag('SGS0105', 'error', `value at \`${path}\` looks like an API key`, { where: { file, path } }));
   return out;
 }

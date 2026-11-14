@@ -32,6 +32,7 @@ sigilsmith is a *builder* package. You (or, more often, your coding agent) use i
 | `build [--accept]` | writes the wiring module and the lock |
 | `targets [--emit]` | favicon, Apple touch icon, manifest icons, og:image, Media Session art: files and snippets |
 | `check` | config, freshness, data drift, identity, determinism, budget, peers, bypass, target registration |
+| `mcp` | the same operations as MCP tools over stdio (`claude mcp add sigilsmith -- npx sigilsmith mcp`); `preview` returns the sheet as an image |
 
 ## Generators (implemented)
 
@@ -43,7 +44,7 @@ sigilsmith is a *builder* package. You (or, more often, your coding agent) use i
 | `initials@1` | geometric × metadata | 740 B | letters from the label, colour from the key |
 | `emoji@1` | illustrative × metadata | 1411 B | keyword match on title/tags, else hash |
 | `minidenticons@1` | geometric × hash | 640 B | adapter over the MIT `minidenticons` (peer, pinned 4.2.1) |
-| remote (`proxy`, `module`/BYOK, `dicebear`, `mock`) | any | 2.6 kB module | cached by content id, instant placeholder, keys never in the bundle |
+| remote (`proxy`, `module`/BYOK, `dicebear`, `mock`) | any | 2.6 kB module | cached by content id, instant placeholder, keys never in the bundle; the public DiceBear API is free for non-commercial use only (`check` warns until you acknowledge it or self-host) |
 
 Measured with esbuild + gzip -9 on 2026-11-14 (`npm run measure`); third-party libraries are measured in `spikes/README.md`.
 

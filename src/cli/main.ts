@@ -10,26 +10,8 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { CONFIG_FILE, PKG_NAME } from '../meta.js';
-import {
-  build,
-  catalog,
-  check,
-  detectKeyCmd,
-  emitTargets,
-  envelope,
-  explainCode,
-  explainItems,
-  formatDiagnostic,
-  init,
-  listTargetsCmd,
-  loadConfig,
-  loadSamples,
-  preview,
-  SECTIONS,
-  type Envelope,
-  type Section,
-} from '../node/index.js';
-import { PRESETS } from '../presets.js';
+import { formatDiagnostic, SECTIONS, type Envelope } from '../node/index.js';
+import { runOperation } from '../node/operations.js';
 
 const HELP = `${PKG_NAME}: deterministic identity images for list items.
 
@@ -48,10 +30,10 @@ Commands
   targets [--emit] [--ids a,b] [--item JSON] [--out dir]   list targets / emit files + snippets
   check [--only a,b]                verify: ${SECTIONS.join(', ')}
   explain-code <SGSxxxx>            what a diagnostic means and how to fix it
+  mcp [--cwd dir]                   the same operations as an MCP server over stdio
 
 Global: --config <path> (default ./${CONFIG_FILE}), --json, --help`;
 
-type Values = Record<string, string | boolean | undefined>;
 
 const list = (v: unknown) => (typeof v === 'string' && v ? v.split(',').map((s) => s.trim()).filter(Boolean) : undefined);
 
@@ -66,11 +48,6 @@ function print(env: Envelope, json: boolean, human?: (data: any) => string): num
   return env.ok ? 0 : 1;
 }
 
-async function needConfig(v: Values) {
-  const loaded = await loadConfig(v.config as string | undefined);
-  return loaded;
-}
-
 async function main(argv: string[]): Promise<number> {
   const { values: v, positionals } = parseArgs({
     args: argv,
@@ -82,7 +59,7 @@ async function main(argv: string[]): Promise<number> {
       style: { type: 'string' }, semantic: { type: 'string' }, 'max-gzip': { type: 'string' }, 'no-network': { type: 'boolean' },
       'min-px': { type: 'string' }, implemented: { type: 'boolean' }, 'mit-only': { type: 'boolean' }, ref: { type: 'string' }, presets: { type: 'boolean' },
       generators: { type: 'string' }, out: { type: 'string' }, item: { type: 'string' }, index: { type: 'string' }, all: { type: 'boolean' },
-      accept: { type: 'boolean' }, emit: { type: 'boolean' }, ids: { type: 'string' }, only: { type: 'string' }, 'include-legacy': { type: 'boolean' },
+      accept: { type: 'boolean' }, emit: { type: 'boolean' }, ids: { type: 'string' }, only: { type: 'string' }, 'include-legacy': { type: 'boolean' }, cwd: { type: 'string' },
     },
   });
   const json = Boolean(v.json);
@@ -91,83 +68,58 @@ async function main(argv: string[]): Promise<number> {
     process.stdout.write(`${HELP}\n`);
     return cmd || v.help ? 0 : 2;
   }
-  switch (cmd) {
-    case 'init':
-      return print(init(process.cwd(), { ...(v.samples ? { samples: String(v.samples) } : {}), force: Boolean(v.force) }), json, (d) => `wrote: ${d.wrote.join(', ') || 'nothing'}${d.skipped.length ? `; kept existing: ${d.skipped.join(', ')}` : ''}`);
-    case 'catalog': {
-      if (v.presets) return print(envelope('catalog', { presets: Object.values(PRESETS).map((p) => ({ name: p.name, description: p.description, types: Object.keys(p.byType) })) }), json, (d) => d.presets.map((p: any) => `${p.name}: ${p.description}`).join('\n'));
-      const q = {
-        ...(list(v.style) ? { style: list(v.style)! } : {}), ...(list(v.semantic) ? { semantic: list(v.semantic)! } : {}),
-        ...(v['max-gzip'] ? { maxGzip: Number(v['max-gzip']) } : {}), ...(v['no-network'] ? { noNetwork: true } : {}),
-        ...(v['min-px'] ? { minPx: Number(v['min-px']) } : {}), ...(v.implemented ? { implemented: true } : {}),
-        ...(v['mit-only'] ? { mitOnly: true } : {}), ...(v.ref ? { ref: String(v.ref) } : {}),
-      };
-      return print(catalog(q), json, (d) => [`${d.matched} of ${d.total} match`, ...d.results.map((r: any) => `${r.implemented ? '●' : '○'} ${(r.ref ?? r.id).padEnd(26)} ${r.style.padEnd(14)} ${r.semanticLevel.padEnd(10)} ${r.gzipBytes ?? '?'} B gz  ${r.license ?? '?'}  ${r.description}`)].join('\n'));
-    }
-    case 'detect-key': {
-      const samples = arg ?? (v.samples as string | undefined);
-      if (!samples) {
-        process.stderr.write('usage: detect-key <samples.json> [--write]\n');
-        return 2;
-      }
-      const loaded = await loadConfig(v.config as string | undefined);
-      return print(detectKeyCmd(loaded.raw ? loaded : null, samples, { write: Boolean(v.write) }), json, (d) => `chosen: ${d.chosen ? JSON.stringify(d.chosen.key) : 'none'} over ${d.total} items${d.written ? ' (written to config)' : ''}\n${d.candidates.map((c: any) => `  ${JSON.stringify(c.key)} complete ${(c.completeness * 100).toFixed(0)}% unique ${(c.uniqueness * 100).toFixed(0)}% ${c.suspects.map((s: any) => s.reason).join(',')}`).join('\n')}`);
-    }
-    case 'explain': {
-      const loaded = await needConfig(v);
-      if (!loaded.config) return print(envelope('explain', null, loaded.diagnostics), json);
-      let items: unknown[];
-      if (v.item) items = [JSON.parse(String(v.item))];
-      else {
-        const { items: s, error } = loadSamples(loaded.dir, (v.samples as string | undefined) ?? loaded.config.samples);
-        if (error || !s.length) {
-          process.stderr.write(`${error ?? 'no sample items'}: pass --item '<json>' or set "samples" in the config\n`);
-          return 2;
-        }
-        items = v.all ? s : [s[Number(v.index ?? 0)]];
-      }
-      return print(await explainItems(loaded, items as Record<string, unknown>[]), json, (d) =>
-        d.explanations.map((e: any) => [`key ${JSON.stringify(e.key.value)} (${e.key.via})`, `generator ${e.generator.ref} via ${e.generator.via}${e.generator.weights ? ` weights ${JSON.stringify(e.generator.weights)} bucket ${e.generator.bucket.toFixed(3)}` : ''}`, `inputs ${JSON.stringify(e.inputs.values)}${e.inputs.missing.length ? ` missing ${e.inputs.missing.join(',')}` : ''}`, ...e.params.map((p: any) => `  ${p.path} = ${JSON.stringify(p.value)}  [${p.layer}${p.shadowed.length ? `, over ${p.shadowed.map((s: any) => s.layer).join(',')}` : ''}]`), `delivery: ${e.delivery.note}`, `regeneration: ${e.regeneration.note}`].join('\n')).join('\n\n'));
-    }
-    case 'build': {
-      const loaded = await needConfig(v);
-      if (!loaded.config || loaded.diagnostics.some((d) => d.severity === 'error')) return print(envelope('build', null, loaded.diagnostics), json);
-      return print(await build(loaded, { ...(v.out ? { out: String(v.out) } : {}), accept: Boolean(v.accept) }), json, (d) => `wrote ${d.wrote.join(', ')}; generators: ${d.refs.join(', ')}`);
-    }
-    case 'preview': {
-      const loaded = await needConfig(v);
-      if (!loaded.config) return print(envelope('preview', null, loaded.diagnostics), json);
-      const { items } = loadSamples(loaded.dir, (v.samples as string | undefined) ?? loaded.config.samples);
-      return print(await preview(loaded, { ...(list(v.generators) ? { generators: list(v.generators)! } : {}), items, ...(v.out ? { out: String(v.out) } : {}) }), json, (d) => `${Object.values(d.files).join('\n')}\n${Object.entries(d.metrics).map(([r, m]: any) => `${r}: min distance ${m.minDistance}, median ${m.medianDistance}, near-duplicates ${m.nearDuplicates}/${m.items}${m.caveat ? ` (${m.caveat})` : ''}`).join('\n')}`);
-    }
-    case 'targets': {
-      if (!v.emit) return print(listTargetsCmd({ includeLegacy: Boolean(v['include-legacy']) }), json, (d) => d.targets.map((t: any) => `${t.id.padEnd(24)} ${t.status.padEnd(8)} ${t.scope.padEnd(5)} ${t.requiresStoredUrl ? 'stored URL' : 'client-side'}  ${t.files.join(', ')}`).join('\n'));
-      const loaded = await needConfig(v);
-      if (!loaded.config) return print(envelope('targets', null, loaded.diagnostics), json);
-      return print(await emitTargets(loaded, { ...(list(v.ids) ? { ids: list(v.ids)! } : {}), ...(v.item ? { item: JSON.parse(String(v.item)) } : {}), ...(v.out ? { outDir: String(v.out) } : {}) }), json, (d) => `${d.files.map((f: any) => `wrote ${f.path} (${f.bytes} B)`).join('\n')}\n\n${Object.entries(d.snippets).map(([k, s]) => `<!-- ${k} -->\n${s}`).join('\n\n')}`);
-    }
-    case 'check': {
-      const loaded = await needConfig(v);
-      const only = list(v.only) as Section[] | undefined;
-      return print(await check(loaded, only ? { only } : {}), json, (d) => Object.entries(d.sections).map(([s, r]) => `${r === 'pass' ? '✓' : r === 'fail' ? '✗' : r === 'warn' ? '!' : '-'} ${s}`).join('\n') + (d.budget?.totalGzip != null ? `\nbudget: ${d.budget.totalGzip} B gzip${d.budget.maxGzipBytes ? ` of ${d.budget.maxGzipBytes}` : ''}` : ''));
-    }
-    case 'explain-code':
-      if (!arg) {
-        process.stderr.write('usage: explain-code <SGSxxxx>\n');
-        return 2;
-      }
-      return print(explainCode(arg), json, (d) => (d ? `${d.code}: ${d.title}\ncause: ${d.cause}\nfix: ${d.fix}` : ''));
-    case 'version':
-      process.stdout.write(`${(JSON.parse(readFileSync(resolve(new URL('../../package.json', import.meta.url).pathname), 'utf8')) as { version: string }).version}\n`);
-      return 0;
-    default:
-      process.stderr.write(`unknown command \`${cmd}\`\n\n${HELP}\n`);
-      return 2;
+  const config = v.config as string | undefined;
+  const opt = <T,>(k: string, f: (x: any) => T = (x) => x): T | undefined => (v[k] === undefined ? undefined : f(v[k]));
+  const human: Record<string, (d: any) => string> = {
+    init: (d) => `wrote: ${d.wrote.join(', ') || 'nothing'}${d.skipped.length ? `; kept existing: ${d.skipped.join(', ')}` : ''}`,
+    catalog: (d) => d.presets ? d.presets.map((p: any) => `${p.name}: ${p.description}`).join('\n') : [`${d.matched} of ${d.total} match`, ...d.results.map((r: any) => `${r.implemented ? '●' : '○'} ${(r.ref ?? r.id).padEnd(26)} ${r.style.padEnd(14)} ${r.semanticLevel.padEnd(10)} ${r.gzipBytes ?? '?'} B gz  ${r.license ?? '?'}  ${r.description}${r.terms ? `\n    terms: ${r.terms.join('; ')}` : ''}${r.usage ? `\n    wire: ${r.usage}` : ''}`)].join('\n'),
+    detect_key: (d) => `chosen: ${d.chosen ? JSON.stringify(d.chosen.key) : 'none'} over ${d.total} items${d.written ? ' (written to config)' : ''}\n${d.candidates.map((c: any) => `  ${JSON.stringify(c.key)} complete ${(c.completeness * 100).toFixed(0)}% unique ${(c.uniqueness * 100).toFixed(0)}% ${c.suspects.map((x: any) => x.reason).join(',')}`).join('\n')}`,
+    explain: (d) => d.explanations.map((e: any) => [`key ${JSON.stringify(e.key.value)} (${e.key.via})`, `generator ${e.generator.ref} via ${e.generator.via}${e.generator.weights ? ` weights ${JSON.stringify(e.generator.weights)} bucket ${e.generator.bucket.toFixed(3)}` : ''}`, `inputs ${JSON.stringify(e.inputs.values)}${e.inputs.missing.length ? ` missing ${e.inputs.missing.join(',')}` : ''}`, ...e.params.map((p: any) => `  ${p.path} = ${JSON.stringify(p.value)}  [${p.layer}${p.shadowed.length ? `, over ${p.shadowed.map((x: any) => x.layer).join(',')}` : ''}]`), `delivery: ${e.delivery.note}`, `regeneration: ${e.regeneration.note}`].join('\n')).join('\n\n'),
+    build: (d) => `wrote ${d.wrote.join(', ')}; generators: ${d.refs.join(', ')}`,
+    preview: (d) => `${Object.values(d.files).join('\n')}\n${Object.entries(d.metrics).map(([r, m]: any) => `${r}: min distance ${m.minDistance}, median ${m.medianDistance}, near-duplicates ${m.nearDuplicates}/${m.items}${m.caveat ? ` (${m.caveat})` : ''}`).join('\n')}`,
+    targets: (d) => d.targets ? d.targets.map((t: any) => `${t.id.padEnd(24)} ${t.status.padEnd(8)} ${t.scope.padEnd(5)} ${t.requiresStoredUrl ? 'stored URL' : 'client-side'}  ${t.files.join(', ')}`).join('\n') : `${d.files.map((f: any) => `wrote ${f.path} (${f.bytes} B)`).join('\n')}\n\n${Object.entries(d.snippets).map(([k, x]) => `<!-- ${k} -->\n${x}`).join('\n\n')}`,
+    check: (d) => Object.entries(d.sections).map(([x, r]) => `${r === 'pass' ? '✓' : r === 'fail' ? '✗' : r === 'warn' ? '!' : '-'} ${x}`).join('\n') + (d.budget?.totalGzip != null ? `\nbudget: ${d.budget.totalGzip} B gzip${d.budget.maxGzipBytes ? ` of ${d.budget.maxGzipBytes}` : ''}` : ''),
+    explain_code: (d) => (d ? `${d.code}: ${d.title}\ncause: ${d.cause}\nfix: ${d.fix}` : ''),
+  };
+  const inputs: Record<string, () => Record<string, unknown> | null> = {
+    init: () => ({ samples: opt('samples', String), force: opt('force', Boolean) }),
+    catalog: () => ({ style: list(v.style), semantic: list(v.semantic), maxGzip: opt('max-gzip', Number), noNetwork: opt('no-network', Boolean), minPx: opt('min-px', Number), implemented: opt('implemented', Boolean), mitOnly: opt('mit-only', Boolean), ref: opt('ref', String), presets: opt('presets', Boolean) }),
+    'detect-key': () => (arg ?? v.samples ? { samples: String(arg ?? v.samples), write: opt('write', Boolean), config } : null),
+    explain: () => ({ config, item: opt('item', (x) => JSON.parse(String(x))), index: opt('index', Number), all: opt('all', Boolean), samples: opt('samples', String) }),
+    build: () => ({ config, out: opt('out', String), accept: opt('accept', Boolean) }),
+    preview: () => ({ config, generators: list(v.generators), samples: opt('samples', String), out: opt('out', String) }),
+    targets: () => ({ config, emit: opt('emit', Boolean), ids: list(v.ids), item: opt('item', (x) => JSON.parse(String(x))), out: opt('out', String), includeLegacy: opt('include-legacy', Boolean) }),
+    check: () => ({ config, only: list(v.only) }),
+    'explain-code': () => (arg ? { code: arg } : null),
+  };
+  if (cmd === 'mcp') {
+    const { startMcpServer } = await import('../mcp/server.js');
+    await startMcpServer({ ...(v.cwd ? { cwd: String(v.cwd) } : {}) });
+    return -1; // keep running: the server owns the process
   }
+  if (cmd === 'version') {
+    process.stdout.write(`${(JSON.parse(readFileSync(resolve(new URL('../../package.json', import.meta.url).pathname), 'utf8')) as { version: string }).version}\n`);
+    return 0;
+  }
+  const make = inputs[cmd];
+  if (!make) {
+    process.stderr.write(`unknown command \`${cmd}\`\n\n${HELP}\n`);
+    return 2;
+  }
+  const input = make();
+  if (!input) {
+    process.stderr.write(`usage: ${PKG_NAME} ${cmd} <${cmd === 'explain-code' ? 'SGSxxxx' : 'samples.json'}>\n`);
+    return 2;
+  }
+  const clean = Object.fromEntries(Object.entries(input).filter(([, x]) => x !== undefined));
+  const env = await runOperation(cmd, clean);
+  return print(env, json, human[cmd.replace(/-/g, '_')]);
 }
 
 main(process.argv.slice(2)).then(
-  (code) => process.exit(code),
+  (code) => {
+    if (code >= 0) process.exit(code);
+  },
   (e) => {
     process.stderr.write(`internal error: ${(e as Error).stack ?? e}\n`);
     process.exit(4);

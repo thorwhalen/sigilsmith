@@ -16,6 +16,7 @@ export default defineConfig({
     'react/index': 'src/react/index.tsx',
     'node/index': 'src/node/index.ts',
     'cli/main': 'src/cli/main.ts',
+    'mcp/server': 'src/mcp/server.ts',
     'generators/grid/v1': 'src/generators/grid/v1.ts',
     'generators/rings/v1': 'src/generators/rings/v1.ts',
     'generators/shapes/v1': 'src/generators/shapes/v1.ts',
@@ -30,5 +31,5 @@ export default defineConfig({
   clean: true,
   target: 'es2022',
   platform: 'neutral',
-  external: ['react', 'react-dom', 'zod', /^@zodal\//, 'minidenticons', '@resvg/resvg-js', /^node:/],
+  external: ['react', 'react-dom', 'zod', /^@zodal\//, 'minidenticons', '@resvg/resvg-js', /^@modelcontextprotocol\//, /^node:/],
 });

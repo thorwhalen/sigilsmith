@@ -16,8 +16,8 @@
     "spdx": "MIT",
     "mitCompatible": true,
     "restrictions": [
-      "API free for non-commercial use only; commercial use or higher limits: self-host",
-      "Style licences still apply to output",
+      "The public API (api.dicebear.com) is free for NON-COMMERCIAL use only; commercial apps must self-host the API (open source) and set `baseUrl`",
+      "Each DiceBear style has its own licence (many CC0, some CC BY 4.0 requiring attribution, a few with the artist's own terms): check the chosen style before shipping",
       "No availability guarantee; may change output"
     ],
     "notes": "Service terms from the DiceBear docs, fetched 2026-11-14."
@@ -73,5 +73,6 @@
   ],
   "examples": [],
   "verdict": "mvp",
-  "verdictReason": "Only genuinely keyless, free, deterministic remote service found; ideal real remote/async path for the MVP (with self-host seam)."
+  "verdictReason": "Only genuinely keyless, free, deterministic remote service found; ideal real remote/async path for the MVP (with self-host seam).",
+  "usage": "\"remote\": { \"dicebear@9\": { \"transport\": \"dicebear\", \"style\": \"shapes\", \"use\": \"non-commercial\" } }  // commercial apps: add \"baseUrl\" of a self-hosted DiceBear API instead of \"use\""
 }

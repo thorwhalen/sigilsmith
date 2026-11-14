@@ -252,8 +252,16 @@
                 "type": "string"
               },
               "baseUrl": {
+                "description": "A self-hosted DiceBear API: required for commercial use.",
                 "type": "string",
                 "format": "uri"
+              },
+              "use": {
+                "description": "Acknowledge that the public api.dicebear.com is used for a non-commercial app (its terms).",
+                "type": "string",
+                "enum": [
+                  "non-commercial"
+                ]
               }
             },
             "required": [

@@ -168,3 +168,18 @@ describe('CLI surface (--json envelope, exit codes)', () => {
     expect(JSON.parse(readFileSync(join(dir, 'sigilsmith.config.json'), 'utf8')).key.field).toBe('slug');
   });
 });
+
+describe('service terms (DiceBear, SGS0107)', () => {
+  it('warns until the terms are acknowledged or a self-hosted baseUrl is set; the catalog shows them', async () => {
+    const base = { ...BASIC, policy: { default: 'grid@1', rules: [{ when: { type: 'video' }, use: 'avatar@9' }] } };
+    const warn = await loadConfig(undefined, makeProject({ ...base, remote: { 'avatar@9': { transport: 'dicebear' } } }));
+    expect(warn.diagnostics).toEqual([expect.objectContaining({ code: 'SGS0107', severity: 'warning' })]);
+    const ack = await loadConfig(undefined, makeProject({ ...base, remote: { 'avatar@9': { transport: 'dicebear', use: 'non-commercial' } } }));
+    expect(ack.diagnostics).toEqual([expect.objectContaining({ code: 'SGS0107', severity: 'info' })]);
+    const own = await loadConfig(undefined, makeProject({ ...base, remote: { 'avatar@9': { transport: 'dicebear', baseUrl: 'https://avatars.example.com' } } }));
+    expect(own.diagnostics).toEqual([]);
+    const row = catalog({ implemented: true }).data.results.find((r) => r.id === 'dicebear-http-api')!;
+    expect(row.terms![0]).toMatch(/NON-COMMERCIAL/);
+    expect(row.usage).toContain('"transport": "dicebear"');
+  });
+});

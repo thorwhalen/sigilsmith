@@ -85,6 +85,10 @@ export interface CatalogRow {
   sizeRange: [number | null, number | null];
   verdict: string;
   importPath?: string;
+  /** Licence and service-terms restrictions a developer must know before choosing this. */
+  terms?: string[];
+  /** How to wire it, for entries used through `remote` rather than a generator module. */
+  usage?: string;
   params?: Manifest['params'];
   description: string;
 }
@@ -107,6 +111,8 @@ function row(m: Manifest, full: boolean): CatalogRow {
     sizeRange: [m.sizeRange.minPx, m.sizeRange.maxPx],
     verdict: m.verdict,
     ...(m.importPath ? { importPath: m.importPath } : {}),
+    ...(m.license.restrictions.length ? { terms: m.license.restrictions } : {}),
+    ...((m as { usage?: string }).usage ? { usage: (m as { usage?: string }).usage } : {}),
     ...(full ? { params: m.params } : {}),
     description: m.description,
   };
@@ -121,7 +127,7 @@ export function catalog(q: CatalogQuery = {}): Envelope<{ query: CatalogQuery; t
     const why: string[] = [];
     if (q.ref && m.ref !== q.ref && m.id !== q.ref) continue;
     if (!roles.includes(m.role)) continue;
-    if (q.implemented && !m.implemented) why.push('not implemented yet (survey draft)');
+    if (q.implemented && !m.implemented && !(m as { usage?: string }).usage) why.push('not implemented yet (survey draft)');
     if (q.style?.length && !q.style.includes(m.style)) why.push(`style ${m.style} not in ${q.style.join('/')}`);
     if (q.semantic?.length && !q.semantic.includes(m.semanticLevel)) why.push(`semantic level ${m.semanticLevel} not in ${q.semantic.join('/')}`);
     if (q.maxGzip !== undefined) {

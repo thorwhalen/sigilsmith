@@ -20,3 +20,4 @@ export { CODES, diag, envelope, explainCode, formatDiagnostic, type Diagnostic, 
 export { BUILTINS, BUILTIN_BY_REF } from './builtins.js';
 export { nodeSigil } from './runtime.js';
 export { svgToPng, packIco, pngSize } from './raster.js';
+export { OPERATIONS, getOperation, runOperation, type Operation, type OperationContext } from './operations.js';

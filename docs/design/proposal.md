@@ -379,4 +379,11 @@ Preview metrics (150 items at 32 px, `docs/images/preview-sheet.png`): near-dupl
 - A separate `tune` command (tuning is config edits plus `preview` and `explain`) and `skill install` (the skill ships in the package; the `AGENTS.md` block points at it).
 - The Vite/unplugin virtual-module alternative to the generated file.
 - Golden vectors run in Node only; a cross-engine run (Chromium, WebKit, Firefox) is the next determinism check (palette uses `Math.cos`/`Math.sin`).
-- MCP server (deferred by design, §5); an upload endpoint with server-side validation (host glue, described in the skill).
+- An upload endpoint with server-side validation (host glue, described in the skill).
+
+### After the owner's review (2026-11-14)
+
+11. **MCP server built** (owner's answer to §11 Q7). One operation registry, `src/node/operations.ts` (name, zod input schema, MCP annotations, one function returning the envelope), drives both the CLI and `src/mcp/server.ts` (`npx sigilsmith mcp`, stdio, `@modelcontextprotocol/sdk` as an optional peer). There is no second list to keep in sync. `preview` returns the PNG sheet as MCP image content. `zod` became a regular dependency because the CLI needs it; the browser kernel still never imports it.
+12. **DiceBear kept, with its terms surfaced** (Q5): catalog rows carry `terms` and `usage`; a `dicebear` remote without a self-hosted `baseUrl` raises `SGS0107` (warning) until the config acknowledges `"use": "non-commercial"` (info).
+13. **zodal gaps filed** (Q6) as i2mint/zodal#128–131, zodal-store-fs#14, zodal-store-s3#7, zodal-store-http#8, zodal-dials#39–44, with comments on zodal-dials#35, #38, zodal-media#3 and zodal#119; a `zodal-issues` session is resolving them and the other open zodal issues. The shims named in §10 are deleted as their fixes land on npm (publishing is blocked on i2mint/zodal#23).
+

@@ -8,7 +8,7 @@ metadata:
 
 # sigilsmith: choose, preview, pin, build, glue, check
 
-`sigilsmith.config.json` is the single source of truth. App code never names a field, a generator or a param: it imports `sigil` from the generated wiring module (`src/sigilsmith.gen.ts`). The loop is done when `npx sigilsmith check --json` exits 0.
+`sigilsmith.config.json` is the single source of truth. Every command below is also an MCP tool (`npx sigilsmith mcp`, same names with `_` for `-`, same JSON envelopes) if your agent prefers tools to a shell. App code never names a field, a generator or a param: it imports `sigil` from the generated wiring module (`src/sigilsmith.gen.ts`). The loop is done when `npx sigilsmith check --json` exits 0.
 
 ## The loop
 
