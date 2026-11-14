@@ -19,10 +19,11 @@
     "notes": "Reference TS decoder is tiny; repo push 2024-07."
   },
   "bundleSize": {
-    "minGzipBytes": null,
-    "brotliBytes": null,
-    "measured": false,
-    "source": ""
+    "minBytes": 2221,
+    "minGzipBytes": 1243,
+    "brotliBytes": 1092,
+    "measured": true,
+    "source": "spikes/results.json, spike id `blurhash` (esbuild min, gzip -9, brotli 11; 2026-11-14)"
   },
   "lazyLoadable": true,
   "runtime": {
@@ -69,5 +70,13 @@
   ],
   "examples": [],
   "verdict": "later",
-  "verdictReason": "Stores a ~20-30 char string per item to show before the real image; helpful for slow generators."
+  "verdictReason": "Stores a ~20-30 char string per item to show before the real image; helpful for slow generators.",
+  "quality": {
+    "nearDupPairs": 1,
+    "minDistance": 0.0432,
+    "medianDistance": 0.451,
+    "flagLight": "VANISHES",
+    "flagDark": "ok",
+    "basis": "spikes/results.json, 300 keys at 32 px"
+  }
 }

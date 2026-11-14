@@ -21,10 +21,11 @@
     "notes": "npm package 'hashicon' 0.3.0 (ETCDEVTeam); repo moved to emeraldpay/hashicon, last push 2022-02."
   },
   "bundleSize": {
-    "minGzipBytes": null,
-    "brotliBytes": null,
-    "measured": false,
-    "source": ""
+    "minBytes": 51447,
+    "minGzipBytes": 11748,
+    "brotliBytes": 9299,
+    "measured": true,
+    "source": "spikes/results.json, spike id `hashicon` (esbuild min, gzip -9, brotli 11; 2026-11-14)"
   },
   "lazyLoadable": true,
   "runtime": {

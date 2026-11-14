@@ -24,10 +24,11 @@
     "notes": "GitHub reports NOASSERTION; npm says 'SEE LICENSE IN LICENSE'. Not MIT: do not bundle; optional user-installed only."
   },
   "bundleSize": {
-    "minGzipBytes": null,
-    "brotliBytes": null,
-    "measured": false,
-    "source": ""
+    "minBytes": 69014,
+    "minGzipBytes": 26903,
+    "brotliBytes": 23023,
+    "measured": true,
+    "source": "spikes/results.json, spike id `multiavatar` (esbuild min, gzip -9, brotli 11; 2026-11-14)"
   },
   "lazyLoadable": true,
   "runtime": {
@@ -67,5 +68,13 @@
   ],
   "examples": [],
   "verdict": "optional-peer",
-  "verdictReason": "Appealing characters but custom licence forbids re-packaging assets, so never bundle; offer as user-installed adapter."
+  "verdictReason": "Appealing characters but custom licence forbids re-packaging assets, so never bundle; offer as user-installed adapter.",
+  "quality": {
+    "nearDupPairs": 0,
+    "minDistance": 0.1007,
+    "medianDistance": 0.392,
+    "flagLight": "ok",
+    "flagDark": "ok",
+    "basis": "spikes/results.json, 300 keys at 32 px"
+  }
 }

@@ -1,0 +1,59 @@
+{
+  "measuredAt": "2026-11-14",
+  "method": "esbuild minify esm browser; generator = (kernel+generator) - kernel",
+  "kernel": {
+    "minBytes": 8126,
+    "gzipBytes": 3833,
+    "brotliBytes": 3509
+  },
+  "generators": {
+    "emoji@1": {
+      "minBytes": 3358,
+      "gzipBytes": 1411,
+      "brotliBytes": 1228,
+      "standaloneGzipBytes": 2182
+    },
+    "grid@1": {
+      "minBytes": 1279,
+      "gzipBytes": 613,
+      "brotliBytes": 560,
+      "standaloneGzipBytes": 732
+    },
+    "initials@1": {
+      "minBytes": 1480,
+      "gzipBytes": 740,
+      "brotliBytes": 679,
+      "standaloneGzipBytes": 1539
+    },
+    "minidenticons@1": {
+      "minBytes": 1325,
+      "gzipBytes": 640,
+      "brotliBytes": 566,
+      "standaloneGzipBytes": 786
+    },
+    "rings@1": {
+      "minBytes": 1247,
+      "gzipBytes": 577,
+      "brotliBytes": 524,
+      "standaloneGzipBytes": 706
+    },
+    "shapes@1": {
+      "minBytes": 1543,
+      "gzipBytes": 689,
+      "brotliBytes": 629,
+      "standaloneGzipBytes": 809
+    }
+  },
+  "modules": {
+    "remote": {
+      "minBytes": 5222,
+      "gzipBytes": 2608,
+      "brotliBytes": 2328
+    },
+    "delivery": {
+      "minBytes": 3199,
+      "gzipBytes": 1477,
+      "brotliBytes": 1315
+    }
+  }
+}

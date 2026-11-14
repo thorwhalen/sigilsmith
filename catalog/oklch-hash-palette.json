@@ -74,5 +74,8 @@
   ],
   "examples": [],
   "verdict": "mvp",
-  "verdictReason": "Colour drives distinguishability; tiny, no dependency; shared by every in-house generator."
+  "verdictReason": "Colour drives distinguishability; tiny, no dependency; shared by every in-house generator.",
+  "implementedAs": [
+    "kernel: paletteFromHash"
+  ]
 }

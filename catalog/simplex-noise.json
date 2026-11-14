@@ -19,10 +19,11 @@
     "notes": ""
   },
   "bundleSize": {
-    "minGzipBytes": null,
-    "brotliBytes": null,
-    "measured": false,
-    "source": ""
+    "minBytes": 1500,
+    "minGzipBytes": 908,
+    "brotliBytes": 829,
+    "measured": true,
+    "source": "spikes/results.json, spike id `simplex-noise` (esbuild min, gzip -9, brotli 11; 2026-11-14)"
   },
   "lazyLoadable": true,
   "runtime": {
@@ -63,5 +64,13 @@
   ],
   "examples": [],
   "verdict": "later",
-  "verdictReason": "Tiny and seedable, a good helper for organic in-house generators."
+  "verdictReason": "Tiny and seedable, a good helper for organic in-house generators.",
+  "quality": {
+    "nearDupPairs": 0,
+    "minDistance": 0.1091,
+    "medianDistance": 0.3648,
+    "flagLight": "ok",
+    "flagDark": "ok",
+    "basis": "spikes/results.json, 300 keys at 32 px"
+  }
 }

@@ -19,10 +19,11 @@
     "notes": "Last release 2014; last commit 2021."
   },
   "bundleSize": {
-    "minGzipBytes": null,
-    "brotliBytes": null,
-    "measured": false,
-    "source": ""
+    "minBytes": 19580,
+    "minGzipBytes": 5878,
+    "brotliBytes": 5272,
+    "measured": true,
+    "source": "spikes/results.json, spike id `geopattern` (esbuild min, gzip -9, brotli 11; 2026-11-14)"
   },
   "lazyLoadable": true,
   "runtime": {
@@ -74,5 +75,13 @@
   ],
   "examples": [],
   "verdict": "later",
-  "verdictReason": "Distinct banner-style patterns under MIT; old code, but a clean port of a few patterns is cheap."
+  "verdictReason": "Distinct banner-style patterns under MIT; old code, but a clean port of a few patterns is cheap.",
+  "quality": {
+    "nearDupPairs": 284,
+    "minDistance": 0.0191,
+    "medianDistance": 0.2519,
+    "flagLight": "ok",
+    "flagDark": "ok",
+    "basis": "spikes/results.json, 300 keys at 32 px"
+  }
 }

@@ -40,8 +40,8 @@
       "import": "./dist/delivery.js"
     },
     "./targets": {
-      "types": "./dist/targets.d.ts",
-      "import": "./dist/targets.js"
+      "types": "./dist/targets/index.d.ts",
+      "import": "./dist/targets/index.js"
     },
     "./schema": {
       "types": "./dist/schema/index.d.ts",
@@ -66,7 +66,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "measure": "node scripts/measure-sizes.mjs",
-    "golden": "vitest run tests/golden.test.ts --update"
+    "golden": "vitest run tests/golden.test.ts --update",
+    "schema": "node scripts/write-schema.mjs"
   },
   "devDependencies": {
     "@resvg/resvg-js": "^2.6.2",
@@ -95,5 +96,41 @@
     "@zodal/core": "0.2.0",
     "@zodal/store": "0.2.0",
     "@zodal/ui": "0.2.0"
+  },
+  "peerDependencies": {
+    "zod": "^4.1.13",
+    "react": "^18 || ^19",
+    "minidenticons": "4.2.1",
+    "@resvg/resvg-js": "^2.6.2",
+    "@zodal/core": "^0.2.0",
+    "@zodal/store": "^0.2.0",
+    "@zodal/dials-core": "^0.1.0",
+    "@zodal/dials-ui": "^0.1.0"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "minidenticons": {
+      "optional": true
+    },
+    "@resvg/resvg-js": {
+      "optional": true
+    },
+    "@zodal/core": {
+      "optional": true
+    },
+    "@zodal/store": {
+      "optional": true
+    },
+    "@zodal/dials-core": {
+      "optional": true
+    },
+    "@zodal/dials-ui": {
+      "optional": true
+    }
   }
 }

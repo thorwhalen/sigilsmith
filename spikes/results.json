@@ -1,0 +1,740 @@
+{
+  "generated": "2026-11-14",
+  "params": {
+    "nKeys": 300,
+    "metricPx": 32,
+    "nearDupThreshold": 0.05,
+    "vanishContrast": 1.5,
+    "vanishShare": 0.05,
+    "backgrounds": {
+      "light": "#ffffff",
+      "dark": "#111111"
+    },
+    "names": [
+      "Bohemian Rhapsody",
+      "Blue in Green",
+      "Clair de Lune",
+      "Take Five",
+      "Paranoid Android",
+      "Smells Like Teen Spirit",
+      "Ada Lovelace",
+      "Grace Hopper",
+      "Katherine Johnson",
+      "Yuki Tanaka",
+      "Mohamed El-Amin",
+      "Zoë Müller",
+      "sigilsmith",
+      "react-router",
+      "pydantic-core",
+      "my-cool-project",
+      "docs/api-v2",
+      "monorepo.web.app",
+      "3f2504e0-4f89-11d3-9a0c-0305e82c3301",
+      "9b2c5a64-7e1d-4f0b-8c3a-1d2e3f4a5b6c",
+      "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+      "123e4567-e89b-12d3-a456-426614174000",
+      "a",
+      "user@example.com"
+    ]
+  },
+  "skipped": [
+    [
+      "@dicebear/* other styles (avataaars, lorelei, ...)",
+      "illustration styles carry large embedded art; identicon, shapes, initials and glass cover the geometric end"
+    ],
+    [
+      "react-blockies, jazzicon variants",
+      "React/canvas wrappers around the same blockies algorithm already measured twice"
+    ],
+    [
+      "gradient-avatar, github-identicon (various)",
+      "tiny unmaintained forks of the identicon family already represented by minidenticons and jdenticon"
+    ]
+  ],
+  "libs": {
+    "in-house-baseline": {
+      "id": "in-house-baseline",
+      "packages": [],
+      "version": "in-house",
+      "license": "MIT (ours)",
+      "note": "Hand-written ~15-line SVG identicon (FNV-1a + mulberry32 + 5x5 mirrored grid + one HSL hue). The floor.",
+      "minBytes": 529,
+      "gzipBytes": 376,
+      "brotliBytes": 347,
+      "bytes": {
+        "min": 529,
+        "gzip": 376,
+        "brotli": 347
+      },
+      "deterministic": true,
+      "msPerImage": 0.001,
+      "metrics": {
+        "pairs": 44850,
+        "minDistance": 0.0059,
+        "p1Distance": 0.2358,
+        "medianDistance": 0.3654,
+        "nearDupPairs": 1,
+        "contrastLight": 4.1,
+        "contrastDark": 6.06,
+        "vanishLight": 0,
+        "vanishDark": 0,
+        "flagLight": "ok",
+        "flagDark": "ok"
+      },
+      "outputBytesMedian": 259,
+      "sheet": {
+        "png": "contact-sheets/in-house-baseline.png",
+        "html": "contact-sheets/in-house-baseline.html",
+        "pngBytes": 145361,
+        "pngScale": 1
+      }
+    },
+    "thumbhash": {
+      "id": "thumbhash",
+      "packages": [
+        "thumbhash@0.1.1"
+      ],
+      "version": "0.1.1",
+      "license": "MIT",
+      "note": "Decoder only; a key is turned into 25 pseudo-random bytes, decoded to a 32px PNG data URL (blurry colour field).",
+      "minBytes": 2597,
+      "gzipBytes": 1490,
+      "brotliBytes": 1366,
+      "bytes": {
+        "min": 2597,
+        "gzip": 1490,
+        "brotli": 1366
+      },
+      "deterministic": true,
+      "msPerImage": 0.108,
+      "metrics": {
+        "pairs": 44850,
+        "minDistance": 0,
+        "p1Distance": 0,
+        "medianDistance": 0.6358,
+        "nearDupPairs": 780,
+        "contrastLight": 6.28,
+        "contrastDark": 7.82,
+        "vanishLight": 43,
+        "vanishDark": 40,
+        "flagLight": "VANISHES",
+        "flagDark": "VANISHES"
+      },
+      "outputBytesMedian": 2882,
+      "sheet": {
+        "png": "contact-sheets/thumbhash.png",
+        "html": "contact-sheets/thumbhash.html",
+        "pngBytes": 254767,
+        "pngScale": 0.45
+      }
+    },
+    "minidenticons": {
+      "id": "minidenticons",
+      "packages": [
+        "minidenticons@4.2.1"
+      ],
+      "version": "4.2.1",
+      "license": "MIT",
+      "note": "Tiny identicon, SVG string out.",
+      "minBytes": 833,
+      "gzipBytes": 562,
+      "brotliBytes": 459,
+      "bytes": {
+        "min": 833,
+        "gzip": 562,
+        "brotli": 459
+      },
+      "deterministic": true,
+      "msPerImage": 0.001,
+      "metrics": {
+        "pairs": 44850,
+        "minDistance": 0.1091,
+        "p1Distance": 0.2141,
+        "medianDistance": 0.3399,
+        "nearDupPairs": 0,
+        "contrastLight": 3.72,
+        "contrastDark": 7.16,
+        "vanishLight": 0,
+        "vanishDark": 0,
+        "flagLight": "ok",
+        "flagDark": "ok"
+      },
+      "outputBytesMedian": 613,
+      "sheet": {
+        "png": "contact-sheets/minidenticons.png",
+        "html": "contact-sheets/minidenticons.html",
+        "pngBytes": 112154,
+        "pngScale": 1
+      }
+    },
+    "jdenticon": {
+      "id": "jdenticon",
+      "packages": [
+        "jdenticon@3.3.0"
+      ],
+      "version": "3.3.0",
+      "license": "MIT",
+      "note": "toSvg(key, size). Browser entry resolved by esbuild.",
+      "minBytes": 5571,
+      "gzipBytes": 2852,
+      "brotliBytes": 2547,
+      "bytes": {
+        "min": 5571,
+        "gzip": 2852,
+        "brotli": 2547
+      },
+      "deterministic": true,
+      "msPerImage": 0.015,
+      "metrics": {
+        "pairs": 44850,
+        "minDistance": 0.0229,
+        "p1Distance": 0.1282,
+        "medianDistance": 0.2484,
+        "nearDupPairs": 3,
+        "contrastLight": 4.65,
+        "contrastDark": 6.56,
+        "vanishLight": 0,
+        "vanishDark": 0,
+        "flagLight": "ok",
+        "flagDark": "ok"
+      },
+      "outputBytesMedian": 650.5,
+      "sheet": {
+        "png": "contact-sheets/jdenticon.png",
+        "html": "contact-sheets/jdenticon.html",
+        "pngBytes": 282112,
+        "pngScale": 0.55
+      }
+    },
+    "dicebear-identicon": {
+      "id": "dicebear-identicon",
+      "packages": [
+        "@dicebear/core@9.4.3",
+        "@dicebear/identicon@9.4.2"
+      ],
+      "version": "9.4.3",
+      "license": "MIT",
+      "note": "core + identicon style (`import * as style`, no tree-shaking of the style schema).",
+      "minBytes": 13050,
+      "gzipBytes": 4253,
+      "brotliBytes": 3704,
+      "bytes": {
+        "min": 13050,
+        "gzip": 4253,
+        "brotli": 3704
+      },
+      "deterministic": true,
+      "msPerImage": 0.011,
+      "metrics": {
+        "pairs": 44850,
+        "minDistance": 0.1435,
+        "p1Distance": 0.2988,
+        "medianDistance": 0.4812,
+        "nearDupPairs": 0,
+        "contrastLight": 4.06,
+        "contrastDark": 5.88,
+        "vanishLight": 15,
+        "vanishDark": 0,
+        "flagLight": "ok",
+        "flagDark": "ok"
+      },
+      "outputBytesMedian": 1160,
+      "sheet": {
+        "png": "contact-sheets/dicebear-identicon.png",
+        "html": "contact-sheets/dicebear-identicon.html",
+        "pngBytes": 148148,
+        "pngScale": 1
+      }
+    },
+    "dicebear-shapes": {
+      "id": "dicebear-shapes",
+      "packages": [
+        "@dicebear/core@9.4.3",
+        "@dicebear/shapes@9.4.2"
+      ],
+      "version": "9.4.3",
+      "license": "MIT",
+      "note": "core + shapes style.",
+      "minBytes": 15656,
+      "gzipBytes": 4630,
+      "brotliBytes": 4115,
+      "bytes": {
+        "min": 15656,
+        "gzip": 4630,
+        "brotli": 4115
+      },
+      "deterministic": true,
+      "msPerImage": 0.014,
+      "metrics": {
+        "pairs": 44850,
+        "minDistance": 0.1473,
+        "p1Distance": 0.2549,
+        "medianDistance": 0.4055,
+        "nearDupPairs": 0,
+        "contrastLight": 3.34,
+        "contrastDark": 8.56,
+        "vanishLight": 0,
+        "vanishDark": 0,
+        "flagLight": "ok",
+        "flagDark": "ok"
+      },
+      "outputBytesMedian": 1450.5,
+      "sheet": {
+        "png": "contact-sheets/dicebear-shapes.png",
+        "html": "contact-sheets/dicebear-shapes.html",
+        "pngBytes": 279565,
+        "pngScale": 1
+      }
+    },
+    "dicebear-initials": {
+      "id": "dicebear-initials",
+      "packages": [
+        "@dicebear/core@9.4.3",
+        "@dicebear/initials@9.4.2"
+      ],
+      "version": "9.4.3",
+      "license": "MIT",
+      "note": "core + initials style (text based; needs fonts at render time).",
+      "minBytes": 10008,
+      "gzipBytes": 3944,
+      "brotliBytes": 3556,
+      "bytes": {
+        "min": 10008,
+        "gzip": 3944,
+        "brotli": 3556
+      },
+      "deterministic": true,
+      "msPerImage": 0.011,
+      "metrics": {
+        "pairs": 44850,
+        "minDistance": 0,
+        "p1Distance": 0.1195,
+        "medianDistance": 0.3998,
+        "nearDupPairs": 34,
+        "contrastLight": 3.63,
+        "contrastDark": 6.97,
+        "vanishLight": 15,
+        "vanishDark": 0,
+        "flagLight": "ok",
+        "flagDark": "ok"
+      },
+      "outputBytesMedian": 1105,
+      "sheet": {
+        "png": "contact-sheets/dicebear-initials.png",
+        "html": "contact-sheets/dicebear-initials.html",
+        "pngBytes": 211864,
+        "pngScale": 1
+      }
+    },
+    "dicebear-glass": {
+      "id": "dicebear-glass",
+      "packages": [
+        "@dicebear/core@9.4.3",
+        "@dicebear/glass@9.4.2"
+      ],
+      "version": "9.4.3",
+      "license": "MIT",
+      "note": "core + glass style.",
+      "minBytes": 14806,
+      "gzipBytes": 5182,
+      "brotliBytes": 4532,
+      "bytes": {
+        "min": 14806,
+        "gzip": 5182,
+        "brotli": 4532
+      },
+      "deterministic": true,
+      "msPerImage": 0.014,
+      "metrics": {
+        "pairs": 44850,
+        "minDistance": 0.0345,
+        "p1Distance": 0.0892,
+        "medianDistance": 0.2819,
+        "nearDupPairs": 6,
+        "contrastLight": 1.91,
+        "contrastDark": 11.32,
+        "vanishLight": 129,
+        "vanishDark": 0,
+        "flagLight": "VANISHES",
+        "flagDark": "ok"
+      },
+      "outputBytesMedian": 2348.5,
+      "sheet": {
+        "png": "contact-sheets/dicebear-glass.png",
+        "html": "contact-sheets/dicebear-glass.html",
+        "pngBytes": 268767,
+        "pngScale": 0.45
+      }
+    },
+    "boring-avatars": {
+      "id": "boring-avatars",
+      "packages": [
+        "boring-avatars@2.0.4"
+      ],
+      "version": "2.0.4",
+      "license": "MIT",
+      "note": "React component, variant \"beam\". react / react/jsx-runtime marked external (NOT counted); ReactDOMServer used for Node rendering.",
+      "minBytes": 11204,
+      "gzipBytes": 2858,
+      "brotliBytes": 2415,
+      "bytes": {
+        "min": 11204,
+        "gzip": 2858,
+        "brotli": 2415
+      },
+      "deterministic": true,
+      "msPerImage": 0.145,
+      "metrics": {
+        "pairs": 44850,
+        "minDistance": 0,
+        "p1Distance": 0.0763,
+        "medianDistance": 0.3067,
+        "nearDupPairs": 38,
+        "contrastLight": 4.33,
+        "contrastDark": 5.59,
+        "vanishLight": 0,
+        "vanishDark": 0,
+        "flagLight": "ok",
+        "flagDark": "ok"
+      },
+      "outputBytesMedian": 746,
+      "sheet": {
+        "png": "contact-sheets/boring-avatars.png",
+        "html": "contact-sheets/boring-avatars.html",
+        "pngBytes": 303494,
+        "pngScale": 0.7
+      }
+    },
+    "geopattern": {
+      "id": "geopattern",
+      "packages": [
+        "geopattern@1.2.3"
+      ],
+      "version": "1.2.3",
+      "license": "MIT",
+      "note": "Tiling background patterns (not square; cropped to a square with slice).",
+      "minBytes": 19580,
+      "gzipBytes": 5878,
+      "brotliBytes": 5272,
+      "bytes": {
+        "min": 19580,
+        "gzip": 5878,
+        "brotli": 5272
+      },
+      "deterministic": true,
+      "msPerImage": 0.114,
+      "metrics": {
+        "pairs": 44850,
+        "minDistance": 0.0191,
+        "p1Distance": 0.0544,
+        "medianDistance": 0.2519,
+        "nearDupPairs": 284,
+        "contrastLight": 5.43,
+        "contrastDark": 3.67,
+        "vanishLight": 9,
+        "vanishDark": 9,
+        "flagLight": "ok",
+        "flagDark": "ok"
+      },
+      "outputBytesMedian": 10994.5,
+      "sheet": {
+        "png": "contact-sheets/geopattern.png",
+        "html": "contact-sheets/geopattern.html",
+        "pngBytes": 249439,
+        "pngScale": 0.45
+      }
+    },
+    "trianglify": {
+      "id": "trianglify",
+      "packages": [
+        "trianglify@4.1.1"
+      ],
+      "version": "4.1.1",
+      "license": "GPL-3.0",
+      "note": "Delaunay gradient triangles. GPL-3.0: incompatible with an MIT package; measured for reference only.",
+      "minBytes": 61987,
+      "gzipBytes": 22445,
+      "brotliBytes": 19536,
+      "bytes": {
+        "min": 61987,
+        "gzip": 22445,
+        "brotli": 19536
+      },
+      "deterministic": true,
+      "msPerImage": 0.319,
+      "metrics": {
+        "pairs": 44850,
+        "minDistance": 0.0558,
+        "p1Distance": 0.0785,
+        "medianDistance": 0.2952,
+        "nearDupPairs": 0,
+        "contrastLight": 3.21,
+        "contrastDark": 7.96,
+        "vanishLight": 0,
+        "vanishDark": 0,
+        "flagLight": "ok",
+        "flagDark": "ok"
+      },
+      "outputBytesMedian": 6158.5,
+      "sheet": {
+        "png": "contact-sheets/trianglify.png",
+        "html": "contact-sheets/trianglify.html",
+        "pngBytes": 244252,
+        "pngScale": 1
+      }
+    },
+    "blockies-base64": {
+      "id": "blockies-base64",
+      "packages": [
+        "ethereum-blockies-base64@1.0.2"
+      ],
+      "version": "1.0.2",
+      "license": "MIT",
+      "note": "Blockies via pnglib, PNG data URL out (pure JS, no canvas).",
+      "minBytes": 6360,
+      "gzipBytes": 2844,
+      "brotliBytes": 2588,
+      "bytes": {
+        "min": 6360,
+        "gzip": 2844,
+        "brotli": 2588
+      },
+      "deterministic": true,
+      "msPerImage": 0.563,
+      "metrics": {
+        "pairs": 44850,
+        "minDistance": 0.1449,
+        "p1Distance": 0.2513,
+        "medianDistance": 0.4024,
+        "nearDupPairs": 0,
+        "contrastLight": 5.01,
+        "contrastDark": 6.05,
+        "vanishLight": 1,
+        "vanishDark": 0,
+        "flagLight": "ok",
+        "flagDark": "ok"
+      },
+      "outputBytesMedian": 22313,
+      "sheet": {
+        "png": "contact-sheets/blockies-base64.png",
+        "html": "contact-sheets/blockies-base64.html",
+        "pngBytes": 194068,
+        "pngScale": 1
+      }
+    },
+    "download-blockies": {
+      "id": "download-blockies",
+      "packages": [
+        "@download/blockies@1.0.3"
+      ],
+      "version": "1.0.3",
+      "license": "MIT",
+      "note": "Blockies needing a canvas; in Node a fake 2D context records fillRect into an SVG.",
+      "minBytes": 1280,
+      "gzipBytes": 687,
+      "brotliBytes": 613,
+      "bytes": {
+        "min": 1280,
+        "gzip": 687,
+        "brotli": 613
+      },
+      "deterministic": true,
+      "msPerImage": 0.02,
+      "metrics": {
+        "pairs": 44850,
+        "minDistance": 0.137,
+        "p1Distance": 0.2484,
+        "medianDistance": 0.4029,
+        "nearDupPairs": 0,
+        "contrastLight": 5.05,
+        "contrastDark": 6.01,
+        "vanishLight": 1,
+        "vanishDark": 0,
+        "flagLight": "ok",
+        "flagDark": "ok"
+      },
+      "outputBytesMedian": 3542,
+      "sheet": {
+        "png": "contact-sheets/download-blockies.png",
+        "html": "contact-sheets/download-blockies.html",
+        "pngBytes": 174792,
+        "pngScale": 1
+      }
+    },
+    "multiavatar": {
+      "id": "multiavatar",
+      "packages": [
+        "@multiavatar/multiavatar@1.0.7"
+      ],
+      "version": "1.0.7",
+      "license": "SEE LICENSE IN LICENSE",
+      "note": "Large illustrated avatars (embedded art). Custom licence, see notes.",
+      "licenseNote": "COPYRIGHTS\r 2020-2021 (c) Gie Katon (https://giekaton.com)\r Multiavatar - Multicultural Avatar Maker\r https://multiavatar.com\r \r Proof-of-existence:\r",
+      "minBytes": 69014,
+      "gzipBytes": 26903,
+      "brotliBytes": 23023,
+      "bytes": {
+        "min": 69014,
+        "gzip": 26903,
+        "brotli": 23023
+      },
+      "deterministic": true,
+      "msPerImage": 0.06,
+      "metrics": {
+        "pairs": 44850,
+        "minDistance": 0.1007,
+        "p1Distance": 0.2139,
+        "medianDistance": 0.392,
+        "nearDupPairs": 0,
+        "contrastLight": 4.9,
+        "contrastDark": 7.3,
+        "vanishLight": 0,
+        "vanishDark": 0,
+        "flagLight": "ok",
+        "flagDark": "ok"
+      },
+      "outputBytesMedian": 3935,
+      "sheet": {
+        "png": "contact-sheets/multiavatar.png",
+        "html": "contact-sheets/multiavatar.html",
+        "pngBytes": 230599,
+        "pngScale": 0.45
+      }
+    },
+    "hashicon": {
+      "id": "hashicon",
+      "packages": [
+        "@emeraldpay/hashicon@0.5.2"
+      ],
+      "version": "0.5.2",
+      "license": "Apache-2.0",
+      "note": "Needs a real canvas; size measured, not rendered (no canvas in Node here).",
+      "minBytes": 51447,
+      "gzipBytes": 11748,
+      "brotliBytes": 9299,
+      "bytes": {
+        "min": 51447,
+        "gzip": 11748,
+        "brotli": 9299
+      },
+      "render": "skipped: canvas"
+    },
+    "blurhash": {
+      "id": "blurhash",
+      "packages": [
+        "blurhash@2.0.5"
+      ],
+      "version": "2.0.5",
+      "license": "MIT",
+      "note": "Decoder only (RGBA out); size EXCLUDES canvas/PNG output code that a real integration adds. Key -> synthetic base83 string.",
+      "minBytes": 2221,
+      "gzipBytes": 1243,
+      "brotliBytes": 1092,
+      "bytes": {
+        "min": 2221,
+        "gzip": 1243,
+        "brotli": 1092
+      },
+      "deterministic": true,
+      "msPerImage": 0.289,
+      "metrics": {
+        "pairs": 44850,
+        "minDistance": 0.0432,
+        "p1Distance": 0.1748,
+        "medianDistance": 0.451,
+        "nearDupPairs": 1,
+        "contrastLight": 3.04,
+        "contrastDark": 8.82,
+        "vanishLight": 43,
+        "vanishDark": 1,
+        "flagLight": "VANISHES",
+        "flagDark": "ok"
+      },
+      "outputBytesMedian": 3190,
+      "sheet": {
+        "png": "contact-sheets/blurhash.png",
+        "html": "contact-sheets/blurhash.html",
+        "pngBytes": 215454,
+        "pngScale": 0.35
+      }
+    },
+    "simplex-noise": {
+      "id": "simplex-noise",
+      "packages": [
+        "simplex-noise@4.0.3"
+      ],
+      "version": "4.0.3",
+      "license": "MIT",
+      "note": "Noise primitive; entry builds a 16x16 HSL cell field with an in-house hash/PRNG (counted).",
+      "minBytes": 1500,
+      "gzipBytes": 908,
+      "brotliBytes": 829,
+      "bytes": {
+        "min": 1500,
+        "gzip": 908,
+        "brotli": 829
+      },
+      "deterministic": true,
+      "msPerImage": 0.057,
+      "metrics": {
+        "pairs": 44850,
+        "minDistance": 0.1091,
+        "p1Distance": 0.151,
+        "medianDistance": 0.3648,
+        "nearDupPairs": 0,
+        "contrastLight": 4.1,
+        "contrastDark": 6.3,
+        "vanishLight": 0,
+        "vanishDark": 0,
+        "flagLight": "ok",
+        "flagDark": "ok"
+      },
+      "outputBytesMedian": 16642,
+      "sheet": {
+        "png": "contact-sheets/simplex-noise.png",
+        "html": "contact-sheets/simplex-noise.html",
+        "pngBytes": 286937,
+        "pngScale": 1
+      }
+    },
+    "roughjs": {
+      "id": "roughjs",
+      "packages": [
+        "roughjs@4.6.6"
+      ],
+      "version": "4.6.6",
+      "license": "MIT",
+      "note": "Sketchy shapes via rough.generator() (no DOM); entry draws a circle + 2 rects with an in-house hash/PRNG (counted).",
+      "minBytes": 28218,
+      "gzipBytes": 9533,
+      "brotliBytes": 8523,
+      "bytes": {
+        "min": 28218,
+        "gzip": 9533,
+        "brotli": 8523
+      },
+      "deterministic": true,
+      "msPerImage": 0.15,
+      "metrics": {
+        "pairs": 44850,
+        "minDistance": 0.1363,
+        "p1Distance": 0.1711,
+        "medianDistance": 0.225,
+        "nearDupPairs": 0,
+        "contrastLight": 12.74,
+        "contrastDark": 1.58,
+        "vanishLight": 0,
+        "vanishDark": 77,
+        "flagLight": "ok",
+        "flagDark": "VANISHES"
+      },
+      "outputBytesMedian": 14834.5,
+      "sheet": {
+        "png": "contact-sheets/roughjs.png",
+        "html": "contact-sheets/roughjs.html",
+        "pngBytes": 263190,
+        "pngScale": 0.35
+      }
+    }
+  }
+}

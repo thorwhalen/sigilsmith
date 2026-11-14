@@ -19,10 +19,11 @@
     "notes": "Stable single-file algorithm; repo push 2024-05."
   },
   "bundleSize": {
-    "minGzipBytes": null,
-    "brotliBytes": null,
-    "measured": false,
-    "source": ""
+    "minBytes": 2597,
+    "minGzipBytes": 1490,
+    "brotliBytes": 1366,
+    "measured": true,
+    "source": "spikes/results.json, spike id `thumbhash` (esbuild min, gzip -9, brotli 11; 2026-11-14)"
   },
   "lazyLoadable": true,
   "runtime": {
@@ -56,5 +57,13 @@
   "params": [],
   "examples": [],
   "verdict": "later",
-  "verdictReason": "Better colour and alpha than BlurHash at similar size; same role."
+  "verdictReason": "Better colour and alpha than BlurHash at similar size; same role.",
+  "quality": {
+    "nearDupPairs": 780,
+    "minDistance": 0,
+    "medianDistance": 0.6358,
+    "flagLight": "VANISHES",
+    "flagDark": "VANISHES",
+    "basis": "spikes/results.json, 300 keys at 32 px"
+  }
 }

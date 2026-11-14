@@ -19,10 +19,11 @@
     "notes": "Last push 2024-07."
   },
   "bundleSize": {
-    "minGzipBytes": null,
-    "brotliBytes": null,
-    "measured": false,
-    "source": ""
+    "minBytes": 28218,
+    "minGzipBytes": 9533,
+    "brotliBytes": 8523,
+    "measured": true,
+    "source": "spikes/results.json, spike id `roughjs` (esbuild min, gzip -9, brotli 11; 2026-11-14)"
   },
   "lazyLoadable": true,
   "runtime": {
@@ -69,5 +70,13 @@
   ],
   "examples": [],
   "verdict": "later",
-  "verdictReason": "Gives a hand-drawn finish to any shape-based generator and is seedable."
+  "verdictReason": "Gives a hand-drawn finish to any shape-based generator and is seedable.",
+  "quality": {
+    "nearDupPairs": 0,
+    "minDistance": 0.1363,
+    "medianDistance": 0.225,
+    "flagLight": "ok",
+    "flagDark": "VANISHES",
+    "basis": "spikes/results.json, 300 keys at 32 px"
+  }
 }

@@ -22,10 +22,11 @@
     "notes": "npm and GitHub both report GPL-3.0 (checked 2026-11-14). Last push 2025-05, last release 2020-11."
   },
   "bundleSize": {
-    "minGzipBytes": null,
-    "brotliBytes": null,
-    "measured": false,
-    "source": ""
+    "minBytes": 61987,
+    "minGzipBytes": 22445,
+    "brotliBytes": 19536,
+    "measured": true,
+    "source": "spikes/results.json, spike id `trianglify` (esbuild min, gzip -9, brotli 11; 2026-11-14)"
   },
   "lazyLoadable": true,
   "runtime": {
@@ -90,5 +91,13 @@
   ],
   "examples": [],
   "verdict": "avoid",
-  "verdictReason": "GPL-3.0 conflicts with the MIT package; same look reachable with an in-house jittered-grid triangulation."
+  "verdictReason": "GPL-3.0 conflicts with the MIT package; same look reachable with an in-house jittered-grid triangulation.",
+  "quality": {
+    "nearDupPairs": 0,
+    "minDistance": 0.0558,
+    "medianDistance": 0.2952,
+    "flagLight": "ok",
+    "flagDark": "ok",
+    "basis": "spikes/results.json, 300 keys at 32 px"
+  }
 }

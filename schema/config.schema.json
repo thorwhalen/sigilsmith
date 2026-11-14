@@ -1,0 +1,677 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "version": {
+      "type": "number",
+      "const": 1
+    },
+    "itemType": {
+      "default": {
+        "field": "type"
+      },
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "field": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "field"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "key": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "field": {
+              "type": "string",
+              "minLength": 1
+            },
+            "fallback": {
+              "default": [],
+              "description": "Fields used (as a composite) when the key is missing; a warning is emitted.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "onMissing": {
+              "default": "fallback",
+              "type": "string",
+              "enum": [
+                "fallback",
+                "throw"
+              ]
+            }
+          },
+          "required": [
+            "field"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "fields": {
+              "minItems": 2,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "fallback": {
+              "default": [],
+              "description": "Fields used (as a composite) when the key is missing; a warning is emitted.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "onMissing": {
+              "default": "fallback",
+              "type": "string",
+              "enum": [
+                "fallback",
+                "throw"
+              ]
+            }
+          },
+          "required": [
+            "fields"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "custom": {
+              "type": "string",
+              "pattern": "#"
+            },
+            "fallback": {
+              "default": [],
+              "description": "Fields used (as a composite) when the key is missing; a warning is emitted.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "onMissing": {
+              "default": "fallback",
+              "type": "string",
+              "enum": [
+                "fallback",
+                "throw"
+              ]
+            }
+          },
+          "required": [
+            "custom"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "description": "How to get an item's stable key. Write it with `sigilsmith detect-key --write`."
+    },
+    "label": {
+      "default": {
+        "fields": [
+          "name",
+          "title",
+          "label",
+          "displayName",
+          "username"
+        ]
+      },
+      "type": "object",
+      "properties": {
+        "fields": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "fields"
+      ]
+    },
+    "presets": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "generators": {
+      "default": {},
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]*(\\/[a-z0-9-]+)?@\\d+$",
+        "description": "Generator reference: `<id>@<major>`. The major pins the output contract."
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "A field path (`title`, `meta.uuid`), `$key` or `$label`."
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "field": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "maxChars": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "field"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "params": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {},
+            "description": "Generator params; validated against the generator manifest by `check`."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "remote": {
+      "default": {},
+      "description": "Remote/async generators and their transports. Keys never go here.",
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]*(\\/[a-z0-9-]+)?@\\d+$",
+        "description": "Generator reference: `<id>@<major>`. The major pins the output contract."
+      },
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "transport": {
+                "type": "string",
+                "const": "proxy"
+              },
+              "url": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "transport",
+              "url"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "transport": {
+                "type": "string",
+                "const": "dicebear"
+              },
+              "style": {
+                "default": "shapes",
+                "type": "string"
+              },
+              "baseUrl": {
+                "type": "string",
+                "format": "uri"
+              }
+            },
+            "required": [
+              "transport"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "transport": {
+                "type": "string",
+                "const": "mock"
+              },
+              "latencyMs": {
+                "default": 300,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "transport"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "transport": {
+                "type": "string",
+                "const": "module"
+              },
+              "module": {
+                "type": "string",
+                "pattern": "#"
+              }
+            },
+            "required": [
+              "transport",
+              "module"
+            ],
+            "additionalProperties": false,
+            "description": "A custom transport exported by your code, e.g. BYOK."
+          }
+        ]
+      }
+    },
+    "policy": {
+      "type": "object",
+      "properties": {
+        "default": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*(\\/[a-z0-9-]+)?@\\d+$",
+          "description": "Generator reference: `<id>@<major>`. The major pins the output contract."
+        },
+        "salt": {
+          "default": "sigilsmith",
+          "type": "string"
+        },
+        "rules": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "when": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": [
+                          "string",
+                          "number"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "includes": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "includes"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "exists": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "exists"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "description": "Item field → value, list of values, `{ includes }` or `{ exists }`. All must match."
+              },
+              "use": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-z0-9][a-z0-9-]*(\\/[a-z0-9-]+)?@\\d+$",
+                    "description": "Generator reference: `<id>@<major>`. The major pins the output contract."
+                  },
+                  {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z0-9][a-z0-9-]*(\\/[a-z0-9-]+)?@\\d+$",
+                      "description": "Generator reference: `<id>@<major>`. The major pins the output contract."
+                    },
+                    "additionalProperties": {
+                      "type": "number",
+                      "exclusiveMinimum": 0
+                    }
+                  }
+                ],
+                "description": "A ref, or a weight map for deterministic weighted selection."
+              },
+              "inputs": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "A field path (`title`, `meta.uuid`), `$key` or `$label`."
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "field": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "maxChars": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "field"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              },
+              "params": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9][a-z0-9-]*(\\/[a-z0-9-]+)?@\\d+$",
+                  "description": "Generator reference: `<id>@<major>`. The major pins the output contract."
+                },
+                "additionalProperties": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {},
+                  "description": "Generator params; validated against the generator manifest by `check`."
+                }
+              }
+            },
+            "required": [
+              "when",
+              "use"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "placeholder": {
+          "default": "grid@1",
+          "description": "Pure generator shown while a remote generator works.",
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*(\\/[a-z0-9-]+)?@\\d+$"
+        }
+      },
+      "required": [
+        "default"
+      ],
+      "additionalProperties": false
+    },
+    "delivery": {
+      "default": {
+        "strategy": "materialized",
+        "format": "svg"
+      },
+      "type": "object",
+      "properties": {
+        "strategy": {
+          "default": "materialized",
+          "type": "string",
+          "enum": [
+            "materialized",
+            "derived",
+            "hybrid"
+          ]
+        },
+        "format": {
+          "default": "svg",
+          "type": "string",
+          "enum": [
+            "svg",
+            "png"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "regeneration": {
+      "default": {
+        "policy": "ask"
+      },
+      "type": "object",
+      "properties": {
+        "policy": {
+          "default": "ask",
+          "type": "string",
+          "enum": [
+            "ask",
+            "always",
+            "never"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "budget": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "maxGzipBytes": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "additionalProperties": false
+    },
+    "userSettings": {
+      "default": {
+        "choices": [],
+        "perType": true,
+        "params": {}
+      },
+      "type": "object",
+      "properties": {
+        "choices": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*(\\/[a-z0-9-]+)?@\\d+$",
+            "description": "Generator reference: `<id>@<major>`. The major pins the output contract."
+          }
+        },
+        "perType": {
+          "default": true,
+          "type": "boolean"
+        },
+        "params": {
+          "default": {},
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*(\\/[a-z0-9-]+)?@\\d+$",
+            "description": "Generator reference: `<id>@<major>`. The major pins the output contract."
+          },
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "samples": {
+      "description": "Sample items (JSON array) used by detect-key, check and preview.",
+      "type": "string"
+    },
+    "output": {
+      "default": {
+        "gen": "src/sigilsmith.gen.ts"
+      },
+      "type": "object",
+      "properties": {
+        "gen": {
+          "default": "src/sigilsmith.gen.ts",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "check": {
+      "default": {
+        "src": [
+          "src"
+        ],
+        "ignore": [
+          "node_modules",
+          "dist"
+        ]
+      },
+      "type": "object",
+      "properties": {
+        "src": {
+          "default": [
+            "src"
+          ],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ignore": {
+          "default": [
+            "node_modules",
+            "dist"
+          ],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "targets": {
+      "default": {
+        "ids": [],
+        "publicDir": "public",
+        "background": "#ffffff"
+      },
+      "type": "object",
+      "properties": {
+        "ids": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "baseUrl": {
+          "description": "Absolute site URL; required for og:image.",
+          "type": "string"
+        },
+        "publicDir": {
+          "default": "public",
+          "type": "string"
+        },
+        "html": {
+          "description": "HTML file whose <head> `check targets` inspects.",
+          "type": "string"
+        },
+        "manifest": {
+          "description": "Web app manifest file `check targets` inspects.",
+          "type": "string"
+        },
+        "site": {
+          "description": "The site's own sigil (favicon and app icons).",
+          "type": "object",
+          "properties": {
+            "seed": {
+              "type": "string"
+            },
+            "ref": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9-]*(\\/[a-z0-9-]+)?@\\d+$",
+              "description": "Generator reference: `<id>@<major>`. The major pins the output contract."
+            }
+          },
+          "required": [
+            "seed"
+          ],
+          "additionalProperties": false
+        },
+        "background": {
+          "default": "#ffffff",
+          "description": "Opaque background for icons that cannot be transparent.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "version",
+    "key",
+    "policy"
+  ],
+  "additionalProperties": false,
+  "title": "sigilsmith config",
+  "description": "Single source of truth for item keys, generator inputs, generator choices and params, policy, delivery, regeneration, budgets and targets."
+}

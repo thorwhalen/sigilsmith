@@ -19,10 +19,11 @@
     "notes": "Repo licence MIT; no new release since 2024-05 (npm)."
   },
   "bundleSize": {
-    "minGzipBytes": null,
-    "brotliBytes": null,
-    "measured": false,
-    "source": "README links a Bundlephobia badge; no figure quoted"
+    "minBytes": 5571,
+    "minGzipBytes": 2852,
+    "brotliBytes": 2547,
+    "measured": true,
+    "source": "spikes/results.json, spike id `jdenticon` (esbuild min, gzip -9, brotli 11; 2026-11-14)"
   },
   "lazyLoadable": true,
   "runtime": {
@@ -75,5 +76,13 @@
   ],
   "examples": [],
   "verdict": "later",
-  "verdictReason": "Mature, MIT, hue/saturation/lightness params; wrap right after MVP set (larger than minidenticons)."
+  "verdictReason": "Mature, MIT, hue/saturation/lightness params; wrap right after MVP set (larger than minidenticons).",
+  "quality": {
+    "nearDupPairs": 3,
+    "minDistance": 0.0229,
+    "medianDistance": 0.2484,
+    "flagLight": "ok",
+    "flagDark": "ok",
+    "basis": "spikes/results.json, 300 keys at 32 px"
+  }
 }

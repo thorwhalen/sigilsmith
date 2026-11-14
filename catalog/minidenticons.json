@@ -19,10 +19,11 @@
     "notes": "Repo MIT; last npm release 2024-03."
   },
   "bundleSize": {
-    "minGzipBytes": null,
-    "brotliBytes": null,
-    "measured": false,
-    "source": "README badges quote ~269-453 B brotli and ~311-552 B zip (two badge pairs; not measured by us)"
+    "minBytes": 833,
+    "minGzipBytes": 562,
+    "brotliBytes": 459,
+    "measured": true,
+    "source": "spikes/results.json, spike id `minidenticons` (esbuild min, gzip -9, brotli 11; 2026-11-14)"
   },
   "lazyLoadable": true,
   "runtime": {
@@ -68,5 +69,16 @@
   ],
   "examples": [],
   "verdict": "mvp",
-  "verdictReason": "MIT, tiny, zero-dependency, covers the small-geometric point; proves the third-party wrap pattern."
+  "verdictReason": "MIT, tiny, zero-dependency, covers the small-geometric point; proves the third-party wrap pattern.",
+  "quality": {
+    "nearDupPairs": 0,
+    "minDistance": 0.1091,
+    "medianDistance": 0.3399,
+    "flagLight": "ok",
+    "flagDark": "ok",
+    "basis": "spikes/results.json, 300 keys at 32 px"
+  },
+  "implementedAs": [
+    "minidenticons@1"
+  ]
 }

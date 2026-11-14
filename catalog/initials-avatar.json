@@ -68,5 +68,8 @@
   ],
   "examples": [],
   "verdict": "mvp",
-  "verdictReason": "Highest recognition for people lists; needs name field (metadata level); tiny and in-house."
+  "verdictReason": "Highest recognition for people lists; needs name field (metadata level); tiny and in-house.",
+  "implementedAs": [
+    "initials@1"
+  ]
 }

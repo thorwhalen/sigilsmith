@@ -68,5 +68,10 @@
   ],
   "examples": [],
   "verdict": "mvp",
-  "verdictReason": "Zero dependencies, sub-kilobyte, fully deterministic: the in-house anchor of the MVP."
+  "verdictReason": "Zero dependencies, sub-kilobyte, fully deterministic: the in-house anchor of the MVP.",
+  "implementedAs": [
+    "grid@1",
+    "rings@1",
+    "shapes@1"
+  ]
 }

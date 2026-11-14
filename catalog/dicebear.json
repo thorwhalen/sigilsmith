@@ -22,10 +22,11 @@
     "notes": "@dicebear/core 10.7.0 (2026-08-26); @dicebear/collection 9.4.2 (2026-03-19) on the previous major. Counts from the DiceBear licences page, 2026-11-14."
   },
   "bundleSize": {
-    "minGzipBytes": null,
-    "brotliBytes": null,
-    "measured": false,
-    "source": "Not quoted by README"
+    "minBytes": 13050,
+    "minGzipBytes": 4253,
+    "brotliBytes": 3704,
+    "measured": true,
+    "source": "spikes/results.json, spike id `dicebear-identicon` (esbuild min, gzip -9, brotli 11; 2026-11-14)"
   },
   "lazyLoadable": true,
   "runtime": {
@@ -77,5 +78,13 @@
   ],
   "examples": [],
   "verdict": "later",
-  "verdictReason": "Richest ecosystem, MIT code, but style licences vary; wrap per-style with CC0-only allow-list after MVP (size to be measured)."
+  "verdictReason": "Richest ecosystem, MIT code, but style licences vary; wrap per-style with CC0-only allow-list after MVP (size to be measured).",
+  "quality": {
+    "nearDupPairs": 0,
+    "minDistance": 0.1435,
+    "medianDistance": 0.4812,
+    "flagLight": "ok",
+    "flagDark": "ok",
+    "basis": "spikes/results.json, 300 keys at 32 px"
+  }
 }

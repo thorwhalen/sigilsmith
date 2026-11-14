@@ -5,3 +5,7 @@ dist/
 spikes/**/node_modules/
 spikes/**/out-tmp/
 .claude/handoffs/
+spikes/contact-sheets/*.html
+.sigilsmith/
+examples/*/node_modules/
+examples/*/dist/

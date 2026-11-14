@@ -19,10 +19,11 @@
     "notes": "Original ethereum/blockies repo is archived on GitHub; npm 'ethereum-blockies' last published 2017."
   },
   "bundleSize": {
-    "minGzipBytes": null,
-    "brotliBytes": null,
-    "measured": false,
-    "source": ""
+    "minBytes": 1280,
+    "minGzipBytes": 687,
+    "brotliBytes": 613,
+    "measured": true,
+    "source": "spikes/results.json, spike id `download-blockies` (esbuild min, gzip -9, brotli 11; 2026-11-14)"
   },
   "lazyLoadable": true,
   "runtime": {
@@ -69,5 +70,13 @@
   ],
   "examples": [],
   "verdict": "study",
-  "verdictReason": "Recognisable but pixel-art look and unmaintained; the algorithm is ~60 lines and can be re-implemented in-house."
+  "verdictReason": "Recognisable but pixel-art look and unmaintained; the algorithm is ~60 lines and can be re-implemented in-house.",
+  "quality": {
+    "nearDupPairs": 0,
+    "minDistance": 0.137,
+    "medianDistance": 0.4029,
+    "flagLight": "ok",
+    "flagDark": "ok",
+    "basis": "spikes/results.json, 300 keys at 32 px"
+  }
 }

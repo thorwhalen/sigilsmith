@@ -70,5 +70,8 @@
   ],
   "examples": [],
   "verdict": "mvp",
-  "verdictReason": "Concrete and instantly distinguishable at small sizes; keyword mapping gives metadata semantics."
+  "verdictReason": "Concrete and instantly distinguishable at small sizes; keyword mapping gives metadata semantics.",
+  "implementedAs": [
+    "emoji@1"
+  ]
 }

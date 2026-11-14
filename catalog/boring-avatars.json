@@ -19,10 +19,11 @@
     "notes": "Code and designs MIT."
   },
   "bundleSize": {
-    "minGzipBytes": null,
-    "brotliBytes": null,
-    "measured": false,
-    "source": ""
+    "minBytes": 11204,
+    "minGzipBytes": 2858,
+    "brotliBytes": 2415,
+    "measured": true,
+    "source": "spikes/results.json, spike id `boring-avatars` (esbuild min, gzip -9, brotli 11; 2026-11-14)"
   },
   "lazyLoadable": true,
   "runtime": {
@@ -74,5 +75,13 @@
   ],
   "examples": [],
   "verdict": "later",
-  "verdictReason": "Best abstract set under MIT and actively released, but React-only API; wrap by server-rendering or re-implement templates after MVP."
+  "verdictReason": "Best abstract set under MIT and actively released, but React-only API; wrap by server-rendering or re-implement templates after MVP.",
+  "quality": {
+    "nearDupPairs": 38,
+    "minDistance": 0,
+    "medianDistance": 0.3067,
+    "flagLight": "ok",
+    "flagDark": "ok",
+    "basis": "spikes/results.json, 300 keys at 32 px"
+  }
 }
