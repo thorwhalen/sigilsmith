@@ -372,3 +372,11 @@ From `zodal-fit.md`, with the shims this repo keeps (all under `src/zodal/shims/
 
 Preview metrics (150 items at 32 px, `docs/images/preview-sheet.png`): near-duplicate pairs `grid@1` 0, `rings@1` 0, `shapes@1` 0, `minidenticons@1` 0, `initials@1` 10 (people sharing initials and a nearby hue).
 
+
+### Not built in this MVP (named next steps)
+
+- `sigilsmith/testing` conformance helpers (§1.2) and the `vendor` / `migrate` commands: the golden vectors and `check` cover the contract for now.
+- A separate `tune` command (tuning is config edits plus `preview` and `explain`) and `skill install` (the skill ships in the package; the `AGENTS.md` block points at it).
+- The Vite/unplugin virtual-module alternative to the generated file.
+- Golden vectors run in Node only; a cross-engine run (Chromium, WebKit, Firefox) is the next determinism check (palette uses `Math.cos`/`Math.sin`).
+- MCP server (deferred by design, §5); an upload endpoint with server-side validation (host glue, described in the skill).
