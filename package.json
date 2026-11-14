@@ -1,15 +1,34 @@
 {
   "name": "sigilsmith",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Agent-first builder for deterministic identity images (identicons, avatars, thumbnails, favicons): a catalog of generators behind one facade, an SSOT config, and a CLI that chooses, previews, explains and checks.",
   "author": "Thor Whalen",
   "license": "MIT",
   "type": "module",
-  "private": true,
   "sideEffects": false,
   "engines": {
     "node": ">=20"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thorwhalen/sigilsmith.git"
+  },
+  "homepage": "https://github.com/thorwhalen/sigilsmith#readme",
+  "bugs": {
+    "url": "https://github.com/thorwhalen/sigilsmith/issues"
+  },
+  "keywords": [
+    "identicon",
+    "avatar",
+    "thumbnail",
+    "favicon",
+    "og-image",
+    "deterministic",
+    "svg",
+    "agent",
+    "mcp",
+    "zodal"
+  ],
   "bin": {
     "sigilsmith": "./dist/cli/main.js"
   },
@@ -74,36 +93,11 @@
     "golden": "vitest run tests/golden.test.ts --update",
     "schema": "node scripts/write-schema.mjs",
     "docs": "node scripts/write-docs.mjs",
-    "prepare_assets": "npm run build && npm run measure && npm run schema && npm run docs"
+    "prepare_assets": "npm run build && npm run measure && npm run schema && npm run docs",
+    "prepack": "npm run build && npm run measure && npm run schema && npm run docs"
   },
-  "devDependencies": {
-    "@modelcontextprotocol/sdk": "^1.32.2",
-    "@resvg/resvg-js": "^2.6.2",
-    "@types/node": "^22.20.5",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
-    "@zodal/core": "^0.2.0",
-    "@zodal/dials-codegen": "^0.1.0",
-    "@zodal/dials-core": "^0.1.0",
-    "@zodal/dials-store-secret": "^0.1.0",
-    "@zodal/dials-ui": "^0.1.0",
-    "@zodal/dials-ui-shadcn": "^0.1.0",
-    "@zodal/store": "^0.2.0",
-    "@zodal/store-http": "^0.1.0",
-    "@zodal/ui": "^0.2.0",
-    "esbuild": "^0.28.2",
-    "minidenticons": "^4.2.1",
-    "react": "^19.3.1",
-    "react-dom": "^19.3.1",
-    "tsup": "^8.5.1",
-    "typescript": "^5.9.3",
-    "vitest": "^4.1.12",
-    "zod": "^4.6.7"
-  },
-  "overrides": {
-    "@zodal/core": "$@zodal/core",
-    "@zodal/store": "$@zodal/store",
-    "@zodal/ui": "$@zodal/ui"
+  "dependencies": {
+    "zod": "^4.1.13"
   },
   "peerDependencies": {
     "@resvg/resvg-js": "^2.6.2",
@@ -145,7 +139,37 @@
       "optional": true
     }
   },
-  "dependencies": {
-    "zod": "^4.1.13"
+  "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "@resvg/resvg-js": "^2.6.2",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@zodal/core": "^0.2.0",
+    "@zodal/dials-codegen": "^0.1.0",
+    "@zodal/dials-core": "^0.1.0",
+    "@zodal/dials-store-secret": "^0.1.0",
+    "@zodal/dials-ui": "^0.1.0",
+    "@zodal/dials-ui-shadcn": "^0.1.0",
+    "@zodal/store": "^0.2.0",
+    "@zodal/store-http": "^0.1.0",
+    "@zodal/ui": "^0.2.0",
+    "esbuild": "^0.28.2",
+    "minidenticons": "^4.2.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.12",
+    "zod": "^4.6.7"
+  },
+  "overrides": {
+    "@zodal/core": "$@zodal/core",
+    "@zodal/store": "$@zodal/store",
+    "@zodal/ui": "$@zodal/ui"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }
