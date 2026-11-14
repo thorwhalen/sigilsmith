@@ -367,3 +367,8 @@ From `zodal-fit.md`, with the shims this repo keeps (all under `src/zodal/shims/
 6. **Package root lookup** walks up to `package.json`; tsup's shared chunks broke a fixed relative path.
 7. **Lock computation plans remote items without calling them**, and the budget counts the remote module (2.6 kB) when any remote ref is selectable.
 8. Surveyed drafts that a built-in now implements carry `implementedAs` and are hidden from catalog results.
+9. **`minidenticons@1` passes the kernel's `hash32` to the library.** `preview` metrics showed 60 near-duplicates among 150 sequential ids with the library's own string hash; with `hash32`, none. (Unreleased, so changing it was allowed; after release this would be `minidenticons@2`.)
+10. **Preview metrics over text generators** use varied probe names and real fonts, and carry a `caveat`: emoji render blank in Node without a colour-emoji font, so their pixel metrics are not meaningful outside a browser.
+
+Preview metrics (150 items at 32 px, `docs/images/preview-sheet.png`): near-duplicate pairs `grid@1` 0, `rings@1` 0, `shapes@1` 0, `minidenticons@1` 0, `initials@1` 10 (people sharing initials and a nearby hue).
+

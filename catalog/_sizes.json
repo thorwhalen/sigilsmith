@@ -2,53 +2,53 @@
   "measuredAt": "2026-11-14",
   "method": "esbuild minify esm browser; generator = (kernel+generator) - kernel",
   "kernel": {
-    "minBytes": 8126,
-    "gzipBytes": 3833,
-    "brotliBytes": 3509
+    "minBytes": 8046,
+    "gzipBytes": 3793,
+    "brotliBytes": 3464
   },
   "generators": {
     "emoji@1": {
-      "minBytes": 3358,
-      "gzipBytes": 1411,
-      "brotliBytes": 1228,
+      "minBytes": 3357,
+      "gzipBytes": 1414,
+      "brotliBytes": 1222,
       "standaloneGzipBytes": 2182
     },
     "grid@1": {
-      "minBytes": 1279,
-      "gzipBytes": 613,
-      "brotliBytes": 560,
+      "minBytes": 1278,
+      "gzipBytes": 614,
+      "brotliBytes": 568,
       "standaloneGzipBytes": 732
     },
     "initials@1": {
-      "minBytes": 1480,
-      "gzipBytes": 740,
-      "brotliBytes": 679,
+      "minBytes": 1479,
+      "gzipBytes": 741,
+      "brotliBytes": 655,
       "standaloneGzipBytes": 1539
     },
     "minidenticons@1": {
-      "minBytes": 1325,
-      "gzipBytes": 640,
-      "brotliBytes": 566,
-      "standaloneGzipBytes": 786
+      "minBytes": 1327,
+      "gzipBytes": 642,
+      "brotliBytes": 573,
+      "standaloneGzipBytes": 995
     },
     "rings@1": {
-      "minBytes": 1247,
-      "gzipBytes": 577,
-      "brotliBytes": 524,
+      "minBytes": 1246,
+      "gzipBytes": 578,
+      "brotliBytes": 529,
       "standaloneGzipBytes": 706
     },
     "shapes@1": {
-      "minBytes": 1543,
+      "minBytes": 1542,
       "gzipBytes": 689,
-      "brotliBytes": 629,
+      "brotliBytes": 620,
       "standaloneGzipBytes": 809
     }
   },
   "modules": {
     "remote": {
-      "minBytes": 5222,
-      "gzipBytes": 2608,
-      "brotliBytes": 2328
+      "minBytes": 5251,
+      "gzipBytes": 2624,
+      "brotliBytes": 2342
     },
     "delivery": {
       "minBytes": 3199,

@@ -32,6 +32,9 @@ export const DEFAULT_SAMPLE_ITEMS: Item[] = [
 ];
 
 const SIZES = [16, 32, 64, 128];
+// Varied probe labels, so label-driven generators (initials, emoji) are measured fairly.
+const FIRST = ['Ada', 'Grace', 'Alan', 'Katherine', 'Linus', 'Margaret', 'Tim', 'Yuki', 'Amara', 'Diego', 'Noor', 'Olu', 'Priya', 'Sven', 'Zoe'];
+const LAST = ['Lovelace', 'Hopper', 'Turing', 'Johnson', 'Torvalds', 'Hamilton', 'Berners', 'Tanaka', 'Okafor', 'Rivera', 'Haddad'];
 const BGS = { light: '#ffffff', dark: '#111111' };
 
 export interface Metrics {
@@ -39,6 +42,8 @@ export interface Metrics {
   minDistance: number;
   medianDistance: number;
   nearDuplicates: number;
+  /** Set when the generator draws text: pixels depend on this machine's fonts (Node has no colour-emoji font). */
+  caveat?: string;
 }
 
 function distanceMetrics(pixels: Uint8Array[]): Metrics {
@@ -120,11 +125,13 @@ ${Object.entries(cells)
       const n = Math.min(opts.metricsN ?? 150, 400);
       const pix: Uint8Array[] = [];
       for (let i = 0; i < n; i++) {
-        const img = await sigil.render({ id: `metric-${i}`, title: `Item ${i}`, name: `Person ${i}`, type: 'project' }, { ref });
+        const name = `${FIRST[i % FIRST.length]} ${LAST[Math.floor(i / FIRST.length) % LAST.length]}`;
+        const img = await sigil.render({ id: `metric-${i}`, title: name, name, type: 'project' }, { ref });
         const p = img.type === 'svg' ? svgPixels(img.svg, 32, '#808080') : null;
         if (p) pix.push(p);
       }
       metrics[ref] = distanceMetrics(pix);
+      if (cells[ref]!.some((svg) => svg.includes('<text'))) metrics[ref]!.caveat = "draws <text>: measured with this machine's fonts; emoji render blank without a colour-emoji font, so judge them in a browser";
     }
   } else diagnostics.push(missingResvg());
   files.json = resolve(outDir, 'sheet.json');

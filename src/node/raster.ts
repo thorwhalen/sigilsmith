@@ -41,7 +41,7 @@ export function svgToPng(svg: string, size: number, opts: { background?: string 
 export function svgPixels(svg: string, size: number, background: string): Uint8Array | null {
   const Resvg = loadResvg();
   if (!Resvg) return null;
-  return new Resvg(svg, { fitTo: { mode: 'width', value: size }, background, font: { loadSystemFonts: false } }).render().pixels;
+  return new Resvg(svg, { fitTo: { mode: 'width', value: size }, background, font: { loadSystemFonts: svg.includes('<text') } }).render().pixels;
 }
 
 /** Width and height from a PNG's IHDR chunk, or null if the bytes are not a PNG. */

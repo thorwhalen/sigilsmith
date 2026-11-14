@@ -138,7 +138,7 @@ async function main(argv: string[]): Promise<number> {
       const loaded = await needConfig(v);
       if (!loaded.config) return print(envelope('preview', null, loaded.diagnostics), json);
       const { items } = loadSamples(loaded.dir, (v.samples as string | undefined) ?? loaded.config.samples);
-      return print(await preview(loaded, { ...(list(v.generators) ? { generators: list(v.generators)! } : {}), items, ...(v.out ? { out: String(v.out) } : {}) }), json, (d) => `${Object.values(d.files).join('\n')}\n${Object.entries(d.metrics).map(([r, m]: any) => `${r}: min distance ${m.minDistance}, median ${m.medianDistance}, near-duplicates ${m.nearDuplicates}/${m.items}`).join('\n')}`);
+      return print(await preview(loaded, { ...(list(v.generators) ? { generators: list(v.generators)! } : {}), items, ...(v.out ? { out: String(v.out) } : {}) }), json, (d) => `${Object.values(d.files).join('\n')}\n${Object.entries(d.metrics).map(([r, m]: any) => `${r}: min distance ${m.minDistance}, median ${m.medianDistance}, near-duplicates ${m.nearDuplicates}/${m.items}${m.caveat ? ` (${m.caveat})` : ''}`).join('\n')}`);
     }
     case 'targets': {
       if (!v.emit) return print(listTargetsCmd({ includeLegacy: Boolean(v['include-legacy']) }), json, (d) => d.targets.map((t: any) => `${t.id.padEnd(24)} ${t.status.padEnd(8)} ${t.scope.padEnd(5)} ${t.requiresStoredUrl ? 'stored URL' : 'client-side'}  ${t.files.join(', ')}`).join('\n'));
