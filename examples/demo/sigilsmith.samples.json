@@ -1,0 +1,15 @@
+[
+  { "id": "s1", "type": "song", "title": "Ocean Drive", "artist": "Lighthouse Family", "tags": ["summer"] },
+  { "id": "s2", "type": "song", "title": "Blue Monday", "artist": "New Order" },
+  { "id": "s3", "type": "song", "title": "Moonlight Sonata", "artist": "Beethoven" },
+  { "id": "s4", "type": "song", "title": "Fire and Rain", "artist": "James Taylor" },
+  { "id": "v1", "type": "video", "title": "Launch keynote" },
+  { "id": "v2", "type": "video", "title": "Onboarding tutorial" },
+  { "id": "v3", "type": "video", "title": "Team offsite recap" },
+  { "id": "u1", "type": "user", "name": "Ada Lovelace" },
+  { "id": "u2", "type": "user", "name": "Grace Hopper" },
+  { "id": "u3", "type": "user", "name": "Sam Lee" },
+  { "id": "u4", "type": "user", "name": "Sam Lee" },
+  { "id": "p1", "type": "podcast", "title": "Deep Dive Weekly", "description": "Long conversations about systems" },
+  { "id": "d1", "type": "document", "title": "Quarterly notes" }
+]

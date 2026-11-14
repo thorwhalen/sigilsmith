@@ -1,0 +1,37 @@
+{
+  "name": "sigilsmith-demo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sigils": "sigilsmith build && sigilsmith targets --emit",
+    "check": "sigilsmith check",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@zodal/dials-core": "0.1.0",
+    "@zodal/dials-ui": "0.1.0",
+    "@zodal/dials-ui-shadcn": "0.1.0",
+    "@zodal/store": "0.2.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "sigilsmith": "file:../..",
+    "zod": "^4.1.13",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "2.6.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^6.0.0",
+    "playwright-core": "^1.65.1",
+    "typescript": "5.9.3",
+    "vite": "^8.0.0"
+  },
+  "overrides": {
+    "@zodal/core": "0.2.0",
+    "@zodal/store": "0.2.0",
+    "@zodal/ui": "0.2.0"
+  }
+}

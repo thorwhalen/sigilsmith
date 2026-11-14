@@ -16,11 +16,11 @@ import { createContext, useCallback, useContext, useEffect, useState, useSyncExt
 import type { SigilRecord } from '../delivery.js';
 import type { Sigil as SigilApi } from '../sigil.js';
 import { toDisplayUrl } from '../svg.js';
-import type { Item } from '../types.js';
+import type { Item, SigilImage } from '../types.js';
 
 const Ctx = createContext<SigilApi | null>(null);
 
-export function SigilProvider({ sigil, children }: { sigil: SigilApi; children: ReactNode }) {
+export function SigilProvider({ sigil, children }: { sigil: SigilApi; children?: ReactNode }) {
   return <Ctx.Provider value={sigil}>{children}</Ctx.Provider>;
 }
 
@@ -64,14 +64,27 @@ export function useSigil(item: Item, opts: { size?: number; record?: SigilRecord
     let live = true;
     let objectUrl: string | undefined;
     setState((s) => ({ status: 'loading', ...(s.src ? { src: s.src } : {}) }));
-    sigil
-      .render(item, { size: opts.size ?? 64 })
-      .then((img) => {
-        const src = toDisplayUrl(img);
-        if (img.type === 'blob') objectUrl = src;
-        if (live) setState({ status: 'ready', src });
-      })
-      .catch((error) => live && setState({ status: 'error', error }));
+    const size = opts.size ?? 64;
+    const show = (img: SigilImage) => {
+      const src = toDisplayUrl(img);
+      if (img.type === 'blob') objectUrl = src;
+      if (live) setState({ status: 'ready', src });
+    };
+    (async () => {
+      const plan = await sigil.plan(item);
+      const mod = await sigil.load(plan.selection.ref);
+      // Slow/remote generators: show the instant placeholder first (B5), keep it on failure.
+      if (mod.determinism === 'cached-nondeterministic' && sigil.config.policy.placeholder !== plan.selection.ref) {
+        show(await sigil.render(item, { ref: sigil.config.policy.placeholder, size }));
+        try {
+          show(await sigil.renderPlan(plan, size));
+        } catch {
+          /* placeholder stays */
+        }
+        return;
+      }
+      show(await sigil.renderPlan(plan, size));
+    })().catch((error) => live && setState({ status: 'error', error }));
     return () => {
       live = false;
       if (objectUrl) URL.revokeObjectURL(objectUrl);

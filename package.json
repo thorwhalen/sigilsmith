@@ -51,6 +51,10 @@
       "types": "./dist/zodal/index.d.ts",
       "import": "./dist/zodal/index.js"
     },
+    "./zodal/settings": {
+      "types": "./dist/zodal/settings.d.ts",
+      "import": "./dist/zodal/settings.js"
+    },
     "./react": {
       "types": "./dist/react/index.d.ts",
       "import": "./dist/react/index.js"
@@ -67,7 +71,9 @@
     "typecheck": "tsc --noEmit",
     "measure": "node scripts/measure-sizes.mjs",
     "golden": "vitest run tests/golden.test.ts --update",
-    "schema": "node scripts/write-schema.mjs"
+    "schema": "node scripts/write-schema.mjs",
+    "docs": "node scripts/write-docs.mjs",
+    "prepare_assets": "npm run build && npm run measure && npm run schema && npm run docs"
   },
   "devDependencies": {
     "@resvg/resvg-js": "^2.6.2",

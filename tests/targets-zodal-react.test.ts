@@ -8,7 +8,8 @@ import { deliver } from '../src/delivery.js';
 import { check, emitTargets, loadConfig, pngSize } from '../src/node/index.js';
 import { Sigil, SigilProvider } from '../src/react/index.js';
 import { snippet, TARGETS } from '../src/targets/index.js';
-import { bindSettings, createMemoryBlobProvider, createSigilSettingsStore, defineSigilSettings, fromDataProvider } from '../src/zodal/index.js';
+import { createMemoryBlobProvider, fromDataProvider } from '../src/zodal/index.js';
+import { bindSettings, createSigilSettingsStore, defineSigilSettings } from '../src/zodal/settings.js';
 import { baseConfig, loaders } from './fixtures.js';
 import { BASIC, makeProject } from './project.js';
 

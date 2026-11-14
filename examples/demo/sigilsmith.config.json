@@ -1,0 +1,33 @@
+{
+  "$schema": "./node_modules/sigilsmith/schema/config.schema.json",
+  "version": 1,
+  "itemType": { "field": "type" },
+  "key": { "field": "id", "fallback": ["title", "type"] },
+  "presets": ["media", "people"],
+  "generators": {
+    "rings@1": { "params": { "rings": 4 } }
+  },
+  "remote": {
+    "ai@1": { "transport": "mock", "latencyMs": 1200 }
+  },
+  "policy": {
+    "default": "grid@1",
+    "rules": [
+      { "when": { "type": "video" }, "use": "rings@1" },
+      { "when": { "type": "song" }, "use": { "emoji@1": 1, "shapes@1": 1 } },
+      { "when": { "type": "podcast" }, "use": "ai@1" }
+    ]
+  },
+  "delivery": { "strategy": "materialized", "format": "svg" },
+  "regeneration": { "policy": "ask" },
+  "budget": { "maxGzipBytes": 12000 },
+  "userSettings": { "choices": ["grid@1", "rings@1", "shapes@1", "emoji@1"], "perType": true },
+  "samples": "sigilsmith.samples.json",
+  "output": { "gen": "src/sigilsmith.gen.ts" },
+  "targets": {
+    "ids": ["favicon-svg", "favicon-ico", "apple-touch-icon", "manifest-icons"],
+    "html": "index.html",
+    "manifest": "public/manifest.webmanifest",
+    "site": { "seed": "sigilsmith-demo", "ref": "shapes@1" }
+  }
+}

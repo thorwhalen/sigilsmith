@@ -7,7 +7,7 @@ status: proposal, implemented as the MVP in this repo
 
 # sigilsmith design proposal
 
-sigilsmith gives an app a deterministic *identity image* (a sigil) for every item in a list: songs, users, projects, documents. It is a **builder** package: a developer, usually an AI coding agent, uses its CLI to choose generators from a catalog, preview them, pin them in one config file, and generate the wiring the app imports. What reaches the browser is a kernel of about 2 kB plus only the generators that were chosen.
+sigilsmith gives an app a deterministic *identity image* (a sigil) for every item in a list: songs, users, projects, documents. It is a **builder** package: a developer, usually an AI coding agent, uses its CLI to choose generators from a catalog, preview them, pin them in one config file, and generate the wiring the app imports. What reaches the browser is a kernel of 3.8 kB gzip (measured) plus only the generators that were chosen, 0.6–1.4 kB each.
 
 This document is the design deliverable D9 of the brief (`docs/brief.md`). It rests on six research reports in `docs/research/` and on the measurements in `spikes/`. Where the MVP had to change the design, section 12 says so.
 
@@ -43,12 +43,13 @@ The rule that decides the line (from the distribution report): **anything whose 
 ### 1.2 Package layout (one npm package, subpath exports)
 
 ```
-sigilsmith                        kernel (browser-safe, no zod)          ~2 kB gzip target
-sigilsmith/generators/<id>/v<N>   one frozen generator major each        ≤ 1.5 kB gzip each (in-house)
+sigilsmith                        kernel (browser-safe, no zod)          3.8 kB gzip measured (target was ~2 kB)
+sigilsmith/generators/<id>/v<N>   one frozen generator major each        0.6–1.4 kB gzip each, measured
 sigilsmith/remote                 proxy / BYOK / keyless HTTP generators, result cache
 sigilsmith/delivery               materialized / derived / hybrid, regeneration policy, ImageStore port
 sigilsmith/targets                target registry data, snippets, Media Session helper
-sigilsmith/zodal                  DataProvider adapter, end-user settings on zodal-dials (+ marked shims)
+sigilsmith/zodal                  DataProvider adapter for image storage, no zod (+ marked shims)
+sigilsmith/zodal/settings         end-user settings on zodal-dials (zod + dials: load lazily)
 sigilsmith/react                  <SigilProvider>, <Sigil>, useSigil, useSigilSettings
 sigilsmith/node                   zod schemas, catalog, preview, detect-key, explain, build, check, targets emit
 sigilsmith/testing                golden-vector and conformance helpers
@@ -300,14 +301,14 @@ All commands print one JSON envelope with `--json` (`{ schema, ok, data, diagnos
 
 ## 7. Walkthrough: "abstract thumbnails ≤ 5 kB, no network, for a project list; videos one style, audio another"
 
-1. `npx sigilsmith catalog --style abstract,geometric --no-network --max-gzip 5000 --implemented --json` returns `shapes@1`, `rings@1`, `grid@1` and `minidenticons@1`, with sizes, and lists the excluded ones with reasons.
-2. `npx sigilsmith preview --generators shapes@1,rings@1 --samples data/projects.json` writes `.sigilsmith/preview/sheet.html` and `sheet.png`; the agent looks at the PNG and the near-duplicate counts.
+1. `npx sigilsmith catalog --style abstract --no-network --max-gzip 1000 --implemented --json` returns `rings@1` (577 B) and `shapes@1` (689 B), and lists `grid@1` as excluded because its style is geometric.
+2. `npx sigilsmith preview --generators rings@1,shapes@1 --samples data/projects.json` writes `.sigilsmith/preview/sheet.html` and `sheet.png`; the agent looks at the PNG and the near-duplicate counts.
 3. `npx sigilsmith detect-key data/projects.json --write` finds `slug` complete and unique and writes `"key": { "field": "slug" }`.
-4. The agent edits the config: `policy.rules = [{ when: { type: "video" }, use: "rings@1" }, { when: { type: "audio" }, use: "shapes@1" }]`, `default: "grid@1"`, `budget.maxGzipBytes: 5000`.
-5. `npx sigilsmith build` writes `src/sigilsmith.gen.ts` (three lazy loaders, frozen config) and `sigilsmith.lock.json`.
+4. The agent edits the config: `policy.rules = [{ when: { type: "video" }, use: "rings@1" }, { when: { type: "audio" }, use: "shapes@1" }]`, `default: "rings@1"`, `budget.maxGzipBytes: 5000`.
+5. `npx sigilsmith build` writes `src/sigilsmith.gen.ts` (two lazy loaders, frozen config) and `sigilsmith.lock.json`.
 6. The agent writes glue: `<SigilProvider sigil={sigil}>` at the app root and `<Sigil item={project} size={40} />` in the card.
-7. `npx sigilsmith check --json` reports budget (kernel + three generators), determinism, identity, bypass; exit 0.
-8. Months later someone renames `slug` to `handle` in the data: `check` fails with `SGS0701 key field \`slug\` is missing from 40 of 40 sample items`, fix: set `key.field` to `handle`. One line.
+7. `npx sigilsmith check --json` reports **budget: 3833 + 577 + 689 = 5099 B, over the 5000 B budget** (`SGS0401`, with the largest generator named and a `catalog --max-gzip` command that fits). This is the honest outcome with today's kernel: a 5 kB *total* cap fits the kernel plus one abstract generator, not two. The agent asks the user to choose: one generator for both types (4.4 kB), or a 5.5 kB cap. With `maxGzipBytes: 5500`, everything else (config, fresh, data, identity, determinism, peers, bypass) passes and `check` exits 0.
+8. Months later someone renames `slug` to `handle` in the data: `check` fails with `SGS0701 key field \`slug\` is missing from 40 of 40 sample items`, and its fix is the edit `key.field = "handle"`. One line (this exact scenario is a test: `tests/cli.test.ts`, "drift").
 
 ## 8. Risks
 
@@ -330,11 +331,21 @@ Bundles were measured with esbuild (minified ESM, browser platform) and gzip -9,
 | `@zodal/dials-ui` + core | 476,885 | 100,135 |
 | `@zodal/store-http` (`createHttpBlobProvider`) | 3,443 | 1,526 |
 
-Sizes of the kernel and each built-in generator are measured by `npm run measure` and reported in `README.md` and `catalog/_sizes.json`.
+Sizes of the kernel and each built-in generator, as an app ships them (`npm run measure`, generator = kernel+generator minus kernel):
+
+| Module | min bytes | gzip | brotli |
+|---|---|---|---|
+| kernel (`createSigil`) | 8,126 | 3,833 | 3,509 |
+| `grid@1` / `rings@1` / `shapes@1` | 1,278 / 1,246 / 1,542 | 613 / 577 / 689 | 577 / 535 / 611 |
+| `initials@1` / `emoji@1` / `minidenticons@1` | 1,479 / 3,357 / 1,324 | 740 / 1,411 / 640 | 660 / 1,230 / 575 |
+| `sigilsmith/remote` | 5,222 | 2,608 | 2,328 |
+| `sigilsmith/delivery` | 3,199 | 1,477 | 1,315 |
+
+In the demo app (Vite production build) the list path carries no zod and no dials: the main chunk is 80 kB gzip, nearly all React; the settings screen is a separate 41 kB gzip chunk loaded on demand; each generator is its own chunk.
 
 ## 10. zodal gaps proposed upstream
 
-From `zodal-fit.md`, with the shims this repo keeps (all under `src/zodal/shims/`, each with a `SHIM:` header): G1 key resolution (`resolveKey`, `canonicalKey` in `@zodal/core`; shim is `src/key.ts`, kept dependency-free); G3 content write options and `headContent`; G5 layer ladder in dials (shim is `src/layers.ts`); G8 `useSettings` React hook; G9 Media Session artwork in `@zodal/media`; G10 republish dials against core 0.2 and add licence metadata; and, found while building, **G11 an in-memory blob provider** (`createInMemoryProvider` has no content methods) and **G12 dials-core on `zod/mini`** (98 kB gzip is too heavy for a settings screen in a light app).
+From `zodal-fit.md`, with the shims this repo keeps (all under `src/zodal/shims/`, each with a `SHIM:` header): G1 key resolution (`resolveKey`, `canonicalKey` in `@zodal/core`; shim is `src/key.ts`, kept dependency-free); G3 content write options and `headContent`; G5 layer ladder in dials (shim is `src/layers.ts`); G8 `useSettings` React hook; G9 Media Session artwork in `@zodal/media`; G10 republish dials against core 0.2 and add licence metadata; and, found while building, **G11 an in-memory blob provider** (`createInMemoryProvider` has no content methods), **G12 dials-core on `zod/mini`** (98 kB gzip in a plain esbuild bundle; 41 kB in the demo's Vite chunk), **G13 `@zodal/dials-ui-shadcn@0.1.0` ships no `styles.css`** although its README imports one, and **G14 enum option labels**: the published dials-ui 0.1.0 shows raw enum values (`rings@1`) and ignores `enumLabels`; it reads `meta.title` and a `facets` array.
 
 ## 11. Open questions for the author
 
@@ -348,4 +359,11 @@ From `zodal-fit.md`, with the shims this repo keeps (all under `src/zodal/shims/
 
 ## 12. Changes made while building the MVP
 
-Recorded as they happen; empty means the MVP followed this document.
+1. **Kernel size.** The ~2 kB target (an estimate from the distribution report) did not hold: the kernel measures 3.8 kB gzip with everything `createSigil` needs (key resolution, inputs, layers with provenance, policy, palette, hashing, loader). Content ids and SHA-256 were moved out of the kernel into `src/ids.ts` (used by delivery, remote and the CLI), which saved 0.24 kB. The walkthrough (§7) now shows the budget check failing a 5 kB total cap, which is the honest result.
+2. **`renderWithIds` replaced by `renderPlan(plan)`**, so delivery plans once and computes ids itself.
+3. **`sigilsmith/zodal` split** into storage (`sigilsmith/zodal`, no zod) and settings (`sigilsmith/zodal/settings`). Found by the demo's Vite build: one module for both pulled zod and dials into the list path.
+4. **Placeholder ref** joined the resolved config (`policy.placeholder`), so `<Sigil>` shows the instant placeholder for cached-nondeterministic (remote) generators without extra glue.
+5. **Settings labels come from generator manifests** (`defineSigilSettings`), because `check bypass` correctly flagged the demo for hard-coding refs as display labels.
+6. **Package root lookup** walks up to `package.json`; tsup's shared chunks broke a fixed relative path.
+7. **Lock computation plans remote items without calling them**, and the budget counts the remote module (2.6 kB) when any remote ref is selectable.
+8. Surveyed drafts that a built-in now implements carry `implementedAs` and are hidden from catalog results.

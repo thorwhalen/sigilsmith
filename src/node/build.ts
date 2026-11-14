@@ -84,14 +84,16 @@ export async function computeLock(loaded: LoadedConfig): Promise<{ lock: Lock; d
   const { items, error } = loadSamples(loaded.dir, cfg.samples);
   if (error) diagnostics.push(diag('SGS0702', 'warning', error, { where: { path: 'samples' } }));
   if (items.length) {
-    const sigil = await nodeSigil(loaded, { remote: false });
+    // Remote generators are wired so planning works, but never called: only local images are locked.
+    const sigil = await nodeSigil(loaded, { remote: true });
     for (const item of items.slice(0, 500)) {
       try {
         const plan = await sigil.plan(item);
         if (!BUILTIN_BY_REF[plan.selection.ref]) continue;
-        samples[plan.key] = { ref: plan.selection.ref, image: await imageHash(await sigil.render(item)) };
+        samples[plan.key] = { ref: plan.selection.ref, image: await imageHash(await sigil.renderPlan(plan)) };
       } catch (e) {
-        diagnostics.push(diag('SGS0203', 'warning', (e as Error).message, { where: { item } }));
+        const msg = (e as Error).message;
+        diagnostics.push(diag(/^SGS\d{4}/.exec(msg)?.[0] ?? 'SGS0203', 'warning', msg, { where: { item } }));
       }
     }
   }
@@ -143,7 +145,7 @@ export function renderWiringModule(loaded: LoadedConfig, outFile: string): strin
     ...imports,
     ...extras,
     '',
-    `export const config: ResolvedConfig = Object.freeze(${JSON.stringify(loaded.resolved, null, 2)}) as ResolvedConfig;`,
+    `export const config = Object.freeze(${JSON.stringify(loaded.resolved, null, 2)}) as unknown as ResolvedConfig;`,
     '',
     '/** Lazy loaders for exactly the generators the config can select: one chunk each. */',
     'export const generators: Record<string, GeneratorLoader> = {',

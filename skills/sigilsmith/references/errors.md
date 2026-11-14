@@ -1,0 +1,38 @@
+# Diagnostic codes
+
+Generated from `src/node/diagnostics.ts` by `npm run docs`. Groups: 01xx config, 02xx key, 03xx generator, 04xx budget, 05xx determinism and identity, 06xx targets, 07xx drift. Offline: `npx sigilsmith explain-code <code>`.
+
+| code | title | cause | fix |
+|---|---|---|---|
+| SGS0101 | config file not found | No sigilsmith.config.json in the working directory (or the path given with --config). | Run `npx sigilsmith init`, or pass --config <path>. |
+| SGS0102 | config does not match the schema | A field has the wrong type, an unknown name, or a value out of range. | Edit the field named in `where.path`; the JSON Schema linked by `$schema` gives editor hints. |
+| SGS0103 | unknown preset | The `presets` list names a preset that does not exist. | Use one of the built-in presets listed by `sigilsmith catalog --presets`. |
+| SGS0104 | unknown generator ref | A ref is neither a built-in generator nor declared under `remote`. | Pick an implemented ref from `sigilsmith catalog --implemented`, or declare a remote generator. |
+| SGS0105 | secret in config | A value that looks like an API key is in the config, which is committed and may be bundled. | Remove it. Use a proxy endpoint (`remote.<ref>.transport: "proxy"`) or a BYOK module transport that reads the key at call time. |
+| SGS0106 | no BYOK key | A BYOK transport found no key for the current user. | Ask the user to add their key in settings; the placeholder stays meanwhile. |
+| SGS0201 | no stable key found | No candidate field is complete, unique and stable across the samples. | Add an id field to the data, or configure a composite key (`key.fields`). |
+| SGS0202 | key missing for some items | Some items lack the configured key field, so they use the fallback key, which changes when those fields change. | Fix the data, or choose a key that every item has (`detect-key`). |
+| SGS0203 | key missing and no fallback | An item has no key value and no fallback is configured (or `onMissing` is `throw`). | Set `key.fallback`, or fix the data. |
+| SGS0204 | key not unique | Several sample items share a key, so they would share an image. | Choose a unique key or a composite key (`detect-key` proposes one). |
+| SGS0205 | key looks unstable | The key field looks like display text, a timestamp or a locator, which change over time and would change the image. | Prefer an immutable id; keep this only if it never changes. |
+| SGS0301 | generator not wired | The runtime was asked for a generator that is not in the wiring module. | Add it to the config and run `sigilsmith build`. |
+| SGS0302 | invalid generator params | Params in the config don't match the generator's schema. | Fix the param named in `where.path`; `catalog --ref <ref>` lists valid params. |
+| SGS0303 | derived delivery with a non-pure generator | `derived` renders on every view, which needs a pure, local generator; remote or cached-nondeterministic ones would re-run every time. | Use `materialized` or `hybrid`, or a pure generator. |
+| SGS0304 | generator peer missing or mismatched | An adapter generator needs its upstream library at the pinned version, because its output depends on it. | Install the exact version named in `fix.commands`. |
+| SGS0401 | over budget | Kernel plus selected generators exceed `budget.maxGzipBytes`. | Drop a generator, pick smaller ones (`catalog --max-gzip`), or raise the budget. |
+| SGS0402 | rasterizer missing | PNG output was requested but no rasterizer is available. | In Node, `npm i -D @resvg/resvg-js`; in the browser, pass `rasterize`. |
+| SGS0501 | non-deterministic output | Rendering the same item twice gave different bytes. | A generator uses randomness or time; use ctx.rng only. |
+| SGS0502 | generator output changed | A pinned generator's fingerprint no longer matches the lock, so every image it draws has changed. | Revert the dependency change, or accept with `build --accept` after review. |
+| SGS0503 | lock missing | No sigilsmith.lock.json, so identity cannot be checked. | Run `sigilsmith build`. |
+| SGS0504 | sample identities changed | Some sample items would now get a different image (config edit, data edit or upgrade). | If intended, `build --accept`; else revert. Stored images are unaffected until regenerated (B19). |
+| SGS0601 | unknown target | The target id is not in the registry. | `sigilsmith targets` lists them. |
+| SGS0602 | target not registered | The HTML head lacks the tag for a configured target. | Paste the snippet from `targets --emit` into the head. |
+| SGS0603 | target file missing or wrong size | A file a target needs is missing from the public dir, or its pixel size is wrong. | Run `sigilsmith targets --emit`. |
+| SGS0604 | link-preview URL not absolute | Crawlers resolve og:image/twitter:image only from absolute URLs. | Set `targets.baseUrl` and use an absolute URL. |
+| SGS0605 | manifest icons incomplete | The web app manifest lacks a 192, 512 or maskable icon. | Merge the `icons` snippet from `targets --emit` into the manifest. |
+| SGS0701 | key field missing from data | The configured key field is absent from the sample data: probably renamed. | Point `key.field` at the new name (one line), or run `detect-key --write`. |
+| SGS0702 | input field missing from data | An input or rule field named in the config appears in no sample item. | Rename it in the config to match the data. |
+| SGS0703 | wiring module stale | The config changed since the wiring module was generated. | Run `sigilsmith build`. |
+| SGS0704 | wiring module missing | The generated module the app imports does not exist. | Run `sigilsmith build`. |
+| SGS0705 | generator imported directly | App code imports a generator module, bypassing the config. | Import `sigil` from the wiring module instead. |
+| SGS0706 | hard-coded choice in app code | App code inlines a generator ref, calls Math.random next to sigilsmith, or hard-codes the key field. | Read it from the config/wiring module; the config is the single source of truth. |

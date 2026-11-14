@@ -9,7 +9,7 @@ export const baseConfig: ResolvedConfig = {
   label: { fields: ['name', 'title', 'label'] },
   presets: [PRESETS.media!, PRESETS.people!],
   generators: { 'grid@1': { params: { cells: 5 } } },
-  policy: { default: 'grid@1', salt: 'sigilsmith', rules: [
+  policy: { default: 'grid@1', salt: 'sigilsmith', placeholder: 'grid@1', rules: [
     { when: { type: 'video' }, use: 'rings@1' },
     { when: { type: 'audio' }, use: { 'grid@1': 1, 'shapes@1': 1 } },
   ] },

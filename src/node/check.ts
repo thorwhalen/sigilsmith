@@ -181,6 +181,9 @@ export async function check(loaded: LoadedConfig, opts: { only?: Section[] } = {
     const refs = referencedRefs(cfg).filter((r) => BUILTIN_BY_REF[r]);
     const generators = Object.fromEntries(refs.map((r) => [r, sizes.generators[r]?.gzipBytes ?? null]));
     const kernelGzip = sizes.kernel?.gzipBytes ?? null;
+    // Remote generators share one module (transports, cache, progressive placeholder).
+    const remoteModule = (sizes as { modules?: { remote?: { gzipBytes: number } } }).modules?.remote?.gzipBytes ?? null;
+    if (referencedRefs(cfg).some((r) => cfg.remote[r])) generators['(remote module)'] = remoteModule;
     const known = [kernelGzip, ...Object.values(generators)];
     const totalGzip = known.every((x) => x !== null) ? (known as number[]).reduce((a, b) => a + b, 0) : null;
     const max = cfg.budget.maxGzipBytes ?? null;

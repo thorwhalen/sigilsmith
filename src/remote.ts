@@ -155,7 +155,7 @@ export interface ProgressiveResult {
  * the wiring module.
  */
 export async function progressive(sigil: Sigil, item: Item, opts: { size?: number; placeholderRef?: string; timeoutMs?: number } = {}): Promise<ProgressiveResult> {
-  const { size = 64, placeholderRef = 'grid@1', timeoutMs = 8000 } = opts;
+  const { size = 64, placeholderRef = sigil.config.policy.placeholder ?? 'grid@1', timeoutMs = 8000 } = opts;
   const placeholder = await sigil.render(item, { ref: placeholderRef, size });
   const final = (async () => {
     let timer: ReturnType<typeof setTimeout> | undefined;

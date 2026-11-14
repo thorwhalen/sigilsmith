@@ -12,6 +12,7 @@ export default defineConfig({
     delivery: 'src/delivery.ts',
     'targets/index': 'src/targets/index.ts',
     'zodal/index': 'src/zodal/index.ts',
+    'zodal/settings': 'src/zodal/settings.ts',
     'react/index': 'src/react/index.tsx',
     'node/index': 'src/node/index.ts',
     'cli/main': 'src/cli/main.ts',

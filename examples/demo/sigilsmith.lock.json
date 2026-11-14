@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "package": "0.0.0",
+  "config": "9bc266fb9ca0e16f",
+  "generators": {
+    "emoji@1": {
+      "fingerprint": "ac015b6a09e5ae7c5b67984e1b6c985f"
+    },
+    "grid@1": {
+      "fingerprint": "09e199e9b25cef5d6e3a8ae5f6fb7c63"
+    },
+    "initials@1": {
+      "fingerprint": "49f1e8b0e12c85f9b18b57a5eaccb4b8"
+    },
+    "rings@1": {
+      "fingerprint": "ad12f93edbaf9d850a13403259301094"
+    },
+    "shapes@1": {
+      "fingerprint": "5e2fdf2011bddb4d9a6e7ab2eb451040"
+    }
+  },
+  "samples": {
+    "s1": {
+      "ref": "emoji@1",
+      "image": "7b5608475f5effab75ff6a7b6d76c2fc"
+    },
+    "s2": {
+      "ref": "shapes@1",
+      "image": "d635cf1921ff721a183a75b67383c319"
+    },
+    "s3": {
+      "ref": "emoji@1",
+      "image": "58cda5de91077fc6fbf0203b31bb45b1"
+    },
+    "s4": {
+      "ref": "emoji@1",
+      "image": "ac1ec7485799ec71cb71b7ddb00a49f1"
+    },
+    "v1": {
+      "ref": "rings@1",
+      "image": "bd9418392af9d8a17d83da6336aa4204"
+    },
+    "v2": {
+      "ref": "rings@1",
+      "image": "fc9bdac953226ce1b97cdb02abe010bb"
+    },
+    "v3": {
+      "ref": "rings@1",
+      "image": "06cfe4cbc78bc1c19cb3f44c210b3c4e"
+    },
+    "u1": {
+      "ref": "initials@1",
+      "image": "e9adeed18962d50efa96419b93af6031"
+    },
+    "u2": {
+      "ref": "initials@1",
+      "image": "3ad0f3475c4dca14302c2d6eaf9fa0a2"
+    },
+    "u3": {
+      "ref": "initials@1",
+      "image": "cac1aae0c7135fd58d5a2f6396ac8e30"
+    },
+    "u4": {
+      "ref": "initials@1",
+      "image": "d36f6a357f3a8aba1db24752035682c8"
+    },
+    "d1": {
+      "ref": "grid@1",
+      "image": "23c6b23ea1aeeec640fdddb2a5a6f898"
+    }
+  }
+}

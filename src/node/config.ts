@@ -83,7 +83,7 @@ export function resolveConfig(cfg: Config): ResolvedConfig {
     label: cfg.label,
     presets: cfg.presets.map((p) => PRESETS[p]!).filter(Boolean),
     generators: cfg.generators,
-    policy: { default: cfg.policy.default, salt: cfg.policy.salt, rules: cfg.policy.rules },
+    policy: { default: cfg.policy.default, salt: cfg.policy.salt, rules: cfg.policy.rules, placeholder: cfg.policy.placeholder },
     delivery: cfg.delivery,
     regeneration: cfg.regeneration,
     userSettings: cfg.userSettings,

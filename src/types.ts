@@ -104,7 +104,7 @@ export interface ResolvedConfig {
   label: { fields: string[] };
   presets: Preset[];
   generators: Record<string, { inputs?: InputSpec[]; params?: Record<string, unknown> }>;
-  policy: { default: string; salt: string; rules: PolicyRule[] };
+  policy: { default: string; salt: string; rules: PolicyRule[]; placeholder: string };
   delivery: { strategy: 'materialized' | 'derived' | 'hybrid'; format: 'svg' | 'png' };
   regeneration: { policy: 'ask' | 'always' | 'never' };
   userSettings: { choices: string[]; perType: boolean; params: Record<string, string[]> };

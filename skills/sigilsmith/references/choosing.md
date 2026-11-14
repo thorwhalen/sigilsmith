@@ -1,0 +1,16 @@
+# Choosing a generator
+
+Each catalog row carries the A4 criteria: `style` (abstract → geometric → illustrative → photorealistic), `semanticLevel` (hash → metadata → embedding → llm), `gzipBytes` (measured: the generator's incremental cost on top of the kernel), `network`, `cost`, `license`/`mitCompatible`, `determinism` and `sizeRange` (smallest legible px). Implemented generators (`implemented: true`) can be wired today; survey drafts describe what could be added.
+
+| Need | Start with |
+|---|---|
+| Tiny, abstract, any list | `rings@1`, `shapes@1` |
+| GitHub-style identicon | `grid@1` (in-house) or `minidenticons@1` (MIT adapter; install `minidenticons@4.2.1` exactly) |
+| People | `initials@1` (or the `people` preset, which suggests it for `user`/`person`/`contact` items) |
+| Concrete, readable at 24 px, a hint of meaning | `emoji@1` (keyword match on title/tags, else hash) |
+| Several looks mixed in one list | a weighted rule: `"use": { "rings@1": 2, "shapes@1": 1 }` (deterministic per item) |
+| AI or a hosted service | `remote` entries (proxy, BYOK module, DiceBear HTTP for non-commercial use, mock for tests); the placeholder (`policy.placeholder`, default `grid@1`) shows while it works |
+
+Budget: `budget.maxGzipBytes` covers the kernel (~3.8 kB gzip) plus every generator the config can select. Generators load lazily, one chunk each, but the budget counts them all.
+
+Research behind the catalog: `docs/research/generator-survey.md`; measured sizes and contact sheets for third-party libraries: `spikes/README.md`.
