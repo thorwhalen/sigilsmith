@@ -9,20 +9,13 @@
  */
 import { n, svgDoc, svgImage, tile } from '../../svg.js';
 import type { GeneratorModule } from '../../types.js';
+import { meta, type RingsParams } from './meta.js';
 
-export interface RingsParams {
-  rings: number;
-  shape: 'square' | 'rounded' | 'circle';
-  stroke: number;
-}
+export type { RingsParams };
+
 
 const rings: GeneratorModule<RingsParams> = {
-  id: 'rings',
-  major: 1,
-  kind: 'hash',
-  determinism: 'pure',
-  defaults: { rings: 4, shape: 'circle', stroke: 8 },
-  defaultInputs: ['$key'],
+  ...meta,
   render({ rng, palette, params }) {
     const count = Math.max(2, Math.min(6, Math.round(params.rings)));
     const colours = [palette.primary, palette.secondary, palette.accent, palette.background];

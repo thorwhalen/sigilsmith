@@ -118,7 +118,8 @@ async function main(argv: string[]): Promise<number> {
 
 main(process.argv.slice(2)).then(
   (code) => {
-    if (code >= 0) process.exit(code);
+    // exitCode, not exit(): exit() can cut off piped stdout (a long --json envelope) mid-write.
+    if (code >= 0) process.exitCode = code;
   },
   (e) => {
     process.stderr.write(`internal error: ${(e as Error).stack ?? e}\n`);

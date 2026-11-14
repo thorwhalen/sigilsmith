@@ -10,21 +10,13 @@
  */
 import { n, svgDoc, svgImage, tile } from '../../svg.js';
 import type { GeneratorModule } from '../../types.js';
+import { meta, type GridParams } from './meta.js';
 
-export interface GridParams {
-  cells: number;
-  density: number;
-  shape: 'square' | 'rounded' | 'circle';
-  padding: number;
-}
+export type { GridParams };
+
 
 const grid: GeneratorModule<GridParams> = {
-  id: 'grid',
-  major: 1,
-  kind: 'hash',
-  determinism: 'pure',
-  defaults: { cells: 5, density: 0.5, shape: 'rounded', padding: 0.16 },
-  defaultInputs: ['$key'],
+  ...meta,
   render({ rng, palette, params }) {
     const cells = Math.max(3, Math.min(9, Math.round(params.cells)));
     const half = Math.ceil(cells / 2);

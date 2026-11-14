@@ -16,7 +16,7 @@ export const RefSchema = z
 
 export const InputSpecSchema = z.union([
   z.string().min(1).describe('A field path (`title`, `meta.uuid`), `$key` or `$label`.'),
-  z.object({ field: z.string().min(1), maxChars: z.number().int().positive().optional() }).strict(),
+  z.object({ field: z.string().min(1), maxChars: z.number().int().positive().optional(), as: z.string().min(1).optional().describe('Name the generator sees (e.g. keep `title` when the data field becomes `name`).') }).strict(),
 ]);
 
 const ParamsSchema = z.record(z.string(), z.unknown()).describe('Generator params; validated against the generator manifest by `check`.');
@@ -67,6 +67,7 @@ export const RemoteSpecSchema = z.union([
 export const ConfigSchema = z
   .object({
     $schema: z.string().optional(),
+    $comment: z.string().optional().describe('Free text; JSON has no comments.'),
     version: z.literal(1),
     itemType: z.object({ field: z.string().min(1) }).nullable().default({ field: 'type' }),
     key: KeyConfigSchema.describe('How to get an item\'s stable key. Write it with `sigilsmith detect-key --write`.'),
@@ -83,7 +84,7 @@ export const ConfigSchema = z
       })
       .strict(),
     delivery: z.object({ strategy: z.enum(['materialized', 'derived', 'hybrid']).default('materialized'), format: z.enum(['svg', 'png']).default('svg') }).strict().default({ strategy: 'materialized', format: 'svg' }),
-    regeneration: z.object({ policy: z.enum(['ask', 'always', 'never']).default('ask') }).strict().default({ policy: 'ask' }),
+    regeneration: z.object({ policy: z.enum(['auto', 'ask', 'always', 'never']).default('auto').describe('auto: each generator\'s own default (initials: always), else ask.') }).strict().default({ policy: 'auto' }),
     budget: z.object({ maxGzipBytes: z.number().int().positive().optional() }).strict().default({}),
     userSettings: z
       .object({ choices: z.array(RefSchema).default([]), perType: z.boolean().default(true), params: z.record(RefSchema, z.array(z.string())).default({}) })

@@ -10,7 +10,7 @@
 export type Item = Record<string, unknown>;
 
 /** A field path (`title`, `meta.uuid`), `$key` (the resolved item key) or `$label`. */
-export type InputSpec = string | { field: string; maxChars?: number };
+export type InputSpec = string | { field: string; maxChars?: number; as?: string };
 
 /** What a generator returns. SVG is the canonical, byte-stable form. */
 export type SigilImage =
@@ -60,8 +60,13 @@ export interface GeneratorModule<P extends object = Record<string, unknown>> {
   defaultInputs: InputSpec[];
   /** Determinism class; `derived` delivery requires `pure`. */
   determinism: 'pure' | 'seeded' | 'cached-nondeterministic';
+  /** This generator's own regeneration default, used when the config says `auto`. */
+  regeneration?: 'always' | 'never' | 'ask';
   render(ctx: RenderContext<P>): SigilImage | Promise<SigilImage>;
 }
+
+/** A generator's identity and defaults, without its drawing code. */
+export type GeneratorMeta<P extends object = Record<string, unknown>> = Omit<GeneratorModule<P>, 'render'>;
 
 export type GeneratorLoader = () => Promise<GeneratorModule<any> | { default: GeneratorModule<any> }>;
 
@@ -106,7 +111,7 @@ export interface ResolvedConfig {
   generators: Record<string, { inputs?: InputSpec[]; params?: Record<string, unknown> }>;
   policy: { default: string; salt: string; rules: PolicyRule[]; placeholder: string };
   delivery: { strategy: 'materialized' | 'derived' | 'hybrid'; format: 'svg' | 'png' };
-  regeneration: { policy: 'ask' | 'always' | 'never' };
+  regeneration: { policy: 'auto' | 'ask' | 'always' | 'never' };
   userSettings: { choices: string[]; perType: boolean; params: Record<string, string[]> };
 }
 
@@ -129,7 +134,7 @@ export interface LeafProvenance {
 
 export interface SelectionTrace {
   ref: string;
-  via: 'custom' | 'user' | `rule:${number}` | `preset:${string}` | 'default';
+  via: 'custom' | 'user' | 'explicit' | `rule:${number}` | `preset:${string}` | 'default';
   weights?: Record<string, number>;
   bucket?: number;
 }

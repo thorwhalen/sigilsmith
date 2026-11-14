@@ -91,7 +91,8 @@ Surface for v1: CLI + `AGENTS.md` block + skill, plus the React adapter the brie
   "presets": ["media"],                                // B4.3 layer 2
   "generators": {                                      // B4.3 layer 3: per generator ref
     "grid@1": { "params": { "cells": 5 } },
-    "rings@1": { "inputs": ["$key"] }
+    "rings@1": { "inputs": ["$key"] },
+    "emoji@1": { "inputs": [{ "field": "name", "as": "title" }] }   // renamed data field, same seed and same generator-facing name
   },
   "policy": {                                          // A6
     "default": "grid@1",
@@ -239,9 +240,9 @@ A registry of plain-data `TargetSpec`s (zod-described on the Node side), seeded 
 export function createSigil(opts: { config: ResolvedConfig; generators: Record<string, () => Promise<GeneratorModule>>; keyFn?: (item: Item) => string; user?: UserLayer }): Sigil;
 export interface Sigil {
   render(item: Item, opts?: { size?: number; ref?: string }): Promise<SigilImage>;
-  renderSync?(item: Item, opts?): SigilImage | undefined;            // when the generator is loaded and sync
-  plan(item: Item): Plan;                                              // key, ref, inputs, params, provenance; pure, no loading
-  record(item: Item): Promise<SigilRecord>;                            // render + content ids (no storage)
+  plan(item: Item, opts?: { ref?: string }): Promise<Plan>;            // key, ref, inputs, params, provenance (loads the generator for its defaults)
+  renderPlan(plan: Plan, size?: number): Promise<SigilImage>;          // render an existing plan without planning twice
+  load(ref: string): Promise<GeneratorModule>;
   setUser(layer: UserLayer): void;
 }
 export { canonicalKey, keyOf, hash32, cyrb128, sfc32, palette, toDataUrl } ;
@@ -272,7 +273,7 @@ export function build(...): Envelope; export function check(...): Envelope; expo
 
 - **Hashing**: `cyrb128` (public domain, 128-bit, fast) for seeds; `sfc32` PRNG seeded from it. Seeds include the generator ref, so two generators reading the same key are decorrelated. SHA-256 (WebCrypto, async) for content ids only.
 - **Frozen majors**: `sigilsmith/generators/grid/v1` never changes output. A change to output is `grid/v2`, a new subpath, and the old one stays until a package major after a long deprecation notice. Kernel changes that would alter any generator's output are forbidden; golden vectors catch them.
-- **Golden vectors**: `tests/golden/<id>-v<N>.json` holds sha256 of the SVG for 16 fixed inputs per generator. CI fails on any byte change.
+- **Golden vectors**: `tests/golden/<id>-v<N>.json` holds sha256 of the SVG for 8 fixed inputs per generator, with default and non-default params; `tests/golden/kernel-v1.json` runs items end to end through `createSigil` (composite and fallback keys, presets, weighted rules, params), so a kernel change that alters any image fails too. A missing golden file fails; it is written only with `UPDATE_GOLDEN=1`.
 - **Host lock**: `sigilsmith build` writes `sigilsmith.lock.json` with, per ref, a fingerprint over the golden inputs, and, per sample item, its ref and the sha256 of its SVG. `check identity` re-renders and diffs. Accepting a change is `sigilsmith build --accept`, a reviewed edit.
 - **Raster**: never compared byte for byte (canvas and fonts differ across engines). SVG is the canonical artifact; generators that use `<text>` (initials, emoji) are deterministic in *choice* and markup, not in pixels, and their manifests say so.
 - **Opt-out**: `"determinism": "fresh"` on a rule adds a nonce to the seed (B3's explicit opt-out); `check` warns.
@@ -290,7 +291,7 @@ All commands print one JSON envelope with `--json` (`{ schema, ok, data, diagnos
 | `explain [--item json \| --index n]` | key, generator, inputs, params, each with its layer; delivery and regeneration notes |
 | `build [--out sigilsmith.gen.ts] [--accept]` | resolves and freezes the config into the wiring module; writes the lock |
 | `targets [--emit dir]` | lists targets, emits files and snippets |
-| `check [--html f --manifest f]` | `config`, `fresh`, `key` (data drift), `identity`, `determinism`, `budget`, `bypass`, `targets` |
+| `check [--only a,b]` | `config`, `fresh`, `data` (drift), `identity`, `determinism`, `budget`, `peers`, `bypass`, `targets` (HTML and manifest paths come from `targets.html` / `targets.manifest` in the config) |
 | `explain-code <SGSxxxx>` | the offline page for a diagnostic |
 
 `AGENTS.md` (repo) and a managed block that `init` writes into the host's `AGENTS.md` carry only the non-inferable facts: the config path, the rule "never inline a field name, generator id or param; read the config", the commands, and the definition of done (`npx sigilsmith check --json` exits 0). The skill `skills/sigilsmith/SKILL.md` holds the choose → preview → pin → build → glue → check loop, with references for tuning, delivery and targets.
@@ -347,15 +348,17 @@ In the demo app (Vite production build) the list path carries no zod and no dial
 
 From `zodal-fit.md`, with the shims this repo keeps (all under `src/zodal/shims/`, each with a `SHIM:` header): G1 key resolution (`resolveKey`, `canonicalKey` in `@zodal/core`; shim is `src/key.ts`, kept dependency-free); G3 content write options and `headContent`; G5 layer ladder in dials (shim is `src/layers.ts`); G8 `useSettings` React hook; G9 Media Session artwork in `@zodal/media`; G10 republish dials against core 0.2 and add licence metadata; and, found while building, **G11 an in-memory blob provider** (`createInMemoryProvider` has no content methods), **G12 dials-core on `zod/mini`** (98 kB gzip in a plain esbuild bundle; 41 kB in the demo's Vite chunk), **G13 `@zodal/dials-ui-shadcn@0.1.0` ships no `styles.css`** although its README imports one, and **G14 enum option labels**: the published dials-ui 0.1.0 shows raw enum values (`rings@1`) and ignores `enumLabels`; it reads `meta.title` and a `facets` array.
 
-## 11. Open questions for the author
+## 11. Open questions, answered (2026-11-14)
 
-1. Is JSON (not TypeScript) acceptable for the SSOT config, given that the CLI writes into it?
-2. B19: is "ask, non-modal, default-keep, freeze after keep" the default you want, or should the default be `never` with `ask` opt-in?
-3. Should `sigilsmith build` pin exact versions of third-party generator peers (minidenticons) in the host's `package.json`, since their output is part of identity?
-4. Old generator majors: keep them all in `sigilsmith`, or move retired majors to a `sigilsmith-legacy` package after N years?
-5. The DiceBear public API is non-commercial: keep it in the default catalog, or list it only as "self-host"?
-6. zodal: should the G-gaps become issues on `i2mint/zodal` and `i2mint/zodal-dials` now (outward-facing, so not done in this run)?
-7. MCP server: wait for a concrete agent without a shell, or build now from the same schemas?
+The owner answered Q5–Q7 and delegated Q1–Q4 to an independent reviewer (a Fable model reading the brief, this document and the code); its recommendations were adopted.
+
+1. **JSON config: kept.** The CLI writes into it, any language reads it, loading runs no user code. JSON has no comments, so the schema accepts `$comment` (the `//` in the example above is illustrative only). Revisit if configs need computed or shared values: then a TS `defineConfig` that *emits* the JSON.
+2. **Regeneration default: `auto`.** Each generator may declare its own default (`initials@1`: `always`, since its letters *are* the label); otherwise `ask`. Under `ask`, only an explicit "keep" freezes an item; no answer, a rejection or a timeout keep the image without freezing and remember the declined digest so the same change is not asked twice (`unfreeze()` resets). `check` warns (`SGS0709`) when stored images read changeable inputs and the app never calls `onInputsChanged`.
+3. **Third-party pins: `build` does not edit the host's package.json.** The lock's fingerprint plus `check peers` catch drift; `check peers` also warns when the host declares a range rather than the exact version. sigilsmith's own peer range is `^4.2.1` so a future adapter major can coexist; vendoring small MIT libraries into the frozen subpath is the fallback if that ever conflicts.
+4. **Old majors: kept forever in the package.** Tarball bytes are not bundle bytes, and stored records and `derived` delivery need old refs as long as the host's data lives. Shared helpers (`src/hash.ts`, `src/palette.ts`, `src/svg.ts`) are part of every major's output and are frozen too (AGENTS.md). Deprecate through `check` only for a security or licence problem.
+5. **DiceBear: kept, terms surfaced** (§12, item 12).
+6. **zodal gaps: filed and being resolved** (§12, item 13).
+7. **MCP: built** (§12, item 11).
 
 ## 12. Changes made while building the MVP
 
@@ -386,4 +389,22 @@ Preview metrics (150 items at 32 px, `docs/images/preview-sheet.png`): near-dupl
 11. **MCP server built** (owner's answer to §11 Q7). One operation registry, `src/node/operations.ts` (name, zod input schema, MCP annotations, one function returning the envelope), drives both the CLI and `src/mcp/server.ts` (`npx sigilsmith mcp`, stdio, `@modelcontextprotocol/sdk` as an optional peer). There is no second list to keep in sync. `preview` returns the PNG sheet as MCP image content. `zod` became a regular dependency because the CLI needs it; the browser kernel still never imports it.
 12. **DiceBear kept, with its terms surfaced** (Q5): catalog rows carry `terms` and `usage`; a `dicebear` remote without a self-hosted `baseUrl` raises `SGS0107` (warning) until the config acknowledges `"use": "non-commercial"` (info).
 13. **zodal gaps filed** (Q6) as i2mint/zodal#128–131, zodal-store-fs#14, zodal-store-s3#7, zodal-store-http#8, zodal-dials#39–44, with comments on zodal-dials#35, #38, zodal-media#3 and zodal#119; a `zodal-issues` session is resolving them and the other open zodal issues. The shims named in §10 are deleted as their fixes land on npm (publishing is blocked on i2mint/zodal#23).
+
+### Independent review (Fable, 2026-11-14) and what changed
+
+Before any release, so output formats could still change; golden vectors were regenerated deliberately.
+
+14. **Generator meta split from drawing code** (`src/generators/<id>/meta.ts`): the CLI, catalog and settings read ids and defaults without loading generators, so the CLI starts in a host without the optional `minidenticons` peer (it failed before), and the settings chunk no longer pulls every generator.
+15. **Seeds are built from input values, never field names**, and inputs accept `as`: renaming a field in the data and the config (A9) no longer changes images.
+16. **`emoji@1`** looked keywords up on a plain object, so "The Constructor" drew `function Object()`; now an own-property lookup.
+17. **Content ids include the stored variant** (`svg`, `png@256`), so an SVG and a PNG of one item never collide.
+18. **`deliver` asks the store before rendering** (no repeat renders or paid calls across devices), honours `delivery.format` from the config, passes custom records through, and records the item key. Remote generators share in-flight calls. `<Sigil>` bypasses a stored image only when this item's own user preference picked a different generator.
+19. **Weighted selection uses rendezvous hashing**: adding or reweighting a ref only moves the items that must move.
+20. **Uploads**: `storeCustom` checks magic bytes and size and refuses SVG unless `allowSvg`; params interpolated into SVG are escaped or coerced; the DiceBear transport sends a hash of the seed, not the raw key, and is declared cached-nondeterministic.
+21. **`check`**: warns without samples instead of passing; key uniqueness uses the keys the runtime computes (custom and fallback keys included); bypass scans every file, ignores comments, catches direct generator-library imports; distinct codes (`SGS0706` ref, `SGS0707` Math.random, `SGS0708` key field, `SGS0709` regeneration not wired); a lock written for another config is `SGS0505`; budget counts the delivery module and the React adapter; tag checks are attribute-order independent; unknown or unreachable refs under `generators` are reported.
+22. **Custom key and transport modules** are bundled with esbuild (when the host has it) before import, so TypeScript and extensionless imports work on any Node ≥ 20.
+23. **A build that would change identities writes nothing**; failed generator chunk loads can be retried; an explicit `ref` reports `via: 'explicit'`; `initials` honours `maxLetters: 3`; object-valued key parts serialize with sorted keys; end-user settings expose the params listed in `userSettings.params` (layer 5 complete).
+24. **The CLI no longer truncates long `--json` output** (it set `process.exit` right after writing to a pipe), found by the new packaging test.
+
+Sizes after these changes: kernel 3,922 B gzip (3,583 brotli); delivery 1,644 B; React adapter 1,460 B; remote 2,686 B.
 

@@ -100,14 +100,19 @@ export function checkTargets(loaded: LoadedConfig): Diagnostic[] {
   const htmlFile = cfg.targets.html ? resolve(loaded.dir, cfg.targets.html) : null;
   const html = htmlFile && existsSync(htmlFile) ? readFileSync(htmlFile, 'utf8') : null;
   if (cfg.targets.html && !html) out.push(diag('SGS0602', 'error', `HTML file \`${cfg.targets.html}\` not found`, { where: { path: 'targets.html' } }));
+  if (!cfg.targets.html) out.push(diag('SGS0602', 'info', 'tag registration not checked: set `targets.html` to the page whose <head> holds the tags', { where: { path: 'targets.html' } }));
+  // Attributes in any order: collect each tag's attributes into a map.
+  const tags = html ? [...html.matchAll(/<(link|meta)\b([^>]*)>/gi)].map((m) => ({ tag: m[1]!.toLowerCase(), attrs: Object.fromEntries([...m[2]!.matchAll(/([\w:-]+)\s*=\s*["']([^"']*)["']/g)].map((a) => [a[1]!.toLowerCase(), a[2]!])) })) : [];
+  const has = (pred: (a: Record<string, string>, tag: string) => boolean) => tags.some((t) => pred(t.attrs, t.tag));
+  const rels = (a: Record<string, string>) => (a.rel ?? '').toLowerCase().split(/\s+/);
   const pub = resolve(loaded.dir, cfg.targets.publicDir);
-  const tagFor: Record<string, RegExp> = {
-    'favicon-svg': /<link[^>]+rel=["']icon["'][^>]+type=["']image\/svg\+xml["']|<link[^>]+type=["']image\/svg\+xml["'][^>]+rel=["']icon["']/i,
-    'favicon-ico': /<link[^>]+rel=["']icon["'][^>]+href=["'][^"']*\.ico["']|<link[^>]+href=["'][^"']*\.ico["'][^>]+rel=["']icon["']/i,
-    'apple-touch-icon': /<link[^>]+rel=["']apple-touch-icon["']/i,
-    'og-image': /<meta[^>]+property=["']og:image["']/i,
-    'twitter-image': /<meta[^>]+name=["']twitter:image["']/i,
-    'theme-color': /<meta[^>]+name=["']theme-color["']/i,
+  const tagFor: Record<string, (a: Record<string, string>, tag: string) => boolean> = {
+    'favicon-svg': (a, t) => t === 'link' && rels(a).includes('icon') && (a.type === 'image/svg+xml' || /\.svg($|\?)/.test(a.href ?? '')),
+    'favicon-ico': (a, t) => t === 'link' && rels(a).includes('icon') && /\.ico($|\?)/.test(a.href ?? ''),
+    'apple-touch-icon': (a, t) => t === 'link' && rels(a).includes('apple-touch-icon'),
+    'og-image': (a, t) => t === 'meta' && a.property === 'og:image',
+    'twitter-image': (a, t) => t === 'meta' && a.name === 'twitter:image',
+    'theme-color': (a, t) => t === 'meta' && a.name === 'theme-color',
   };
   for (const id of cfg.targets.ids) {
     const t = TARGETS.find((x) => x.id === id);
@@ -115,12 +120,13 @@ export function checkTargets(loaded: LoadedConfig): Diagnostic[] {
       out.push(diag('SGS0601', 'error', `unknown target \`${id}\``, { where: { path: 'targets.ids' } }));
       continue;
     }
-    if (html && tagFor[id] && !tagFor[id]!.test(html)) {
+    if (html && tagFor[id] && !has(tagFor[id]!)) {
       out.push(diag('SGS0602', 'error', `\`${cfg.targets.html}\` has no tag for \`${id}\``, { where: { file: cfg.targets.html, target: id }, fix: { summary: `add: ${snippet(t, { base: '/', url: '<url>', alt: '', color: cfg.targets.background }).split('\n')[0]}`, applicability: 'has-placeholders', commands: [`npx ${PKG_NAME} targets --emit`] } }));
     }
     if (html && (id === 'og-image' || id === 'twitter-image')) {
-      const m = html.match(id === 'og-image' ? /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i : /<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i);
-      if (m && !/^https?:\/\//.test(m[1]!)) out.push(diag('SGS0604', 'error', `\`${id}\` URL \`${m[1]}\` is not absolute`, { where: { file: cfg.targets.html, target: id } }));
+      const tag = tags.find((x) => (id === 'og-image' ? x.attrs.property === 'og:image' : x.attrs.name === 'twitter:image'));
+      const url = tag?.attrs.content;
+      if (url && !/^https?:\/\//.test(url)) out.push(diag('SGS0604', 'error', `\`${id}\` URL \`${url}\` is not absolute`, { where: { file: cfg.targets.html, target: id } }));
     }
     if (t.scope === 'site') {
       for (const f of t.files) {

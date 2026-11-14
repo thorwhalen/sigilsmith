@@ -4,14 +4,17 @@
  * plus catalog metadata and a zod params schema whose defaults come from the module.
  */
 import type { z } from 'zod';
-import type { GeneratorModule } from '../types.js';
+import type { GeneratorMeta, GeneratorModule } from '../types.js';
 import { ManifestSchema, type Manifest } from './schema.js';
 import { PKG_NAME } from '../meta.js';
 
 export interface BuiltinManifest {
   manifest: Manifest;
   paramsSchema: z.ZodObject<any>;
-  module: GeneratorModule<any>;
+  /** Identity and defaults (no drawing code). */
+  meta: GeneratorMeta<any>;
+  /** Load the generator module itself (may need an optional peer, e.g. minidenticons). */
+  load: () => Promise<GeneratorModule<any>>;
 }
 
 type Meta = Omit<Manifest, 'id' | 'version' | 'params' | 'implemented' | 'major' | 'ref' | 'importPath' | 'kind' | 'defaultInputs' | 'bundleSize' | 'determinism' | 'examples' | 'verdict' | 'verdictReason' | 'lazyLoadable'> & {
@@ -28,7 +31,7 @@ function describeParams(schema: z.ZodObject<any>, defaults: Record<string, unkno
   }));
 }
 
-export function defineGeneratorManifest(module: GeneratorModule<any>, meta: Meta, paramsSchema: z.ZodObject<any>): BuiltinManifest {
+export function defineGeneratorManifest(module: GeneratorMeta<any>, loader: () => Promise<{ default: GeneratorModule<any> }>, meta: Meta, paramsSchema: z.ZodObject<any>): BuiltinManifest {
   const ref = `${module.id}@${module.major}`;
   const manifest = ManifestSchema.parse({
     ...meta,
@@ -48,5 +51,5 @@ export function defineGeneratorManifest(module: GeneratorModule<any>, meta: Meta
     verdict: 'implemented',
     verdictReason: meta.verdictReason ?? 'Built in.',
   });
-  return { manifest, paramsSchema, module };
+  return { manifest, paramsSchema, meta: module, load: async () => (await loader()).default };
 }

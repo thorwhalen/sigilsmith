@@ -1,10 +1,11 @@
 /** Catalog manifest and params schema for `shapes@1` (Node side). */
 import { z } from 'zod';
 import { defineGeneratorManifest } from '../../node/define.js';
-import mod from './v1.js';
+import { meta as mod } from './meta.js';
 
 export default defineGeneratorManifest(
   mod,
+  () => import('./v1.js'),
   {
     name: 'Bauhaus shapes', description: 'Two to five overlapping circles, squares, triangles and half discs in palette colours.',
     category: 'pattern', role: 'generator',

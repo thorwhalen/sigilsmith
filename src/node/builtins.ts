@@ -17,6 +17,4 @@ export const BUILTINS: BuiltinManifest[] = [grid, rings, shapes, initials, emoji
 export const BUILTIN_BY_REF: Record<string, BuiltinManifest> = Object.fromEntries(BUILTINS.map((b) => [b.manifest.ref!, b]));
 
 /** Node-side loaders for every built-in generator (explain, preview, check, build). */
-export const NODE_LOADERS: Record<string, () => Promise<BuiltinManifest['module']>> = Object.fromEntries(
-  BUILTINS.map((b) => [b.manifest.ref!, async () => b.module]),
-);
+export const NODE_LOADERS: Record<string, BuiltinManifest['load']> = Object.fromEntries(BUILTINS.map((b) => [b.manifest.ref!, b.load]));

@@ -9,21 +9,15 @@
  */
 import { n, svgDoc, svgImage, tile } from '../../svg.js';
 import type { GeneratorModule } from '../../types.js';
+import { meta, type ShapesParams } from './meta.js';
 
-export interface ShapesParams {
-  count: number;
-  shape: 'square' | 'rounded' | 'circle';
-}
+export type { ShapesParams };
+
 
 const KINDS = ['circle', 'square', 'triangle', 'half'] as const;
 
 const shapes: GeneratorModule<ShapesParams> = {
-  id: 'shapes',
-  major: 1,
-  kind: 'hash',
-  determinism: 'pure',
-  defaults: { count: 3, shape: 'rounded' },
-  defaultInputs: ['$key'],
+  ...meta,
   render({ rng, palette, params }) {
     const count = Math.max(2, Math.min(5, Math.round(params.count)));
     const colours = [palette.primary, palette.secondary, palette.accent, palette.ink];

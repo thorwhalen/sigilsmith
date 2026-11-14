@@ -11,7 +11,7 @@ Each catalog row carries the A4 criteria: `style` (abstract → geometric → il
 | Several looks mixed in one list | a weighted rule: `"use": { "rings@1": 2, "shapes@1": 1 }` (deterministic per item) |
 | AI or a hosted service | `remote` entries (proxy, BYOK module, DiceBear HTTP, mock for tests); the placeholder (`policy.placeholder`, default `grid@1`) shows while it works |
 
-Budget: `budget.maxGzipBytes` covers the kernel (~3.8 kB gzip) plus every generator the config can select. Generators load lazily, one chunk each, but the budget counts them all.
+Budget: `budget.maxGzipBytes` covers the kernel (~3.9 kB gzip), the delivery module (1.6 kB, unless `derived`), the React adapter (1.5 kB, if used), the remote module (2.7 kB, if any remote ref) and every generator the config can select. Generators load lazily, one chunk each, but the budget counts them all.
 
 Research behind the catalog: `docs/research/generator-survey.md`; measured sizes and contact sheets for third-party libraries: `spikes/README.md`.
 

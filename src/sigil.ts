@@ -60,6 +60,7 @@ export function createSigil(opts: CreateSigilOptions): Sigil {
         return Promise.reject(new Error(`SGS0301: \`${ref}\` is not wired; add it to the config, run \`sigilsmith build\``));
       }
       p = loader().then((m) => ('default' in m && m.default ? m.default : (m as GeneratorModule<any>)));
+      p.catch(() => loaded.delete(ref)); // a failed chunk load can be retried
       loaded.set(ref, p);
     }
     return p;
@@ -69,7 +70,7 @@ export function createSigil(opts: CreateSigilOptions): Sigil {
     const k = keyOf(item, config.key.spec, { fallback: config.key.fallback, onMissing: config.key.onMissing, ...(keyFn ? { keyFn } : {}) });
     if (k.via === 'fallback') warn(`item is missing key field(s) ${k.missing.join(', ')}; using fallback key (SGS0202)`, { key: k.key });
     const itemType = itemTypeOf(item, config);
-    const sel = o.ref ? { ref: o.ref, via: 'default' as const } : select(item, k.key, config, user);
+    const sel = o.ref ? { ref: o.ref, via: 'explicit' as const } : select(item, k.key, config, user);
     const mod = await load(sel.ref);
     const ruleIndex = 'ruleIndex' in sel ? sel.ruleIndex : undefined;
     const rule = ruleIndex !== undefined ? config.policy.rules[ruleIndex] : undefined;

@@ -54,12 +54,16 @@ function toBase64(data: Uint8Array): string {
 export interface SigilRecord {
   source: 'generated' | 'custom';
   ref?: string;
+  /** The item key the image was made for (a fallback key changes when the real id arrives). */
+  key?: string;
   contentId: string;
   /** Digest of the resolved generator inputs: the regeneration trigger. */
   inputsDigest: string;
   url?: string;
-  /** The user kept the image after an input change, or uploaded their own: stop asking. */
+  /** The user explicitly kept the image after an input change, or uploaded their own: stop asking. */
   frozen?: boolean;
+  /** Inputs digest the user was asked about and did not answer: do not ask again for it. */
+  declinedDigest?: string;
 }
 
 export type Rasterize = (svg: string, size: number) => Promise<{ bytes: Uint8Array; mime: string }>;
@@ -68,9 +72,11 @@ export interface DeliverOptions {
   strategy?: Strategy;
   store?: ImageStore;
   size?: number;
-  /** Store PNG instead of SVG (needs `rasterize`). */
+  /** Stored format; defaults to the config's `delivery.format`. PNG needs `rasterize`. */
   format?: 'svg' | 'png';
   rasterize?: Rasterize;
+  /** The item's current record: a custom image is returned untouched, never replaced. */
+  record?: SigilRecord | null;
   /** Called when a hybrid background upload fails. */
   onError?: (error: unknown) => void;
 }
@@ -79,22 +85,9 @@ export interface Delivered {
   record: SigilRecord;
   /** URL to show now: the stored URL when there is one, else a data/object URL. */
   display: string;
-  plan: Plan;
+  plan?: Plan;
   /** For hybrid: settles when the background upload is done. */
   stored?: Promise<SigilRecord>;
-}
-
-async function store(image: SigilImage, contentId: string, o: DeliverOptions): Promise<string> {
-  const s = o.store ?? defaultStore();
-  const existing = await s.head(contentId);
-  if (existing) return existing;
-  let bytes: Uint8Array;
-  let mime: string;
-  if (o.format === 'png' && image.type === 'svg') {
-    if (!o.rasterize) throw new Error('format "png" needs a `rasterize` function (SGS0402)');
-    ({ bytes, mime } = await o.rasterize(image.svg, o.size ?? 256));
-  } else ({ bytes, mime } = await toBytes(image));
-  return s.put(contentId, bytes, { mime });
 }
 
 let _default: ImageStore | undefined;
@@ -102,27 +95,68 @@ function defaultStore(): ImageStore {
   return (_default ??= memoryStore());
 }
 
-/** Produce (and, per strategy, store) the image for an item. Custom images pass through untouched. */
-export async function deliver(sigil: Sigil, item: Item, o: DeliverOptions = {}): Promise<Delivered> {
-  const strategy = o.strategy ?? sigil.config.delivery.strategy;
-  const plan = await sigil.plan(item);
-  const image = await sigil.renderPlan(plan, o.size ?? 64);
-  const { contentId, inputsDigest } = await idsOf(plan);
-  const base: SigilRecord = { source: 'generated', ref: plan.selection.ref, contentId, inputsDigest };
-  if (strategy === 'derived') return { record: base, display: toDisplayUrl(image), plan };
-  if (strategy === 'materialized') {
-    const url = await store(image, contentId, o);
-    return { record: { ...base, url }, display: url, plan };
+async function encode(image: SigilImage, format: 'svg' | 'png', size: number, rasterize?: Rasterize): Promise<{ bytes: Uint8Array; mime: string }> {
+  if (format === 'png' && image.type === 'svg') {
+    if (!rasterize) throw new Error('SGS0402: format "png" needs a `rasterize` function');
+    return rasterize(image.svg, size);
   }
-  const stored = store(image, contentId, o).then((url) => ({ ...base, url }));
+  return toBytes(image);
+}
+
+/**
+ * Produce (and, per strategy, store) the image for an item. The store is asked first,
+ * by content id, so an image that exists (made on another device, or by a paid remote
+ * generator) is never rendered or paid for again. A custom record passes through.
+ */
+export async function deliver(sigil: Sigil, item: Item, o: DeliverOptions = {}): Promise<Delivered> {
+  if (o.record?.source === 'custom') return { record: o.record, display: o.record.url ?? '' };
+  const strategy = o.strategy ?? sigil.config.delivery.strategy;
+  const format = o.format ?? sigil.config.delivery.format ?? 'svg';
+  const size = o.size ?? (format === 'png' ? 256 : 64);
+  const plan = await sigil.plan(item);
+  const { contentId, inputsDigest } = await idsOf(plan, format === 'png' ? `png@${size}` : 'svg');
+  const base: SigilRecord = { source: 'generated', ref: plan.selection.ref, key: plan.key, contentId, inputsDigest };
+  const s = o.store ?? defaultStore();
+  if (strategy !== 'derived') {
+    const existing = await s.head(contentId);
+    if (existing) return { record: { ...base, url: existing }, display: existing, plan };
+  }
+  const image = await sigil.renderPlan(plan, size);
+  if (strategy === 'derived') return { record: base, display: toDisplayUrl(image), plan };
+  const put = async () => {
+    const { bytes, mime } = await encode(image, format, size, o.rasterize);
+    return { ...base, url: await s.put(contentId, bytes, { mime }) };
+  };
+  if (strategy === 'materialized') {
+    const record = await put();
+    return { record, display: record.url!, plan };
+  }
+  const stored = put();
   stored.catch((e) => o.onError?.(e));
   return { record: base, display: toDisplayUrl(image), plan, stored };
 }
 
-/** Store a user-supplied image through the same path (B6). */
-export async function storeCustom(data: Uint8Array, mime: string, o: { store?: ImageStore } = {}): Promise<SigilRecord> {
+const SNIFF: Array<[string, (b: Uint8Array) => boolean]> = [
+  ['image/png', (b) => b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47],
+  ['image/jpeg', (b) => b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff],
+  ['image/gif', (b) => b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x38],
+  ['image/webp', (b) => b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 && b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50],
+];
+
+/**
+ * Store a user-supplied image through the same path (B6). Raster formats only, by
+ * default, checked by their magic bytes (not the claimed type), and capped in size.
+ * SVG from users is refused unless `allowSvg`: a scripted SVG served from the app's
+ * origin is stored XSS. This is a client-side courtesy; the server must check again.
+ */
+export async function storeCustom(data: Uint8Array, mime: string, o: { store?: ImageStore; maxBytes?: number; allowSvg?: boolean } = {}): Promise<SigilRecord> {
+  const { maxBytes = 2_000_000, allowSvg = false } = o;
+  if (data.length > maxBytes) throw new Error(`SGS0110: upload is ${data.length} bytes, over the ${maxBytes} byte limit`);
+  const sniffed = SNIFF.find(([, test]) => test(data))?.[0];
+  const isSvg = !sniffed && mime === 'image/svg+xml';
+  if (!sniffed && !(isSvg && allowSvg)) throw new Error(`SGS0110: upload is not a PNG, JPEG, GIF or WebP image${isSvg ? ' (SVG needs allowSvg and server-side sanitising)' : ''}`);
   const contentId = `sg_${(await sha256Hex(data)).slice(0, 32)}`;
-  const url = await (o.store ?? defaultStore()).put(contentId, data, { mime });
+  const url = await (o.store ?? defaultStore()).put(contentId, data, { mime: sniffed ?? 'image/svg+xml' });
   return { source: 'custom', contentId, inputsDigest: '', url, frozen: true };
 }
 
@@ -135,12 +169,26 @@ export interface RegenContext {
   nextDigest: string;
 }
 
+/** The policy that applies to an item: the option, else the config, else (for `auto`) the generator's own default, else `ask`. */
+export async function regenerationPolicyFor(sigil: Sigil, ref: string, explicit?: RegenerationPolicy): Promise<RegenerationPolicy> {
+  if (explicit) return explicit;
+  const configured = sigil.config.regeneration.policy;
+  if (configured !== 'auto') return configured;
+  try {
+    return (await sigil.load(ref)).regeneration ?? 'ask';
+  } catch {
+    return 'ask';
+  }
+}
+
 /**
  * Decide what happens to a stored image when the item's generator inputs change (B19).
  *
  * `unchanged` when the inputs digest is the same (an identicon keyed on an immutable
- * id never asks). Custom and frozen images are always kept. `ask` calls `confirm`; no
- * `confirm`, a rejection or a timeout all mean keep. A keep under `ask` freezes the item.
+ * id never asks). Custom and frozen images are always kept. `ask` calls `confirm`:
+ * an explicit "keep" freezes the item; no `confirm`, a rejection or a timeout keep the
+ * image without freezing it, and remember the digest so the same change is not asked
+ * about twice.
  */
 export async function onInputsChanged(
   sigil: Sigil,
@@ -148,24 +196,33 @@ export async function onInputsChanged(
   record: SigilRecord,
   opts: { policy?: RegenerationPolicy; confirm?: (ctx: RegenContext) => Promise<'update' | 'keep'>; timeoutMs?: number } = {},
 ): Promise<{ decision: RegenDecision; record: SigilRecord }> {
-  const policy = opts.policy ?? sigil.config.regeneration.policy;
   const plan = await sigil.plan(item);
   const nextDigest = await inputsDigestOf(plan.seed);
   if (nextDigest === record.inputsDigest) return { decision: 'unchanged', record };
-  if (record.source === 'custom' || record.frozen || policy === 'never') return { decision: 'keep', record };
+  const policy = await regenerationPolicyFor(sigil, plan.selection.ref, opts.policy);
+  if (record.source === 'custom' || record.frozen || policy === 'never' || record.declinedDigest === nextDigest) return { decision: 'keep', record };
   if (policy === 'always') return { decision: 'regenerate', record };
-  if (!opts.confirm) return { decision: 'keep', record: { ...record, frozen: true } };
+  const declined = { decision: 'keep' as const, record: { ...record, declinedDigest: nextDigest } };
+  if (!opts.confirm) return declined;
   let timer: ReturnType<typeof setTimeout> | undefined;
-  const timeout = new Promise<'keep'>((r) => {
-    timer = setTimeout(() => r('keep'), opts.timeoutMs ?? 60_000);
+  const timeout = new Promise<'timeout'>((r) => {
+    timer = setTimeout(() => r('timeout'), opts.timeoutMs ?? 60_000);
   });
-  let answer: 'update' | 'keep';
+  let answer: 'update' | 'keep' | 'timeout';
   try {
     answer = await Promise.race([opts.confirm({ item, record, nextDigest }), timeout]);
   } catch {
-    answer = 'keep';
+    answer = 'timeout';
   } finally {
     clearTimeout(timer);
   }
-  return answer === 'update' ? { decision: 'regenerate', record } : { decision: 'keep', record: { ...record, frozen: true } };
+  if (answer === 'update') return { decision: 'regenerate', record };
+  if (answer === 'keep') return { decision: 'keep', record: { ...record, frozen: true } };
+  return declined;
+}
+
+/** Undo a freeze: the next input change will be decided by the policy again. */
+export function unfreeze(record: SigilRecord): SigilRecord {
+  const { frozen: _f, declinedDigest: _d, ...rest } = record;
+  return rest;
 }

@@ -24,10 +24,12 @@ metadata:
 
 ## Rules that are easy to break
 
-- Never import `sigilsmith/generators/...` in app code, never write a ref like `'grid@1'` in app code, never call `Math.random` near sigilsmith: `check bypass` fails on all three.
+- Never import `sigilsmith/generators/...` or a generator library in app code, and never write a ref like `'grid@1'` in app code: `check bypass` fails on both. `Math.random` near sigilsmith is flagged too (a warning).
 - Never edit a generator's code to change its look: change params in the config, or pick another generator. Output changes are new majors (`grid@2`), chosen in the config.
 - Changing a rule, weights, `policy.salt`, the key or a generator's inputs changes images; `check identity` lists which items. Only `build --accept` after the user agrees.
 - Next to a name the image is decorative: `alt=""` (the default).
+- Renaming a data field: change the config only. Inputs are seeded by value, so `{ "field": "name", "as": "title" }` keeps both the image and the name the generator sees.
+- User uploads go through `storeCustom` (raster only, bytes sniffed, size-capped); never store user SVG without server-side sanitising.
 - API keys never go in the config or the bundle: use `remote.<ref>.transport: "proxy"` (your server holds the key) or a BYOK module transport.
 - Crawler targets (og:image, favicons) need stored PNG files at stable URLs; `derived` (render-on-read) delivery cannot serve them.
 

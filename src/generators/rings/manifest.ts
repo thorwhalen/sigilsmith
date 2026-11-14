@@ -1,10 +1,11 @@
 /** Catalog manifest and params schema for `rings@1` (Node side). */
 import { z } from 'zod';
 import { defineGeneratorManifest } from '../../node/define.js';
-import mod from './v1.js';
+import { meta as mod } from './meta.js';
 
 export default defineGeneratorManifest(
   mod,
+  () => import('./v1.js'),
   {
     name: 'Rings', description: 'Concentric arcs of seeded length, rotation and colour on a dark tile; abstract and calm.',
     category: 'pattern', role: 'generator',

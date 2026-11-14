@@ -5,6 +5,10 @@
     "$schema": {
       "type": "string"
     },
+    "$comment": {
+      "description": "Free text; JSON has no comments.",
+      "type": "string"
+    },
     "version": {
       "type": "number",
       "const": 1
@@ -189,6 +193,11 @@
                       "type": "integer",
                       "exclusiveMinimum": 0,
                       "maximum": 9007199254740991
+                    },
+                    "as": {
+                      "description": "Name the generator sees (e.g. keep `title` when the data field becomes `name`).",
+                      "type": "string",
+                      "minLength": 1
                     }
                   },
                   "required": [
@@ -423,6 +432,11 @@
                           "type": "integer",
                           "exclusiveMinimum": 0,
                           "maximum": 9007199254740991
+                        },
+                        "as": {
+                          "description": "Name the generator sees (e.g. keep `title` when the data field becomes `name`).",
+                          "type": "string",
+                          "minLength": 1
                         }
                       },
                       "required": [
@@ -498,14 +512,16 @@
     },
     "regeneration": {
       "default": {
-        "policy": "ask"
+        "policy": "auto"
       },
       "type": "object",
       "properties": {
         "policy": {
-          "default": "ask",
+          "default": "auto",
+          "description": "auto: each generator's own default (initials: always), else ask.",
           "type": "string",
           "enum": [
+            "auto",
             "ask",
             "always",
             "never"

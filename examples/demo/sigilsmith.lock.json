@@ -1,7 +1,7 @@
 {
   "version": 1,
   "package": "0.0.0",
-  "config": "9bc266fb9ca0e16f",
+  "config": "92b6c41d740fd09b",
   "generators": {
     "emoji@1": {
       "fingerprint": "ac015b6a09e5ae7c5b67984e1b6c985f"
@@ -22,31 +22,31 @@
   "samples": {
     "s1": {
       "ref": "emoji@1",
-      "image": "7b5608475f5effab75ff6a7b6d76c2fc"
+      "image": "7ab9e6f42cf46b61bb9adf732276ad2e"
     },
     "s2": {
-      "ref": "shapes@1",
-      "image": "d635cf1921ff721a183a75b67383c319"
+      "ref": "emoji@1",
+      "image": "d7a8215172e71c8d2abd201a90a7182b"
     },
     "s3": {
       "ref": "emoji@1",
-      "image": "58cda5de91077fc6fbf0203b31bb45b1"
+      "image": "2d13fc8a39df59b805eecff43d839d93"
     },
     "s4": {
       "ref": "emoji@1",
-      "image": "ac1ec7485799ec71cb71b7ddb00a49f1"
+      "image": "9522a056e64a243d86e75cb9f952e1de"
     },
     "v1": {
       "ref": "rings@1",
-      "image": "bd9418392af9d8a17d83da6336aa4204"
+      "image": "3ee1bab48cda1a2e797fde6b64567eeb"
     },
     "v2": {
       "ref": "rings@1",
-      "image": "fc9bdac953226ce1b97cdb02abe010bb"
+      "image": "306c903b3587813c6cad1f0c61d25cb6"
     },
     "v3": {
       "ref": "rings@1",
-      "image": "06cfe4cbc78bc1c19cb3f44c210b3c4e"
+      "image": "c82de4442193e02c548e9c257560aa12"
     },
     "u1": {
       "ref": "initials@1",
@@ -66,7 +66,7 @@
     },
     "d1": {
       "ref": "grid@1",
-      "image": "23c6b23ea1aeeec640fdddb2a5a6f898"
+      "image": "46aae9f31622c08263234c5b2efa2763"
     }
   }
 }

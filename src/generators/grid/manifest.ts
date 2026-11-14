@@ -1,10 +1,11 @@
 /** Catalog manifest and params schema for `grid@1` (Node side). */
 import { z } from 'zod';
 import { defineGeneratorManifest } from '../../node/define.js';
-import mod from './v1.js';
+import { meta as mod } from './meta.js';
 
 export default defineGeneratorManifest(
   mod,
+  () => import('./v1.js'),
   {
     name: 'Grid identicon', description: 'Mirrored grid of cells in one hue on a tinted tile (GitHub-style), in-house and dependency-free.',
     category: 'identicon', role: 'generator',

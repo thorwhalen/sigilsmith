@@ -11,6 +11,7 @@ Generated from `src/node/diagnostics.ts` by `npm run docs`. Groups: 01xx config,
 | SGS0105 | secret in config | A value that looks like an API key is in the config, which is committed and may be bundled. | Remove it. Use a proxy endpoint (`remote.<ref>.transport: "proxy"`) or a BYOK module transport that reads the key at call time. |
 | SGS0106 | no BYOK key | A BYOK transport found no key for the current user. | Ask the user to add their key in settings; the placeholder stays meanwhile. |
 | SGS0107 | service terms restrict use | A remote service in the config has terms that limit how it may be used (the public DiceBear API is free for non-commercial use only; DiceBear styles carry their own licences). | Commercial app: self-host the service and set its `baseUrl`. Non-commercial app: acknowledge the terms in the config (`"use": "non-commercial"`). Check the style's licence either way. |
+| SGS0110 | upload rejected | A user-supplied image is too large or is not a PNG, JPEG, GIF or WebP (checked by its bytes, not its claimed type). SVG is refused by default: a scripted SVG served from the app origin is stored XSS. | Ask for a raster image, or raise maxBytes; accept SVG only with server-side sanitising (allowSvg). |
 | SGS0201 | no stable key found | No candidate field is complete, unique and stable across the samples. | Add an id field to the data, or configure a composite key (`key.fields`). |
 | SGS0202 | key missing for some items | Some items lack the configured key field, so they use the fallback key, which changes when those fields change. | Fix the data, or choose a key that every item has (`detect-key`). |
 | SGS0203 | key missing and no fallback | An item has no key value and no fallback is configured (or `onMissing` is `throw`). | Set `key.fallback`, or fix the data. |
@@ -26,6 +27,7 @@ Generated from `src/node/diagnostics.ts` by `npm run docs`. Groups: 01xx config,
 | SGS0502 | generator output changed | A pinned generator's fingerprint no longer matches the lock, so every image it draws has changed. | Revert the dependency change, or accept with `build --accept` after review. |
 | SGS0503 | lock missing | No sigilsmith.lock.json, so identity cannot be checked. | Run `sigilsmith build`. |
 | SGS0504 | sample identities changed | Some sample items would now get a different image (config edit, data edit or upgrade). | If intended, `build --accept`; else revert. Stored images are unaffected until regenerated (B19). |
+| SGS0505 | lock is stale | The lock was written for a different config, so new rules and items have no recorded identity. | Run `sigilsmith build` and review what changes. |
 | SGS0601 | unknown target | The target id is not in the registry. | `sigilsmith targets` lists them. |
 | SGS0602 | target not registered | The HTML head lacks the tag for a configured target. | Paste the snippet from `targets --emit` into the head. |
 | SGS0603 | target file missing or wrong size | A file a target needs is missing from the public dir, or its pixel size is wrong. | Run `sigilsmith targets --emit`. |
@@ -35,5 +37,8 @@ Generated from `src/node/diagnostics.ts` by `npm run docs`. Groups: 01xx config,
 | SGS0702 | input field missing from data | An input or rule field named in the config appears in no sample item. | Rename it in the config to match the data. |
 | SGS0703 | wiring module stale | The config changed since the wiring module was generated. | Run `sigilsmith build`. |
 | SGS0704 | wiring module missing | The generated module the app imports does not exist. | Run `sigilsmith build`. |
-| SGS0705 | generator imported directly | App code imports a generator module, bypassing the config. | Import `sigil` from the wiring module instead. |
-| SGS0706 | hard-coded choice in app code | App code inlines a generator ref, calls Math.random next to sigilsmith, or hard-codes the key field. | Read it from the config/wiring module; the config is the single source of truth. |
+| SGS0705 | generator imported directly | App code imports a generator module or a generator library (e.g. minidenticons), bypassing the config. | Import `sigil` from the wiring module instead. |
+| SGS0706 | generator ref hard-coded in app code | App code names a generator ref, so changing the choice means editing code instead of the config. | Choose generators in the config (policy rules, user settings); app code passes the item only. |
+| SGS0707 | Math.random near sigilsmith | Randomness next to identity images makes them change between renders. | Remove it; identity images are seeded from the item. |
+| SGS0708 | key field hard-coded in app code | App code names the key field next to a sigilsmith call; renaming the field then needs a code change. | Pass the whole item; the config owns the key. |
+| SGS0709 | regeneration not wired | A selectable generator reads inputs that can change (titles, names) and images are stored, but the app never calls onInputsChanged, so stored images go stale silently. | Call onInputsChanged(sigil, item, record, { confirm }) after edits, or set regeneration.policy to "never". |

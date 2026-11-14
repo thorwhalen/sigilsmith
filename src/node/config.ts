@@ -55,6 +55,11 @@ export function validateSemantics(cfg: Config, file: string): Diagnostic[] {
       out.push(diag('SGS0104', 'error', `unknown generator ref \`${ref}\``, { where: { file }, fix: { summary: `implemented: ${Object.keys(BUILTIN_BY_REF).join(', ')}; or declare it under \`remote\``, applicability: 'has-placeholders', commands: ['npx sigilsmith catalog --implemented'] } }));
     }
   }
+  const known = new Set(referencedRefs(cfg));
+  for (const ref of [...Object.keys(cfg.generators), ...Object.keys(cfg.userSettings.params)]) {
+    if (!BUILTIN_BY_REF[ref] && !cfg.remote[ref]) out.push(diag('SGS0104', 'error', `unknown generator ref \`${ref}\` in the config`, { where: { file } }));
+    else if (!known.has(ref)) out.push(diag('SGS0104', 'warning', `\`${ref}\` is configured but no rule, default or user choice can select it`, { where: { file } }));
+  }
   const checkParams = (ref: string, params: Record<string, unknown> | undefined, path: string) => {
     const b = BUILTIN_BY_REF[ref];
     if (!b || !params) return;
@@ -66,7 +71,7 @@ export function validateSemantics(cfg: Config, file: string): Diagnostic[] {
   if (cfg.delivery.strategy === 'derived') {
     for (const ref of referencedRefs(cfg)) {
       const b = BUILTIN_BY_REF[ref];
-      if (cfg.remote[ref] || (b && b.module.determinism !== 'pure')) out.push(diag('SGS0303', 'error', `\`${ref}\` cannot be used with derived delivery`, { where: { file, path: 'delivery.strategy' }, fix: { summary: 'use "hybrid" or "materialized"', applicability: 'maybe-incorrect', edits: [{ file, path: 'delivery.strategy', set: 'hybrid' }] } }));
+      if (cfg.remote[ref] || (b && b.meta.determinism !== 'pure')) out.push(diag('SGS0303', 'error', `\`${ref}\` cannot be used with derived delivery`, { where: { file, path: 'delivery.strategy' }, fix: { summary: 'use "hybrid" or "materialized"', applicability: 'maybe-incorrect', edits: [{ file, path: 'delivery.strategy', set: 'hybrid' }] } }));
     }
   }
   for (const [ref, spec] of Object.entries(cfg.remote)) {

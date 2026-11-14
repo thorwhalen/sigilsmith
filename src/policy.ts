@@ -26,20 +26,24 @@ export function matches(item: Item, when: Record<string, Matcher>): boolean {
   });
 }
 
-/** Deterministic weighted pick; refs are sorted so key order in JSON does not matter. */
+/**
+ * Deterministic weighted pick by weighted rendezvous hashing (highest random weight):
+ * each ref scores `-ln(u) / w` with `u` a hash of (salt, key, ref), and the lowest
+ * score wins. Same item, same ref; items spread in proportion to the weights; and
+ * adding, removing or reweighting one ref only moves the items that must move (a
+ * cumulative-bucket scheme would reshuffle many unrelated items). `bucket` reports
+ * the item's own hash in [0, 1) for explain.
+ */
 export function weightedPick(weights: Record<string, number>, key: string, salt: string): { ref: string; bucket: number } {
-  const entries = Object.entries(weights)
-    .filter(([, w]) => w > 0)
-    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
-  if (entries.length === 0) throw new Error('weighted rule has no positive weights');
-  const total = entries.reduce((s, [, w]) => s + w, 0);
-  const bucket = hash32(`${salt}\u0000${key}`) / 4294967296;
-  let acc = 0;
-  for (const [ref, w] of entries) {
-    acc += w / total;
-    if (bucket < acc) return { ref, bucket };
+  let best: { ref: string; score: number } | undefined;
+  for (const [ref, w] of Object.entries(weights)) {
+    if (!(w > 0)) continue;
+    const u = (hash32(`${salt}\u0000${key}\u0000${ref}`) + 0.5) / 4294967296;
+    const score = -Math.log(u) / w;
+    if (!best || score < best.score || (score === best.score && ref < best.ref)) best = { ref, score };
   }
-  return { ref: entries[entries.length - 1]![0], bucket };
+  if (!best) throw new Error('weighted rule has no positive weights');
+  return { ref: best.ref, bucket: hash32(`${salt}\u0000${key}`) / 4294967296 };
 }
 
 function resolveUse(use: PolicyRule['use'], key: string, salt: string): Omit<SelectionTrace, 'via'> {

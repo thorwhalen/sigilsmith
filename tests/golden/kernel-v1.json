@@ -1,0 +1,100 @@
+[
+  {
+    "key": "[\"New Order\",\"Blue Monday\"]",
+    "via": "rule:1",
+    "ref": "shapes@1",
+    "seed": "[\"New Order\",\"Blue Monday\"]",
+    "params": {
+      "count": 3,
+      "shape": "rounded"
+    },
+    "svg": "f7ed2b98ccd47c87ea8b2d3f64c1da7bdb0f23daff1217968d327b390faaa818"
+  },
+  {
+    "key": "[\"Lighthouse Family\",\"Ocean Drive\"]",
+    "via": "rule:1",
+    "ref": "emoji@1",
+    "seed": "[\"Ocean Drive\",null]",
+    "params": {
+      "shape": "rounded",
+      "keywords": true
+    },
+    "svg": "2e252cfb0dcaa961cc8889df67c53addea897bdb741e3760fdab9becc3976161"
+  },
+  {
+    "key": "[\"Beethoven\",\"Moonlight Sonata\"]",
+    "via": "rule:1",
+    "ref": "shapes@1",
+    "seed": "[\"Beethoven\",\"Moonlight Sonata\"]",
+    "params": {
+      "count": 3,
+      "shape": "rounded"
+    },
+    "svg": "99ae2239109da85b97f85fd0ad0cec5d6a82211bd2563e805ac5538074301d40"
+  },
+  {
+    "key": "[\"A\",\"Keynote\"]",
+    "via": "rule:0",
+    "ref": "rings@1",
+    "seed": "[\"A\",\"Keynote\"]",
+    "params": {
+      "rings": 3,
+      "shape": "circle",
+      "stroke": 8
+    },
+    "svg": "028b98a12543fded897dc9bb90819b079f17333a40c40428539586240ac235bb"
+  },
+  {
+    "key": "[\"B\",\"Gig\"]",
+    "via": "rule:2",
+    "ref": "minidenticons@1",
+    "seed": "[\"B\",\"Gig\"]",
+    "params": {
+      "saturation": 70,
+      "lightness": 45,
+      "background": "#f4f4f5"
+    },
+    "svg": "fb259f1434c0e77773d1b1bdc2ddf370c7867c315cd4859a2ebe5334665497d4"
+  },
+  {
+    "key": "[\"~fallback\",\"no-artist\"]",
+    "via": "default",
+    "ref": "grid@1",
+    "seed": "[\"~fallback\",\"no-artist\"]",
+    "params": {
+      "cells": 7,
+      "density": 0.5,
+      "shape": "rounded",
+      "padding": 0.16
+    },
+    "svg": "784a0b9012712255f72384b1337b9a1e70803d912ae9bd69c5935582981defc9"
+  },
+  {
+    "key": "[\"Ada Lovelace\",\"Notes\"]",
+    "via": "preset:people",
+    "ref": "initials@1",
+    "seed": "[\"Ada King Lovelace\",\"[\\\"Ada Lovelace\\\",\\\"Notes\\\"]\"]",
+    "params": {
+      "maxLetters": 2,
+      "shape": "circle",
+      "fontFamily": "system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif",
+      "fontWeight": 600,
+      "tone": "solid"
+    },
+    "svg": "9dda2cbe804199719e09a163e879c6209182ca4d6f3b43ca46f54a77e1869fed"
+  },
+  {
+    "key": "[\"Ωμέγα\",\"🎵 Ünïcode\"]",
+    "via": "rule:1",
+    "ref": "initials@1",
+    "seed": "[\"🎵 Ünïcode\",\"Ωμέγα\",null]",
+    "params": {
+      "maxLetters": 2,
+      "shape": "circle",
+      "fontFamily": "system-ui, -apple-system, \"Segoe UI\", Roboto, sans-serif",
+      "fontWeight": 600,
+      "tone": "solid"
+    },
+    "svg": "ba421070c5536b68d7228dfeed7369f6982785b2a3d98bbc0088afc1e0a19725"
+  }
+]

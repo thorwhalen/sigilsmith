@@ -24,7 +24,7 @@ Storage is the `store` argument: `memoryStore()` by default; any zodal blob prov
 
 ## When inputs change (`regeneration.policy`)
 
-Call `onInputsChanged(sigil, item, record, { confirm })` after an edit. It returns `unchanged` (inputs digest same: e.g. identicons keyed on an id never react to renames), `keep` or `regenerate`. With `ask` (the default), `confirm` should be a non-modal prompt that defaults to keep ("Image kept. Update it to match the new title?" with an Update button); no answer or a timeout keeps the image and freezes the item. Custom images are always kept.
+Call `onInputsChanged(sigil, item, record, { confirm })` after an edit (`check` warns with `SGS0709` if stored images read changeable inputs and you never call it). It returns `unchanged` (inputs digest same: e.g. identicons keyed on an id never react to renames), `keep` or `regenerate`. The default policy `auto` uses the generator's own default (`initials@1` follows the label: `always`), else `ask`. Under `ask`, `confirm` should be a non-modal prompt that defaults to keep ("Image kept. Update it to match the new title?" with Update and Keep); an explicit Keep freezes the item, while no answer or a timeout keeps the image without freezing and does not ask again for the same change. `unfreeze(record)` resets. Custom images are always kept. Render images after the item has its real id: a fallback key (used while the id is missing) gives a different image.
 
 ## End-user settings
 

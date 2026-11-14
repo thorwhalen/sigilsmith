@@ -12,7 +12,7 @@
 import { contentIdOf } from './ids.js';
 import type { Sigil } from './sigil.js';
 import { svgDoc, svgImage, tile, n } from './svg.js';
-import { hash32 } from './hash.js';
+import { hash32, sha256Hex } from './hash.js';
 import { paletteFromHash } from './palette.js';
 import type { GeneratorModule, Item, RenderContext, SigilImage } from './types.js';
 
@@ -73,14 +73,19 @@ export function byokTransport(opts: { getKey: () => Promise<string | undefined>;
 }
 
 /**
- * Keyless DiceBear HTTP API (SVG). Free for non-commercial use only and rate-limited;
- * pass `baseUrl` to use a self-hosted instance.
+ * Keyless DiceBear HTTP API (SVG). The public api.dicebear.com is free for
+ * NON-COMMERCIAL use only and rate-limited; commercial apps self-host it and pass
+ * `baseUrl`. Only a hash of the seed leaves the browser. The URL pins the major
+ * (`9.x`); minor releases may still change output, so results are cached and the
+ * generator is declared cached-nondeterministic.
  */
 export function dicebearTransport(opts: { style?: string; baseUrl?: string; version?: string; fetch?: typeof fetch } = {}): Transport {
   const { style = 'shapes', baseUrl = 'https://api.dicebear.com', version = '9.x' } = opts;
   const f = opts.fetch ?? ((...a: Parameters<typeof fetch>) => fetch(...a));
   return async (req) => {
-    const url = `${baseUrl}/${version}/${encodeURIComponent(style)}/svg?seed=${encodeURIComponent(req.seed)}`;
+    // Send a hash, never the raw seed: the seed is the item key (it may be an email address).
+    const seed = (await sha256Hex(`dicebear\u0000${req.seed}`)).slice(0, 24);
+    const url = `${baseUrl}/${version}/${encodeURIComponent(style)}/svg?seed=${seed}`;
     const res = await f(url);
     if (!res.ok) throw new Error(`DiceBear answered HTTP ${res.status}`);
     return svgImage(await res.text());
@@ -124,6 +129,8 @@ export interface RemoteGeneratorOptions {
 export function createRemoteGenerator(opts: RemoteGeneratorOptions): GeneratorModule {
   const cache = opts.cache ?? new Map<string, SigilImage>();
   const ref = `${opts.id}@${opts.major}`;
+  // Concurrent renders of the same item share one call (two list rows, StrictMode double effects).
+  const inFlight = new Map<string, Promise<SigilImage>>();
   return {
     id: opts.id,
     major: opts.major,
@@ -135,9 +142,17 @@ export function createRemoteGenerator(opts: RemoteGeneratorOptions): GeneratorMo
       const id = await contentIdOf(ref, ctx.seed, ctx.params);
       const hit = await cache.get(id);
       if (hit) return hit;
-      const image = await opts.transport({ ref, seed: ctx.seed, fields: ctx.fields, params: ctx.params, size: ctx.size });
-      await cache.set(id, image);
-      return image;
+      let pending = inFlight.get(id);
+      if (!pending) {
+        pending = (async () => {
+          const image = await opts.transport({ ref, seed: ctx.seed, fields: ctx.fields, params: ctx.params, size: ctx.size });
+          await cache.set(id, image);
+          return image;
+        })();
+        inFlight.set(id, pending);
+        pending.then(() => inFlight.delete(id), () => inFlight.delete(id));
+      }
+      return pending;
     },
   };
 }
@@ -198,6 +213,6 @@ export function remoteFromSpec(id: string, major: number, spec: RemoteSpec, extr
     major,
     transport,
     ...(extra.cache ? { cache: extra.cache } : {}),
-    ...(spec.transport === 'dicebear' ? { kind: 'hash' as const, defaultInputs: ['$key'], determinism: 'pure' as const } : {}),
+    ...(spec.transport === 'dicebear' ? { kind: 'hash' as const, defaultInputs: ['$key'] } : {}),
   });
 }

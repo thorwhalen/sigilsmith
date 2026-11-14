@@ -33,7 +33,7 @@ export async function explainItems(loaded: LoadedConfig, items: Item[]): Promise
       continue;
     }
     const ref = plan.selection.ref;
-    const determinism = BUILTIN_BY_REF[ref]?.module.determinism ?? (cfg.remote[ref] ? 'cached-nondeterministic' : 'unknown');
+    const determinism = BUILTIN_BY_REF[ref]?.meta.determinism ?? (cfg.remote[ref] ? 'cached-nondeterministic' : 'unknown');
     const onlyKey = plan.inputs.every((i) => ['$key'].includes(typeof i === 'string' ? i : i.field));
     const strategy = cfg.delivery.strategy;
     if (plan.keyVia === 'fallback') diagnostics.push(diag('SGS0202', 'warning', `item uses the fallback key; missing ${plan.keyMissing.join(', ')}`, { where: { key: plan.key } }));

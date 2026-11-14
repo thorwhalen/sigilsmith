@@ -39,7 +39,14 @@ export function normalizePart(value: unknown): string | undefined {
   if (typeof value === 'number') return Number.isFinite(value) ? String(value) : undefined;
   if (typeof value === 'boolean' || typeof value === 'bigint') return String(value);
   if (value instanceof Date) return Number.isNaN(value.getTime()) ? undefined : value.toISOString();
-  return JSON.stringify(value);
+  return stable(value);
+}
+
+function stable(v: unknown): string {
+  if (v === null || typeof v !== 'object') return JSON.stringify(v) ?? 'null';
+  if (Array.isArray(v)) return `[${v.map(stable).join(',')}]`;
+  const o = v as Record<string, unknown>;
+  return `{${Object.keys(o).filter((k) => o[k] !== undefined).sort().map((k) => `${JSON.stringify(k)}:${stable(o[k])}`).join(',')}}`;
 }
 
 /**

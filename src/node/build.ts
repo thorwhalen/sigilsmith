@@ -78,7 +78,14 @@ export async function computeLock(loaded: LoadedConfig): Promise<{ lock: Lock; d
     const b = BUILTIN_BY_REF[ref];
     if (!b) continue; // remote generators are cached-nondeterministic: nothing to fingerprint
     const peer = b.manifest.peer;
-    generators[ref] = { fingerprint: await fingerprint(b.module), ...(peer ? { peer: { name: peer.name, version: installedVersion(loaded.dir, peer.name) } } : {}) };
+    let mod: GeneratorModule<any>;
+    try {
+      mod = await b.load();
+    } catch (e) {
+      diagnostics.push(diag('SGS0304', 'error', `cannot load \`${ref}\`: ${(e as Error).message.split('\n')[0]}`, { fix: { summary: peer ? `install ${peer.name}@${peer.version}` : 'reinstall sigilsmith', applicability: 'machine-applicable', ...(peer ? { commands: [`npm i -E ${peer.name}@${peer.version}`] } : {}) } }));
+      continue;
+    }
+    generators[ref] = { fingerprint: await fingerprint(mod), ...(peer ? { peer: { name: peer.name, version: installedVersion(loaded.dir, peer.name) } } : {}) };
   }
   const samples: Lock['samples'] = {};
   const { items, error } = loadSamples(loaded.dir, cfg.samples);
@@ -173,18 +180,16 @@ export async function build(loaded: LoadedConfig, opts: { out?: string; accept?:
     const changed = Object.entries(lock.generators).filter(([r, g]) => old.generators[r] && old.generators[r]!.fingerprint !== g.fingerprint);
     const moved = Object.entries(lock.samples).filter(([k, s]) => old.samples[k] && (old.samples[k]!.image !== s.image || old.samples[k]!.ref !== s.ref));
     if (changed.length || moved.length) {
-      diagnostics.push(diag('SGS0504', 'error', `this build would change identities: ${changed.length} generator(s), ${moved.length} sample item(s); lock not updated`, { where: { generators: changed.map(([r]) => r), items: moved.map(([k]) => k).slice(0, 20) }, fix: { summary: 'review, then accept', applicability: 'maybe-incorrect', commands: [`npx ${PKG_NAME} build --accept`] } }));
+      diagnostics.push(diag('SGS0504', 'error', `this build would change identities: ${changed.length} generator(s), ${moved.length} sample item(s); nothing written`, { where: { generators: changed.map(([r]) => r), items: moved.map(([k]) => k).slice(0, 20) }, fix: { summary: 'review, then accept', applicability: 'maybe-incorrect', commands: [`npx ${PKG_NAME} build --accept`] } }));
     }
   }
   const blocked = diagnostics.some((d) => d.code === 'SGS0504');
-  if (!opts.dryRun) {
+  // A build that would change identities writes nothing: the wiring module and the lock move together.
+  if (!opts.dryRun && !blocked) {
     mkdirSync(dirname(outFile), { recursive: true });
     writeFileSync(outFile, source);
-    wrote.push(relative(loaded.dir, outFile));
-    if (!blocked) {
-      writeFileSync(lockFile, `${JSON.stringify(lock, null, 2)}\n`);
-      wrote.push(relative(loaded.dir, lockFile));
-    }
+    writeFileSync(lockFile, `${JSON.stringify(lock, null, 2)}\n`);
+    wrote.push(relative(loaded.dir, outFile), relative(loaded.dir, lockFile));
   }
   return envelope('build', { wiring: relative(loaded.dir, outFile), lock: relative(loaded.dir, lockFile), refs: referencedRefs(cfg), wrote }, diagnostics, [{ command: `npx ${PKG_NAME} check`, why: 'verify budget, identity, drift and targets' }]);
 }

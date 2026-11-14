@@ -13,12 +13,10 @@ import { hash32 } from '../../hash.js';
 import { paletteFromHash } from '../../palette.js';
 import { svgDoc, svgImage, tile } from '../../svg.js';
 import type { GeneratorModule } from '../../types.js';
+import { meta, type EmojiParams } from './meta.js';
 
-export interface EmojiParams {
-  shape: 'square' | 'rounded' | 'circle';
-  /** Match label words and tags against the keyword table before falling back to a hash pick. */
-  keywords: boolean;
-}
+export type { EmojiParams };
+
 
 export const KEYWORDS: Record<string, string> = {
   ocean: '🌊', sea: '🌊', wave: '🌊', beach: '🏖️', sun: '☀️', summer: '☀️', moon: '🌙', night: '🌙', star: '⭐', stars: '⭐',
@@ -40,19 +38,13 @@ export const FALLBACK = [
 
 function pick(words: string[]): string | undefined {
   for (const w of words) {
-    const e = KEYWORDS[w];
-    if (e) return e;
+    if (Object.hasOwn(KEYWORDS, w)) return KEYWORDS[w];
   }
   return undefined;
 }
 
 const emoji: GeneratorModule<EmojiParams> = {
-  id: 'emoji',
-  major: 1,
-  kind: 'semantic',
-  determinism: 'pure',
-  defaults: { shape: 'rounded', keywords: true },
-  defaultInputs: ['$label', 'tags', '$key'],
+  ...meta,
   render({ fields, seed, params }) {
     const h = hash32(fields.key ?? seed);
     const text = [fields.label, fields.title, fields.tags].filter(Boolean).join(' ').toLocaleLowerCase('en-US');

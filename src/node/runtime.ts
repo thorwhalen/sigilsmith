@@ -3,7 +3,9 @@
  * build). It uses the same kernel as the browser, so what the CLI reports is what the
  * app will draw.
  */
-import { resolve } from 'node:path';
+import { mkdirSync, mkdtempSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { remoteFromSpec, type RemoteSpec, type Transport } from '../remote.js';
 import { createSigil, type Sigil } from '../sigil.js';
@@ -11,10 +13,32 @@ import type { GeneratorLoader, Item } from '../types.js';
 import { NODE_LOADERS } from './builtins.js';
 import type { LoadedConfig } from './config.js';
 
-/** Import `<module path>#<export>` relative to the config's directory (Node strips TS types itself on 22.18+/23.6+). */
+/**
+ * Import a host module (a custom key function or transport). TypeScript, extensionless
+ * imports and the host's own dependencies are handled by bundling it with esbuild first
+ * when esbuild is installed (any Vite/tsup project has it); otherwise Node imports it
+ * directly, which needs plain JS or Node's own type stripping (22.18+).
+ */
+async function importHostModule(file: string, hostDir: string): Promise<unknown> {
+  let esbuild: typeof import('esbuild') | undefined;
+  try {
+    esbuild = (await import(pathToFileURL(createRequire(`${dirname(file)}/`).resolve('esbuild')).href)) as typeof import('esbuild');
+  } catch {
+    esbuild = undefined;
+  }
+  if (!esbuild) return import(pathToFileURL(file).href);
+  // Inside the host project, so the bundle's bare imports resolve against its node_modules.
+  const cache = join(hostDir, 'node_modules', '.cache', 'sigilsmith');
+  mkdirSync(cache, { recursive: true });
+  const out = join(mkdtempSync(join(cache, 'mod-')), 'mod.mjs');
+  await esbuild.build({ entryPoints: [file], bundle: true, format: 'esm', platform: 'node', outfile: out, packages: 'external', logLevel: 'silent' });
+  return import(pathToFileURL(out).href);
+}
+
+/** Import `<module path>#<export>` relative to the config's directory. */
 export async function importRef<T>(dir: string, ref: string): Promise<T> {
   const [path, name] = ref.split('#') as [string, string];
-  const mod = (await import(pathToFileURL(resolve(dir, path)).href)) as Record<string, unknown>;
+  const mod = (await importHostModule(resolve(dir, path), dir)) as Record<string, unknown>;
   if (!(name in mod)) throw new Error(`\`${path}\` has no export \`${name}\``);
   return mod[name] as T;
 }

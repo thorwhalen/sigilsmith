@@ -1,10 +1,11 @@
 /** Catalog manifest and params schema for `emoji@1` (Node side). */
 import { z } from 'zod';
 import { defineGeneratorManifest } from '../../node/define.js';
-import mod from './v1.js';
+import { meta as mod } from './meta.js';
 
 export default defineGeneratorManifest(
   mod,
+  () => import('./v1.js'),
   {
     name: 'Emoji tile', description: 'An emoji chosen by keyword (label words, tags) or by hash, on a tinted tile (Notion/Slack style).',
     category: 'emoji', role: 'generator',

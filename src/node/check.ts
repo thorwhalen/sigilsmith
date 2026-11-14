@@ -34,10 +34,10 @@ function keyFields(loaded: LoadedConfig): string[] {
   return 'field' in k ? [k.field] : 'fields' in k ? k.fields : [];
 }
 
-function checkData(loaded: LoadedConfig, items: Item[], samplesFile: string): Diagnostic[] {
+function checkData(loaded: LoadedConfig, items: Item[], samplesFile: string, keys: Array<string | undefined>): Diagnostic[] {
   const cfg = loaded.config!;
   const out: Diagnostic[] = [];
-  if (!items.length) return out;
+  if (!items.length) return [noSamples()];
   const present = (f: string) => items.filter((it) => normalizePart(getPath(it, f)) !== undefined).length;
   for (const f of keyFields(loaded)) {
     const n = present(f);
@@ -56,16 +56,12 @@ function checkData(loaded: LoadedConfig, items: Item[], samplesFile: string): Di
       out.push(diag('SGS0202', 'warning', `key field \`${f}\` is missing from ${items.length - n} of ${items.length} sample items (they will use the fallback key)`, { where: { config: 'key', data: samplesFile } }));
     }
   }
-  const fields = keyFields(loaded);
-  if (fields.length && fields.every((f) => present(f) === items.length)) {
-    const seen = new Map<string, number>();
-    for (const it of items) {
-      const k = JSON.stringify(fields.map((f) => normalizePart(getPath(it, f))));
-      seen.set(k, (seen.get(k) ?? 0) + 1);
-    }
-    const dups = [...seen.entries()].filter(([, c]) => c > 1);
-    if (dups.length) out.push(diag('SGS0204', 'error', `key is not unique: ${dups.length} value(s) shared by several items, e.g. ${dups[0]![0]}`, { where: { config: 'key', data: samplesFile }, fix: { summary: 'use a unique or composite key', applicability: 'maybe-incorrect', commands: [`npx ${PKG_NAME} detect-key ${relative(loaded.dir, samplesFile)}`] } }));
-  }
+  // Uniqueness of the keys the runtime will actually compute (field, composite, custom or fallback).
+  const seen = new Map<string, number[]>();
+  keys.forEach((k, i) => k !== undefined && seen.set(k, [...(seen.get(k) ?? []), i]));
+  const dups = [...seen.entries()].filter(([, idx]) => idx.length > 1);
+  if (dups.length) out.push(diag('SGS0204', 'error', `key is not unique: ${dups.length} value(s) shared by several items, e.g. ${JSON.stringify(dups[0]![0])} (items ${dups[0]![1].join(', ')})`, { where: { config: 'key', data: samplesFile }, fix: { summary: 'use a unique or composite key', applicability: 'maybe-incorrect', commands: [`npx ${PKG_NAME} detect-key ${relative(loaded.dir, samplesFile)}`] } }));
+  for (const f of cfg.key.fallback) if (present(f) === 0) out.push(diag('SGS0702', 'warning', `fallback key field \`${f}\` appears in no sample item`, { where: { config: 'key.fallback', data: samplesFile } }));
   const named = new Set<string>();
   if (cfg.itemType) named.add(cfg.itemType.field);
   for (const g of Object.values(cfg.generators)) for (const i of g.inputs ?? []) named.add(fieldOf(i));
@@ -78,6 +74,15 @@ function checkData(loaded: LoadedConfig, items: Item[], samplesFile: string): Di
     if (present(f) === 0) out.push(diag('SGS0702', 'error', `field \`${f}\` named in the config appears in no sample item`, { where: { config: CONFIG_FILE, data: samplesFile }, fix: { summary: 'rename it in the config to match the data (one line), or fix the data', applicability: 'has-placeholders' } }));
   }
   return out;
+}
+
+function noSamples(): Diagnostic {
+  return diag('SGS0702', 'warning', 'no sample items: data drift and identity cannot be verified', { where: { path: 'samples' }, fix: { summary: 'point "samples" at 20-200 real items (JSON array)', applicability: 'has-placeholders', edits: [{ file: CONFIG_FILE, path: 'samples', set: 'sigilsmith.samples.json' }] } });
+}
+
+/** Source text with comments blanked out (line numbers preserved). */
+function stripComments(text: string): string {
+  return text.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' ')).replace(/(^|[^:'"`\\])\/\/.*$/gm, '$1');
 }
 
 function* walk(dir: string, ignore: string[]): Generator<string> {
@@ -94,24 +99,52 @@ function checkBypass(loaded: LoadedConfig, genFile: string): Diagnostic[] {
   const cfg = loaded.config!;
   const out: Diagnostic[] = [];
   const refs = referencedRefs(cfg);
-  const refRe = new RegExp(`['"\`](${refs.map((r) => r.replace(/[.*+?^${}()|[\]\\@]/g, '\\$&')).join('|')})['"\`]`);
+  const esc = (x: string) => x.replace(/[.*+?^${}()|[\]\\@/]/g, '\\$&');
+  const refRe = refs.length ? new RegExp(`['"\`](${refs.map(esc).join('|')})['"\`]`) : null;
+  const peers = refs.map((r) => BUILTIN_BY_REF[r]?.manifest.peer?.name).filter((x): x is string => Boolean(x));
+  const peerRe = peers.length ? new RegExp(`(from|import\\()\\s*['"\`](${peers.map(esc).join('|')})['"\`/]`) : null;
   const keyField = keyFields(loaded)[0];
+  const genBase = genFile.split('/').pop()!.replace(/\.ts$/, '');
+  let regenerationWired = false;
   for (const src of cfg.check.src) {
     for (const file of walk(resolve(loaded.dir, src), cfg.check.ignore)) {
       if (resolve(file) === resolve(genFile)) continue;
-      const text = readFileSync(file, 'utf8');
-      const usesPkg = text.includes(`'${PKG_NAME}`) || text.includes(`"${PKG_NAME}`) || text.includes(relative(resolve(file, '..'), genFile).replace(/\.ts$/, '').split('/').pop()!);
+      const text = stripComments(readFileSync(file, 'utf8'));
+      if (text.includes('onInputsChanged(')) regenerationWired = true;
+      const usesPkg = text.includes(`'${PKG_NAME}`) || text.includes(`"${PKG_NAME}`) || text.includes(genBase);
       text.split('\n').forEach((line, i) => {
         const where = { file: relative(loaded.dir, file), line: i + 1 };
-        if (new RegExp(`${PKG_NAME}/generators/`).test(line) && /import/.test(line)) out.push(diag('SGS0705', 'error', 'generator imported directly, bypassing the config', { where, fix: { summary: `import { sigil } from the wiring module (${relative(loaded.dir, genFile)})`, applicability: 'has-placeholders' } }));
+        if (/import|require/.test(line) && new RegExp(`${PKG_NAME}/generators/`).test(line)) out.push(diag('SGS0705', 'error', 'generator imported directly, bypassing the config', { where, fix: { summary: `import { sigil } from the wiring module (${relative(loaded.dir, genFile)})`, applicability: 'has-placeholders' } }));
+        if (peerRe?.test(line)) out.push(diag('SGS0705', 'error', `generator library imported directly: ${line.trim().slice(0, 80)}`, { where, fix: { summary: 'draw through sigil (the config pins the adapter and its params)', applicability: 'has-placeholders' } }));
+        if (refRe?.test(line)) out.push(diag('SGS0706', 'error', `generator ref hard-coded in app code: ${line.trim().slice(0, 80)}`, { where, fix: { summary: 'choose generators in the config (policy rules or user settings), not in code', applicability: 'has-placeholders' } }));
         if (!usesPkg) return;
-        if (refs.length && refRe.test(line)) out.push(diag('SGS0706', 'error', `generator ref hard-coded in app code: ${line.trim().slice(0, 80)}`, { where, fix: { summary: 'choose generators in the config (policy rules or user settings), not in code', applicability: 'has-placeholders' } }));
-        if (/Math\.random\(/.test(line)) out.push(diag('SGS0706', 'warning', 'Math.random in a file that uses sigilsmith: identity images must be deterministic', { where }));
-        if (keyField && new RegExp(`(keyOf|render|plan|deliver)\\([^)]*['"\`]${keyField}['"\`]`).test(line)) out.push(diag('SGS0706', 'error', `key field \`${keyField}\` hard-coded next to a sigilsmith call`, { where, fix: { summary: 'the config owns the key; pass the whole item', applicability: 'has-placeholders' } }));
+        if (/Math\.random\(/.test(line)) out.push(diag('SGS0707', 'warning', 'Math.random in a file that uses sigilsmith: identity images must be deterministic', { where }));
+        if (keyField && new RegExp(`(keyOf|render|plan|deliver)\\([^)]*['"\`]${esc(keyField)}['"\`]`).test(line)) out.push(diag('SGS0708', 'error', `key field \`${keyField}\` hard-coded next to a sigilsmith call`, { where, fix: { summary: 'the config owns the key; pass the whole item', applicability: 'has-placeholders' } }));
       });
     }
   }
+  // Stored images whose inputs can change go stale silently unless the app calls onInputsChanged (B19).
+  if (cfg.delivery.strategy !== 'derived' && !regenerationWired && cfg.regeneration.policy !== 'never') {
+    const changing = refs.filter((r) => {
+      const inputs = cfg.generators[r]?.inputs ?? BUILTIN_BY_REF[r]?.meta.defaultInputs ?? [];
+      return inputs.some((x) => fieldOf(x) !== '$key') || cfg.policy.rules.some((rule) => rule.inputs?.some((x) => fieldOf(x) !== '$key'));
+    });
+    if (changing.length) out.push(diag('SGS0709', 'warning', `${changing.join(', ')} read inputs that can change (titles, names), but the app never calls onInputsChanged: stored images will go stale silently`, { fix: { summary: 'call onInputsChanged(sigil, item, record, { confirm }) after edits (sigilsmith/delivery), or set regeneration.policy to "never"', applicability: 'has-placeholders' } }));
+  }
   return out;
+}
+
+function hostDeclared(dir: string, name: string): string | undefined {
+  const f = resolve(dir, 'package.json');
+  if (!existsSync(f)) return undefined;
+  const pkg = JSON.parse(readFileSync(f, 'utf8')) as Record<string, Record<string, string> | undefined>;
+  return pkg.dependencies?.[name] ?? pkg.devDependencies?.[name];
+}
+
+function usesReact(loaded: LoadedConfig): boolean {
+  const cfg = loaded.config!;
+  for (const src of cfg.check.src) for (const file of walk(resolve(loaded.dir, src), cfg.check.ignore)) if (readFileSync(file, 'utf8').includes(`${PKG_NAME}/react`)) return true;
+  return false;
 }
 
 export interface CheckData {
@@ -148,7 +181,20 @@ export async function check(loaded: LoadedConfig, opts: { only?: Section[] } = {
   }
 
   const { items, file: samplesFile, error } = loadSamples(loaded.dir, cfg.samples);
-  if (run('data')) mark('data', error ? [diag('SGS0702', 'error', error, { where: { path: 'samples' } })] : checkData(loaded, items, samplesFile ?? ''));
+  if (run('data')) {
+    if (error) mark('data', [diag('SGS0702', 'error', error, { where: { path: 'samples' } })]);
+    else {
+      const ds: Diagnostic[] = [];
+      const keys: Array<string | undefined> = [];
+      try {
+        const s = await nodeSigil(loaded, { remote: true });
+        for (const it of items) keys.push(await s.plan(it).then((p) => p.key, () => undefined));
+      } catch (e) {
+        ds.push(diag('SGS0203', 'error', `runtime check failed: ${(e as Error).message}`));
+      }
+      mark('data', [...ds, ...checkData(loaded, items, samplesFile ?? '', keys)]);
+    }
+  }
 
   if (run('identity') || run('determinism')) {
     const lockFile = resolve(loaded.dir, LOCK_FILE);
@@ -158,6 +204,8 @@ export async function check(loaded: LoadedConfig, opts: { only?: Section[] } = {
       if (!existsSync(lockFile)) ds.push(diag('SGS0503', 'error', `no ${LOCK_FILE}`, { fix: { summary: 'create it', applicability: 'machine-applicable', commands: [`npx ${PKG_NAME} build`] } }));
       else {
         const old = JSON.parse(readFileSync(lockFile, 'utf8')) as Lock;
+        if (old.config !== loaded.hash) ds.push(diag('SGS0505', 'error', `the lock was written for another config (${old.config}, config is now ${loaded.hash}): identities of new rules and items are unchecked`, { fix: { summary: 'rebuild; review what changes', applicability: 'machine-applicable', commands: [`npx ${PKG_NAME} build`] } }));
+        if (!items.length) ds.push(noSamples());
         const generatorsChanged = Object.entries(now.generators).filter(([r, g]) => old.generators[r] && old.generators[r]!.fingerprint !== g.fingerprint).map(([r]) => r);
         for (const r of generatorsChanged) ds.push(diag('SGS0502', 'error', `generator \`${r}\` draws differently than when the lock was written`, { where: { ref: r }, fix: { summary: 'revert the upgrade or accept after review', applicability: 'maybe-incorrect', commands: [`npx ${PKG_NAME} build --accept`] } }));
         const changed = Object.entries(now.samples).filter(([k, s]) => old.samples[k] && (old.samples[k]!.image !== s.image || old.samples[k]!.ref !== s.ref)).map(([k]) => k);
@@ -184,6 +232,9 @@ export async function check(loaded: LoadedConfig, opts: { only?: Section[] } = {
     // Remote generators share one module (transports, cache, progressive placeholder).
     const remoteModule = (sizes as { modules?: { remote?: { gzipBytes: number } } }).modules?.remote?.gzipBytes ?? null;
     if (referencedRefs(cfg).some((r) => cfg.remote[r])) generators['(remote module)'] = remoteModule;
+    const modules = (sizes as { modules?: Record<string, { gzipBytes: number }> }).modules ?? {};
+    if (cfg.delivery.strategy !== 'derived') generators['(delivery module)'] = modules.delivery?.gzipBytes ?? null;
+    if (usesReact(loaded)) generators['(react adapter)'] = modules.react?.gzipBytes ?? null;
     const known = [kernelGzip, ...Object.values(generators)];
     const totalGzip = known.every((x) => x !== null) ? (known as number[]).reduce((a, b) => a + b, 0) : null;
     const max = cfg.budget.maxGzipBytes ?? null;
@@ -191,7 +242,7 @@ export async function check(loaded: LoadedConfig, opts: { only?: Section[] } = {
     if (max !== null && totalGzip === null) ds.push(diag('SGS0401', 'warning', 'sizes not measured for this package build; cannot check the budget', { fix: { summary: 'run `npm run measure` in the sigilsmith package', applicability: 'unspecified' } }));
     if (max !== null && totalGzip !== null && totalGzip > max) {
       const biggest = Object.entries(generators).sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))[0];
-      ds.push(diag('SGS0401', 'error', `kernel + generators = ${totalGzip} B gzip, over the ${max} B budget`, { where: { generators }, fix: { summary: `drop or replace the largest (${biggest?.[0]}: ${biggest?.[1]} B), or raise budget.maxGzipBytes`, applicability: 'maybe-incorrect', commands: [`npx ${PKG_NAME} catalog --implemented --max-gzip ${Math.max(0, max - (kernelGzip ?? 0))}`] } }));
+      ds.push(diag('SGS0401', 'error', `kernel + modules + generators = ${totalGzip} B gzip, over the ${max} B budget`, { where: { generators }, fix: { summary: `drop or replace the largest (${biggest?.[0]}: ${biggest?.[1]} B), or raise budget.maxGzipBytes`, applicability: 'maybe-incorrect', commands: [`npx ${PKG_NAME} catalog --implemented --max-gzip ${Math.max(0, max - (kernelGzip ?? 0))}`] } }));
     }
     mark('budget', ds);
   }
@@ -203,22 +254,14 @@ export async function check(loaded: LoadedConfig, opts: { only?: Section[] } = {
       if (!peer) continue;
       const v = installedVersion(loaded.dir, peer.name);
       if (v !== peer.version) ds.push(diag('SGS0304', 'error', `\`${r}\` needs ${peer.name}@${peer.version} (found ${v ?? 'none'})`, { fix: { summary: 'install the exact version: its output is part of identity', applicability: 'machine-applicable', commands: [`npm i -E ${peer.name}@${peer.version}`] } }));
+      const declared = hostDeclared(loaded.dir, peer.name);
+      if (declared && declared !== peer.version) ds.push(diag('SGS0304', 'warning', `package.json declares ${peer.name}@"${declared}"; an upgrade within that range could change every \`${r}\` image`, { fix: { summary: 'declare the exact version', applicability: 'machine-applicable', commands: [`npm i -E ${peer.name}@${peer.version}`] } }));
     }
     mark('peers', ds);
   }
 
   if (run('bypass')) mark('bypass', checkBypass(loaded, genFile));
   if (run('targets')) mark('targets', checkTargets(loaded));
-
-  // Exercise the runtime once, so a broken custom key module or transport surfaces here.
-  if (run('data')) {
-    try {
-      const s = await nodeSigil(loaded, { remote: false });
-      if (items[0]) await s.plan(items[0]);
-    } catch (e) {
-      all.push(diag('SGS0203', 'error', `runtime check failed: ${(e as Error).message}`));
-    }
-  }
 
   const failing = all.filter((d) => d.severity === 'error');
   return envelope('check', data, all, failing.length ? [{ command: failing[0]!.fix?.commands?.[0] ?? `npx ${PKG_NAME} explain-code ${failing[0]!.code}`, why: `fix the first error (${failing[0]!.code}), then re-run check` }] : []);

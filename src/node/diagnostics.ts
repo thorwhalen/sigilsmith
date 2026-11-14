@@ -43,6 +43,7 @@ export const CODES: Record<string, { title: string; cause: string; fix: string }
   SGS0105: { title: 'secret in config', cause: 'A value that looks like an API key is in the config, which is committed and may be bundled.', fix: 'Remove it. Use a proxy endpoint (`remote.<ref>.transport: "proxy"`) or a BYOK module transport that reads the key at call time.' },
   SGS0106: { title: 'no BYOK key', cause: 'A BYOK transport found no key for the current user.', fix: 'Ask the user to add their key in settings; the placeholder stays meanwhile.' },
   SGS0107: { title: 'service terms restrict use', cause: 'A remote service in the config has terms that limit how it may be used (the public DiceBear API is free for non-commercial use only; DiceBear styles carry their own licences).', fix: 'Commercial app: self-host the service and set its `baseUrl`. Non-commercial app: acknowledge the terms in the config (`"use": "non-commercial"`). Check the style\'s licence either way.' },
+  SGS0110: { title: 'upload rejected', cause: 'A user-supplied image is too large or is not a PNG, JPEG, GIF or WebP (checked by its bytes, not its claimed type). SVG is refused by default: a scripted SVG served from the app origin is stored XSS.', fix: 'Ask for a raster image, or raise maxBytes; accept SVG only with server-side sanitising (allowSvg).' },
   SGS0201: { title: 'no stable key found', cause: 'No candidate field is complete, unique and stable across the samples.', fix: 'Add an id field to the data, or configure a composite key (`key.fields`).' },
   SGS0202: { title: 'key missing for some items', cause: 'Some items lack the configured key field, so they use the fallback key, which changes when those fields change.', fix: 'Fix the data, or choose a key that every item has (`detect-key`).' },
   SGS0203: { title: 'key missing and no fallback', cause: 'An item has no key value and no fallback is configured (or `onMissing` is `throw`).', fix: 'Set `key.fallback`, or fix the data.' },
@@ -58,6 +59,7 @@ export const CODES: Record<string, { title: string; cause: string; fix: string }
   SGS0502: { title: 'generator output changed', cause: "A pinned generator's fingerprint no longer matches the lock, so every image it draws has changed.", fix: 'Revert the dependency change, or accept with `build --accept` after review.' },
   SGS0503: { title: 'lock missing', cause: `No ${PKG_NAME}.lock.json, so identity cannot be checked.`, fix: `Run \`${PKG_NAME} build\`.` },
   SGS0504: { title: 'sample identities changed', cause: 'Some sample items would now get a different image (config edit, data edit or upgrade).', fix: 'If intended, `build --accept`; else revert. Stored images are unaffected until regenerated (B19).' },
+  SGS0505: { title: 'lock is stale', cause: 'The lock was written for a different config, so new rules and items have no recorded identity.', fix: 'Run `sigilsmith build` and review what changes.' },
   SGS0601: { title: 'unknown target', cause: 'The target id is not in the registry.', fix: `\`${PKG_NAME} targets\` lists them.` },
   SGS0602: { title: 'target not registered', cause: 'The HTML head lacks the tag for a configured target.', fix: 'Paste the snippet from `targets --emit` into the head.' },
   SGS0603: { title: 'target file missing or wrong size', cause: 'A file a target needs is missing from the public dir, or its pixel size is wrong.', fix: `Run \`${PKG_NAME} targets --emit\`.` },
@@ -67,8 +69,11 @@ export const CODES: Record<string, { title: string; cause: string; fix: string }
   SGS0702: { title: 'input field missing from data', cause: 'An input or rule field named in the config appears in no sample item.', fix: 'Rename it in the config to match the data.' },
   SGS0703: { title: 'wiring module stale', cause: 'The config changed since the wiring module was generated.', fix: `Run \`${PKG_NAME} build\`.` },
   SGS0704: { title: 'wiring module missing', cause: 'The generated module the app imports does not exist.', fix: `Run \`${PKG_NAME} build\`.` },
-  SGS0705: { title: 'generator imported directly', cause: 'App code imports a generator module, bypassing the config.', fix: 'Import `sigil` from the wiring module instead.' },
-  SGS0706: { title: 'hard-coded choice in app code', cause: 'App code inlines a generator ref, calls Math.random next to sigilsmith, or hard-codes the key field.', fix: 'Read it from the config/wiring module; the config is the single source of truth.' },
+  SGS0705: { title: 'generator imported directly', cause: 'App code imports a generator module or a generator library (e.g. minidenticons), bypassing the config.', fix: 'Import `sigil` from the wiring module instead.' },
+  SGS0706: { title: 'generator ref hard-coded in app code', cause: 'App code names a generator ref, so changing the choice means editing code instead of the config.', fix: 'Choose generators in the config (policy rules, user settings); app code passes the item only.' },
+  SGS0707: { title: 'Math.random near sigilsmith', cause: 'Randomness next to identity images makes them change between renders.', fix: 'Remove it; identity images are seeded from the item.' },
+  SGS0708: { title: 'key field hard-coded in app code', cause: 'App code names the key field next to a sigilsmith call; renaming the field then needs a code change.', fix: 'Pass the whole item; the config owns the key.' },
+  SGS0709: { title: 'regeneration not wired', cause: 'A selectable generator reads inputs that can change (titles, names) and images are stored, but the app never calls onInputsChanged, so stored images go stale silently.', fix: 'Call onInputsChanged(sigil, item, record, { confirm }) after edits, or set regeneration.policy to "never".' },
 };
 
 export function diag(code: keyof typeof CODES | string, severity: Severity, message: string, extra: { where?: Record<string, unknown>; fix?: Partial<Fix> } = {}): Diagnostic {

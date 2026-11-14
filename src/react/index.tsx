@@ -49,15 +49,14 @@ export function useSigil(item: Item, opts: { size?: number; record?: SigilRecord
   const [attempt, setAttempt] = useState(0);
   const storedUrl = opts.record?.url;
   const custom = opts.record?.source === 'custom';
+  const recordRef = opts.record?.ref;
   const itemKey = JSON.stringify(item);
   useEffect(() => {
     if (user?.enabled === false && !custom) {
       setState({ status: 'disabled' });
       return;
     }
-    // A stored image wins unless the user picked another style for generated images.
-    const userPicked = Boolean(user && (user as { style?: Record<string, string> }).style && Object.keys((user as { style: Record<string, string> }).style).length);
-    if (storedUrl && (custom || !userPicked)) {
+    if (storedUrl && custom) {
       setState({ status: 'ready', src: storedUrl });
       return;
     }
@@ -72,6 +71,11 @@ export function useSigil(item: Item, opts: { size?: number; record?: SigilRecord
     };
     (async () => {
       const plan = await sigil.plan(item);
+      // The stored image wins, unless this item's user preference picked another generator.
+      if (storedUrl && !(plan.selection.via === 'user' && plan.selection.ref !== recordRef)) {
+        if (live) setState({ status: 'ready', src: storedUrl });
+        return;
+      }
       const mod = await sigil.load(plan.selection.ref);
       // Slow/remote generators: show the instant placeholder first (B5), keep it on failure.
       if (mod.determinism === 'cached-nondeterministic' && sigil.config.policy.placeholder !== plan.selection.ref) {
@@ -89,7 +93,7 @@ export function useSigil(item: Item, opts: { size?: number; record?: SigilRecord
       live = false;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [sigil, itemKey, storedUrl, custom, user, attempt, opts.size]);
+  }, [sigil, itemKey, storedUrl, recordRef, custom, user, attempt, opts.size]);
   const retry = useCallback(() => setAttempt((a) => a + 1), []);
   return { ...state, retry };
 }

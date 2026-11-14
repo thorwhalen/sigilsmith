@@ -1,10 +1,11 @@
 /** Catalog manifest and params schema for `minidenticons@1` (Node side). */
 import { z } from 'zod';
 import { defineGeneratorManifest } from '../../node/define.js';
-import mod from './v1.js';
+import { meta as mod } from './meta.js';
 
 export default defineGeneratorManifest(
   mod,
+  () => import('./v1.js'),
   {
     name: 'Minidenticons (adapter)', description: 'Adapter over the MIT minidenticons library: 5x5 mirrored identicon, 9 hues.',
     category: 'identicon', role: 'generator',

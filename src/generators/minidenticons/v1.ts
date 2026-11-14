@@ -11,29 +11,21 @@
  */
 import { minidenticon } from 'minidenticons';
 import { hash32 } from '../../hash.js';
-import { svgImage } from '../../svg.js';
+import { escapeXml, svgImage } from '../../svg.js';
 import type { GeneratorModule } from '../../types.js';
+import { meta, type MinidenticonsParams } from './meta.js';
 
-export interface MinidenticonsParams {
-  saturation: number;
-  lightness: number;
-  /** Light tile behind the figure, so it stays visible on dark pages. `none` for transparent. */
-  background: string;
-}
+export type { MinidenticonsParams };
+
 
 const mini: GeneratorModule<MinidenticonsParams> = {
-  id: 'minidenticons',
-  major: 1,
-  kind: 'hash',
-  determinism: 'pure',
-  defaults: { saturation: 70, lightness: 45, background: '#f4f4f5' },
-  defaultInputs: ['$key'],
+  ...meta,
   render({ seed, params }) {
     // The library's own string hash collides on sequential ids (`item-1`, `item-2`); cyrb128 does not.
-    const inner = minidenticon(seed, params.saturation, params.lightness, hash32);
+    const inner = minidenticon(seed, Number(params.saturation), Number(params.lightness), hash32);
     if (params.background === 'none') return svgImage(inner);
     const nested = inner.replace('<svg ', '<svg x="8" y="8" width="84" height="84" ');
-    return svgImage(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="${params.background}"/>${nested}</svg>`);
+    return svgImage(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="16" fill="${escapeXml(String(params.background))}"/>${nested}</svg>`);
   },
 };
 

@@ -55,6 +55,15 @@ export function defineSigilSettings(config: ResolvedConfig, opts: { types?: stri
     if (types.length) for (const t of types) shape[`sigil.style.${t}`] = styleEnum(`${t[0]!.toUpperCase()}${t.slice(1)} style`, `Thumbnail style for ${t} items ("auto" follows the app's policy)`);
     else shape['sigil.style'] = styleEnum('Thumbnail style', '"auto" follows the app\'s policy');
   }
+  // Params the developer opened to users (`userSettings.params`), with the generator's own schema (bounds, enums).
+  for (const [ref, keys] of Object.entries(config.userSettings.params)) {
+    const b = BUILTIN_BY_REF[ref];
+    if (!b) continue;
+    for (const k of keys) {
+      const field = (b.paramsSchema.shape as Record<string, z.ZodType>)[k];
+      if (field) shape[`sigil.params.${ref}.${k}`] = (field as z.ZodType).meta({ title: `${labels[ref] ?? ref}: ${k}`, description: field.description ?? '', facets: ['thumbnails'] });
+    }
+  }
   const dials = defineDials(z.object(shape));
   return {
     dials,
@@ -66,7 +75,14 @@ export function defineSigilSettings(config: ResolvedConfig, opts: { types?: stri
         if (k === 'sigil.style') style['*'] = v;
         else if (k.startsWith('sigil.style.')) style[k.slice('sigil.style.'.length)] = v;
       }
-      return { enabled: effective['sigil.enabled'] !== false, style };
+      const params: Record<string, Record<string, unknown>> = {};
+      for (const [k, v] of Object.entries(effective)) {
+        if (!k.startsWith('sigil.params.') || v === undefined) continue;
+        const rest = k.slice('sigil.params.'.length);
+        const dot = rest.lastIndexOf('.');
+        (params[rest.slice(0, dot)] ??= {})[rest.slice(dot + 1)] = v;
+      }
+      return { enabled: effective['sigil.enabled'] !== false, style, params };
     },
   };
 }

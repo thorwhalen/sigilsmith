@@ -19,9 +19,13 @@ export function stableStringify(v: unknown): string {
     .join(',')}}`;
 }
 
-/** `sg_` + 32 hex: a hash of generator ref, inputs and params. Same inputs, same name, anywhere. */
-export async function contentIdOf(ref: string, seed: string, params: Record<string, unknown>): Promise<string> {
-  return `sg_${(await sha256Hex(stableStringify([ref, seed, params]))).slice(0, 32)}`;
+/**
+ * `sg_` + 32 hex: a hash of generator ref, inputs, params and the stored variant
+ * (`svg`, or `png@256`): same inputs and format, same name, anywhere; an SVG and a PNG
+ * of the same item never collide.
+ */
+export async function contentIdOf(ref: string, seed: string, params: Record<string, unknown>, variant = 'svg'): Promise<string> {
+  return `sg_${(await sha256Hex(stableStringify([ref, seed, params, variant]))).slice(0, 32)}`;
 }
 
 /** Digest of the resolved generator inputs; changes exactly when the image's inputs change. */
@@ -29,6 +33,6 @@ export async function inputsDigestOf(seed: string): Promise<string> {
   return (await sha256Hex(seed)).slice(0, 16);
 }
 
-export async function idsOf(plan: Plan): Promise<{ contentId: string; inputsDigest: string }> {
-  return { contentId: await contentIdOf(plan.selection.ref, plan.seed, plan.params), inputsDigest: await inputsDigestOf(plan.seed) };
+export async function idsOf(plan: Plan, variant = 'svg'): Promise<{ contentId: string; inputsDigest: string }> {
+  return { contentId: await contentIdOf(plan.selection.ref, plan.seed, plan.params, variant), inputsDigest: await inputsDigestOf(plan.seed) };
 }

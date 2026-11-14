@@ -10,7 +10,7 @@ import { brotliCompressSync, constants, gzipSync } from 'node:zlib';
 
 const dist = new URL('../dist/', import.meta.url).pathname;
 async function measure(contents) {
-  const r = await build({ stdin: { contents, resolveDir: dist }, bundle: true, minify: true, format: 'esm', platform: 'browser', write: false, external: ['react'], logLevel: 'silent' });
+  const r = await build({ stdin: { contents, resolveDir: dist }, bundle: true, minify: true, format: 'esm', platform: 'browser', write: false, external: ['react', 'react/*', 'react-dom', 'zod', '@zodal/*'], logLevel: 'silent' });
   const b = r.outputFiles[0].contents;
   return { minBytes: b.length, gzipBytes: gzipSync(b, { level: 9 }).length, brotliBytes: brotliCompressSync(b, { params: { [constants.BROTLI_PARAM_QUALITY]: 11 } }).length };
 }
@@ -27,6 +27,7 @@ for (const id of readdirSync(`${dist}generators`)) {
 }
 const remote = await measure(`import { remoteFromSpec, progressive } from './remote.js'; export { remoteFromSpec, progressive };`);
 const delivery = await measure(`import { deliver, onInputsChanged, memoryStore } from './delivery.js'; export { deliver, onInputsChanged, memoryStore };`);
-const out = { measuredAt: new Date().toISOString().slice(0, 10), method: 'esbuild minify esm browser; generator = (kernel+generator) - kernel', kernel, generators, modules: { remote, delivery } };
+const react = await measure(`import { Sigil, SigilProvider } from './react/index.js'; export { Sigil, SigilProvider };`);
+const out = { measuredAt: new Date().toISOString().slice(0, 10), method: 'esbuild minify esm browser; generator = (kernel+generator) - kernel', kernel, generators, modules: { remote, delivery, react } };
 writeFileSync(new URL('../catalog/_sizes.json', import.meta.url), `${JSON.stringify(out, null, 2)}\n`);
 console.log(JSON.stringify(out, null, 2));

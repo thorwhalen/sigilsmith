@@ -2,58 +2,63 @@
   "measuredAt": "2026-11-14",
   "method": "esbuild minify esm browser; generator = (kernel+generator) - kernel",
   "kernel": {
-    "minBytes": 8046,
-    "gzipBytes": 3793,
-    "brotliBytes": 3464
+    "minBytes": 8411,
+    "gzipBytes": 3922,
+    "brotliBytes": 3583
   },
   "generators": {
     "emoji@1": {
-      "minBytes": 3357,
-      "gzipBytes": 1414,
-      "brotliBytes": 1222,
-      "standaloneGzipBytes": 2182
+      "minBytes": 3381,
+      "gzipBytes": 1429,
+      "brotliBytes": 1244,
+      "standaloneGzipBytes": 2210
     },
     "grid@1": {
-      "minBytes": 1278,
-      "gzipBytes": 614,
-      "brotliBytes": 568,
-      "standaloneGzipBytes": 732
+      "minBytes": 1294,
+      "gzipBytes": 626,
+      "brotliBytes": 581,
+      "standaloneGzipBytes": 742
     },
     "initials@1": {
-      "minBytes": 1479,
-      "gzipBytes": 741,
-      "brotliBytes": 655,
-      "standaloneGzipBytes": 1539
+      "minBytes": 1550,
+      "gzipBytes": 786,
+      "brotliBytes": 694,
+      "standaloneGzipBytes": 1595
     },
     "minidenticons@1": {
-      "minBytes": 1327,
-      "gzipBytes": 642,
-      "brotliBytes": 573,
-      "standaloneGzipBytes": 995
+      "minBytes": 1481,
+      "gzipBytes": 695,
+      "brotliBytes": 616,
+      "standaloneGzipBytes": 1059
     },
     "rings@1": {
-      "minBytes": 1246,
-      "gzipBytes": 578,
+      "minBytes": 1262,
+      "gzipBytes": 586,
       "brotliBytes": 529,
-      "standaloneGzipBytes": 706
+      "standaloneGzipBytes": 717
     },
     "shapes@1": {
-      "minBytes": 1542,
-      "gzipBytes": 689,
-      "brotliBytes": 620,
-      "standaloneGzipBytes": 809
+      "minBytes": 1558,
+      "gzipBytes": 699,
+      "brotliBytes": 626,
+      "standaloneGzipBytes": 821
     }
   },
   "modules": {
     "remote": {
-      "minBytes": 5251,
-      "gzipBytes": 2624,
-      "brotliBytes": 2342
+      "minBytes": 5371,
+      "gzipBytes": 2686,
+      "brotliBytes": 2400
     },
     "delivery": {
-      "minBytes": 3199,
-      "gzipBytes": 1477,
-      "brotliBytes": 1315
+      "minBytes": 3634,
+      "gzipBytes": 1644,
+      "brotliBytes": 1474
+    },
+    "react": {
+      "minBytes": 2826,
+      "gzipBytes": 1460,
+      "brotliBytes": 1277
     }
   }
 }

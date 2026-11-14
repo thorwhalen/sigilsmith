@@ -10,5 +10,19 @@
     "Ωμέγα": "514f73ccef18e794c0a16b93f337c39682e5fae0aa6523e98b97b99ae40380a4",
     "🎵 song": "e2ed1a81fde5a6f914436dcb7e29f59b81cff8bd0918a355bcc246702ddbb33d",
     "f47ac10b-58cc-4372-a567-0e02b2c3d479": "e6ef7abb7496ce39665f9c6e0ecd6c47b43f30e6a6566f332b7cd747bc660a89"
+  },
+  "altParams": {
+    "keywords": false,
+    "shape": "circle"
+  },
+  "alt": {
+    "0": "bc7c175658b19ae8fb237b457b3d1e6c5b76f3d264277750daf5403fb26a956d",
+    "a": "0bd05edfc2ad8adc525227257a2b6877338d1094487e306593eaddbeff6c68ee",
+    "sigil": "e764391e91001703190d75af691950b6afb4f5a55e56f463f204246d942404c5",
+    "Blue Monday": "535d70e58df874cfba38247d5483e045c10baee9ec9d4e2fef2b52de9362f0ac",
+    "ada@example.com": "e6d058b1382d1328e042e118a09c7355ca9a75059c1d119aba640c42e8272c56",
+    "Ωμέγα": "7cc03e2123b346f3192e484d7994c6206444d0bccd2927fe56eee256a1846f63",
+    "🎵 song": "8e62eaaa97cab64f3bb1eab22d157df881d70efe35fd0676c41711c8acbf2c78",
+    "f47ac10b-58cc-4372-a567-0e02b2c3d479": "f6df2fb9c4d8deb1159ab47d5fae716fcc2b8dd191b972e956e638b646294e36"
   }
 }
