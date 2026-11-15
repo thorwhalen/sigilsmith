@@ -1,5 +1,5 @@
 {
-  "measuredAt": "2026-11-14",
+  "measuredAt": "2026-11-15",
   "method": "esbuild minify esm browser; generator = (kernel+generator) - kernel",
   "kernel": {
     "minBytes": 8411,
