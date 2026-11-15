@@ -85,7 +85,7 @@ export const ConfigSchema = z
       .strict(),
     delivery: z.object({ strategy: z.enum(['materialized', 'derived', 'hybrid']).default('materialized'), format: z.enum(['svg', 'png']).default('svg') }).strict().default({ strategy: 'materialized', format: 'svg' }),
     regeneration: z.object({ policy: z.enum(['auto', 'ask', 'always', 'never']).default('auto').describe('auto: each generator\'s own default (initials: always), else ask.') }).strict().default({ policy: 'auto' }),
-    budget: z.object({ maxGzipBytes: z.number().int().positive().optional() }).strict().default({}),
+    budget: z.object({ maxGzipBytes: z.number().int().positive().optional().describe('Total gzip bytes sigilsmith may add to the app: kernel + the delivery, React and remote modules in use + every generator the config can select. Not per generator (that is `catalog --max-gzip`).') }).strict().default({}),
     userSettings: z
       .object({ choices: z.array(RefSchema).default([]), perType: z.boolean().default(true), params: z.record(RefSchema, z.array(z.string())).default({}) })
       .strict()

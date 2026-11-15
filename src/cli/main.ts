@@ -20,7 +20,7 @@ Usage: ${PKG_NAME} <command> [options]   (add --json for one machine-readable en
 Commands
   init [--samples f.json]           write ${CONFIG_FILE} and the AGENTS.md block
   catalog [filters]                 list generators; filters: --style a,b --semantic a,b
-                                    --max-gzip N --no-network --min-px N --implemented
+                                    --max-gzip N (per generator) --no-network --min-px N --implemented
                                     --mit-only --ref <ref> --presets
   preview [--generators a,b]        contact sheet (HTML, PNG with resvg) + metrics
           [--samples f] [--out dir]

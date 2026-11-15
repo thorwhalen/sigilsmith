@@ -8,7 +8,7 @@ import { relative, resolve } from 'node:path';
 import { CONFIG_FILE, PKG_NAME, SAMPLES_FILE } from '../meta.js';
 import type { Item } from '../types.js';
 import { loadSamples, type LoadedConfig } from './config.js';
-import { detectKey, type KeyReport } from './detect.js';
+import { detectItemType, detectKey, type ItemTypeReport, type KeyReport } from './detect.js';
 import { diag, envelope, type Diagnostic, type Envelope } from './diagnostics.js';
 
 export const AGENTS_BEGIN = `<!-- ${PKG_NAME}:begin (managed by \`${PKG_NAME} init\`; edit the config, not this block) -->`;
@@ -29,40 +29,66 @@ export function agentsBlock(genPath: string): string {
   ].join('\n');
 }
 
-export function starterConfig(opts: { key?: unknown; samples?: string; preset?: string[] } = {}) {
+/**
+ * Starter total budget, in gzip bytes, for everything sigilsmith adds to the app's
+ * bundle: kernel (~3.9 kB) + React adapter (~1.5 kB) + the largest local generator
+ * (~1.4 kB) is ~6.8 kB, so the documented React path passes with any one generator and
+ * leaves room for a second small one. It is a total, not a per-generator cap (that is
+ * `catalog --max-gzip`).
+ */
+export const STARTER_BUDGET_GZIP = 8000;
+
+/**
+ * The config `init` writes. Delivery starts `derived`: the starter generator is pure,
+ * so images are computed on read and the app needs no storage, upload route or
+ * `deliver()` call. Switch to `materialized` (or `hybrid`) when images must survive a
+ * change of their inputs (the rename prompt), when a remote generator is used, or when
+ * other systems need a stored URL; `check` says when a choice requires it (SGS0303).
+ */
+export function starterConfig(opts: { key?: unknown; samples?: string; preset?: string[]; itemType?: string | null } = {}) {
   return {
     $schema: `./node_modules/${PKG_NAME}/schema/config.schema.json`,
     version: 1,
-    itemType: { field: 'type' },
+    itemType: opts.itemType === undefined ? { field: 'type' } : opts.itemType === null ? null : { field: opts.itemType },
     key: opts.key ?? { field: 'id', fallback: ['title', 'type'] },
     presets: opts.preset ?? [],
     generators: {},
     policy: { default: 'grid@1', rules: [] },
-    delivery: { strategy: 'materialized', format: 'svg' },
+    delivery: { strategy: 'derived', format: 'svg' },
     regeneration: { policy: 'ask' },
-    budget: { maxGzipBytes: 5000 },
+    budget: { maxGzipBytes: STARTER_BUDGET_GZIP },
     userSettings: { choices: [] },
     ...(opts.samples ? { samples: opts.samples } : {}),
     output: { gen: `src/${PKG_NAME}.gen.ts` },
   };
 }
 
-export function init(dir: string, opts: { samples?: string; force?: boolean; agents?: boolean } = {}): Envelope<{ wrote: string[]; skipped: string[] }> {
+export interface InitData {
+  wrote: string[];
+  skipped: string[];
+  /** What was read from the samples, when given: the key and item-type choices written. */
+  detected?: { key: KeyReport['chosen']; itemType: ItemTypeReport };
+}
+
+export function init(dir: string, opts: { samples?: string; force?: boolean; agents?: boolean } = {}): Envelope<InitData> {
   const wrote: string[] = [];
   const skipped: string[] = [];
   const diagnostics: Diagnostic[] = [];
   const cfgFile = resolve(dir, CONFIG_FILE);
   let key: unknown;
+  let detected: InitData['detected'];
   if (opts.samples) {
     const { items, error } = loadSamples(dir, opts.samples);
     if (error) diagnostics.push(diag('SGS0702', 'warning', error));
     const report = detectKey(items);
     if (report.chosen) key = { ...report.chosen.key, fallback: [] };
     for (const w of report.warnings) diagnostics.push(diag('SGS0205', 'warning', w));
+    detected = { key: report.chosen, itemType: detectItemType(items) };
   }
+  const itemType = detected ? detected.itemType.field : undefined;
   if (existsSync(cfgFile) && !opts.force) skipped.push(CONFIG_FILE);
   else {
-    writeFileSync(cfgFile, `${JSON.stringify(starterConfig({ key, ...(opts.samples ? { samples: opts.samples } : {}) }), null, 2)}\n`);
+    writeFileSync(cfgFile, `${JSON.stringify(starterConfig({ key, itemType, ...(opts.samples ? { samples: opts.samples } : {}) }), null, 2)}\n`);
     wrote.push(CONFIG_FILE);
   }
   if (opts.agents !== false) {
@@ -73,8 +99,15 @@ export function init(dir: string, opts: { samples?: string; force?: boolean; age
     writeFileSync(agents, re.test(text) ? text.replace(re, block) : `${text.trimEnd()}\n\n${block}\n`);
     wrote.push('AGENTS.md');
   }
-  return envelope('init', { wrote, skipped }, diagnostics, [
+  // The SKILL loop, in order: key → choose → look → build. With samples, init already
+  // wrote the detected key (detect-key shows the full report); without, the key is a guess.
+  const keyStep = opts.samples
+    ? { command: `npx ${PKG_NAME} detect-key ${opts.samples}`, why: 'review the key init wrote (candidates, uniqueness, suspects)' }
+    : { command: `npx ${PKG_NAME} detect-key ${SAMPLES_FILE} --write`, why: `the key is a guess (\`id\`): save 20+ real items to ${SAMPLES_FILE} and detect it` };
+  return envelope('init', { wrote, skipped, ...(detected ? { detected } : {}) }, diagnostics, [
+    keyStep,
     { command: `npx ${PKG_NAME} catalog --implemented`, why: 'see what generators exist' },
+    { command: `npx ${PKG_NAME} preview`, why: 'look at the candidates drawn for your items' },
     { command: `npx ${PKG_NAME} build`, why: 'write the wiring module and lock' },
   ]);
 }

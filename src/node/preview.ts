@@ -4,8 +4,12 @@
  *
  * Rows are generators; columns are sample items; each cell shows the item at 16, 32,
  * 64 and 128 px on a light and a dark background. Written as HTML (always) and PNG
- * (when resvg is installed). Metrics: rendered at 32 px over the items, the minimum
- * and median pairwise RGB distance and the number of near-duplicate pairs.
+ * (when resvg is installed). The sheet shows at most `SHEET_MAX_ITEMS` items.
+ *
+ * Metrics: each generator rendered at 32 px, then the minimum and median pairwise RGB
+ * distance and the number of near-duplicate pairs. They run on the app's own samples
+ * when there are at least `METRICS_MIN_SAMPLES` of them (up to `METRICS_MAX_ITEMS`),
+ * else on `METRICS_SYNTHETIC_ITEMS` generated items; `metricsOn` says which.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -32,6 +36,13 @@ export const DEFAULT_SAMPLE_ITEMS: Item[] = [
 ];
 
 const SIZES = [16, 32, 64, 128];
+/** Columns on the contact sheet; more would not be legible. */
+export const SHEET_MAX_ITEMS = 24;
+/** Fewer samples than this give too few pairs for the metrics to mean much. */
+export const METRICS_MIN_SAMPLES = 20;
+export const METRICS_SYNTHETIC_ITEMS = 150;
+/** Pairwise distances grow as n²; this keeps preview to seconds. */
+export const METRICS_MAX_ITEMS = 400;
 // Varied probe labels, so label-driven generators (initials, emoji) are measured fairly.
 const FIRST = ['Ada', 'Grace', 'Alan', 'Katherine', 'Linus', 'Margaret', 'Tim', 'Yuki', 'Amara', 'Diego', 'Noor', 'Olu', 'Priya', 'Sven', 'Zoe'];
 const LAST = ['Lovelace', 'Hopper', 'Turing', 'Johnson', 'Torvalds', 'Hamilton', 'Berners', 'Tanaka', 'Okafor', 'Rivera', 'Haddad'];
@@ -64,11 +75,18 @@ function distanceMetrics(pixels: Uint8Array[]): Metrics {
 export async function preview(
   loaded: LoadedConfig,
   opts: { generators?: string[]; items?: Item[]; out?: string; metricsN?: number } = {},
-): Promise<Envelope<{ files: Record<string, string>; grid: { generators: string[]; items: number; sizes: number[]; backgrounds: string[] }; metrics: Record<string, Metrics> }>> {
+): Promise<Envelope<{ files: Record<string, string>; grid: { generators: string[]; items: number; of: number; sizes: number[]; backgrounds: string[] }; metricsOn: 'samples' | 'synthetic'; metrics: Record<string, Metrics> }>> {
   const diagnostics: Diagnostic[] = [];
   const sigil = await nodeSigil(loaded, { remote: false });
   const refs = opts.generators?.length ? opts.generators : Object.keys(BUILTIN_BY_REF);
-  const items = (opts.items?.length ? opts.items : DEFAULT_SAMPLE_ITEMS).slice(0, 24);
+  const all = opts.items?.length ? opts.items : DEFAULT_SAMPLE_ITEMS;
+  const items = all.slice(0, SHEET_MAX_ITEMS);
+  const metricsOn: 'samples' | 'synthetic' = (opts.items?.length ?? 0) >= METRICS_MIN_SAMPLES ? 'samples' : 'synthetic';
+  const synthetic = (i: number): Item => {
+    const name = `${FIRST[i % FIRST.length]} ${LAST[Math.floor(i / FIRST.length) % LAST.length]}`;
+    return { id: `metric-${i}`, title: name, name, type: 'project' };
+  };
+  const metricItems = metricsOn === 'samples' ? opts.items!.slice(0, METRICS_MAX_ITEMS) : Array.from({ length: Math.min(opts.metricsN ?? METRICS_SYNTHETIC_ITEMS, METRICS_MAX_ITEMS) }, (_, i) => synthetic(i));
   const outDir = resolve(loaded.dir, opts.out ?? '.sigilsmith/preview');
   mkdirSync(outDir, { recursive: true });
   const cells: Record<string, string[]> = {};
@@ -122,12 +140,11 @@ ${Object.entries(cells)
     files.png = resolve(outDir, 'sheet.png');
     writeFileSync(files.png, svgToPng(sheet, W));
     for (const ref of Object.keys(cells)) {
-      const n = Math.min(opts.metricsN ?? 150, 400);
       const pix: Uint8Array[] = [];
-      for (let i = 0; i < n; i++) {
-        const name = `${FIRST[i % FIRST.length]} ${LAST[Math.floor(i / FIRST.length) % LAST.length]}`;
-        const img = await sigil.render({ id: `metric-${i}`, title: name, name, type: 'project' }, { ref });
-        const p = img.type === 'svg' ? svgPixels(img.svg, 32, '#808080') : null;
+      for (const item of metricItems) {
+        // A sample without a usable key is reported by `check`, not here; skip it.
+        const img = await sigil.render(item, { ref }).catch(() => null);
+        const p = img?.type === 'svg' ? svgPixels(img.svg, 32, '#808080') : null;
         if (p) pix.push(p);
       }
       metrics[ref] = distanceMetrics(pix);
@@ -135,10 +152,10 @@ ${Object.entries(cells)
     }
   } else diagnostics.push(missingResvg());
   files.json = resolve(outDir, 'sheet.json');
-  writeFileSync(files.json, JSON.stringify({ generators: Object.keys(cells), items: items.map(label), sizes: SIZES, backgrounds: Object.keys(BGS), metrics }, null, 2));
+  writeFileSync(files.json, JSON.stringify({ generators: Object.keys(cells), items: items.map(label), of: all.length, sizes: SIZES, backgrounds: Object.keys(BGS), metricsOn, metrics }, null, 2));
   return envelope(
     'preview',
-    { files, grid: { generators: Object.keys(cells), items: items.length, sizes: SIZES, backgrounds: Object.keys(BGS) }, metrics },
+    { files, grid: { generators: Object.keys(cells), items: items.length, of: all.length, sizes: SIZES, backgrounds: Object.keys(BGS) }, metricsOn, metrics },
     diagnostics,
     [{ command: files.png ? `open ${files.png}` : `open ${files.html}`, why: 'look at the sheet: rows are generators (light, then dark), columns are items at 128/64/32/16 px' }],
   );

@@ -25,7 +25,7 @@ sigilsmith is a *builder* package. You (or, more often, your coding agent) use i
 | Command | Does |
 |---|---|
 | `init [--samples f]` | starter config (key detected from your samples) and an `AGENTS.md` block |
-| `catalog [--style … --max-gzip N --no-network --implemented]` | the menu: 6 implemented generators and 61 surveyed technologies, filtered by your constraints, with reasons for exclusions |
+| `catalog [--style … --max-gzip N --no-network --implemented]` (`--max-gzip` is per generator) | the menu: 6 implemented generators and 61 surveyed technologies, filtered by your constraints, with reasons for exclusions |
 | `preview [--generators a@1,b@1]` | contact sheet (items × 16/32/64/128 px × light/dark) as HTML and PNG, plus near-duplicate metrics |
 | `detect-key <samples> [--write]` | finds the field (or composite) that identifies items; flags unstable choices |
 | `explain [--index N]` | for an item: key, generator and the rule that chose it, inputs, and the layer every param came from |
@@ -59,7 +59,7 @@ Measured with esbuild + gzip -9 on 2026-11-14 (`npm run measure`); third-party l
   ]
 },
 "userSettings": { "choices": ["grid@1", "rings@1", "shapes@1"] },          // end users may pick among these
-"delivery": { "strategy": "materialized" },                                 // or "derived" / "hybrid"
+"delivery": { "strategy": "derived" },                                      // or "materialized" / "hybrid"
 "regeneration": { "policy": "auto" }                                        // generator default (initials: always), else ask; or "ask" / "always" / "never"
 ```
 

@@ -408,3 +408,12 @@ Before any release, so output formats could still change; golden vectors were re
 
 Sizes after these changes: kernel 3,922 B gzip (3,583 brotli); delivery 1,644 B; React adapter 1,460 B; remote 2,686 B.
 
+
+### First integration (media_player, 2026-11-15) and what changed
+
+25. **Starter budget is 8000 B, documented as a total** (#3). `init` wrote 5000, and kernel + React adapter + the smallest generator is ~6 kB, so the documented React path failed `check` whatever generator was picked. `budget.maxGzipBytes` now says in the schema, SGS0401 and the skill that it counts kernel, modules and generators; `catalog --max-gzip` says it is per generator.
+26. **SGS0401's fix is computed from real headroom**: the room left for the largest generator (`catalog --max-gzip <room>`), or, when the kernel and modules alone exceed the budget, an edit raising it. It used to offer `--max-gzip 0`.
+27. **`init` reads the item type from the samples** (#4): a conventional name (`type`, `kind`, `category`, `source`, …) or a low-cardinality string field present in nearly every item, else `itemType: null`, instead of a `type` field the data may not have.
+28. **`init` writes `delivery.strategy: "derived"`.** The starter generator is pure, so the commonest first use (a list view) needs no storage, upload route or `deliver()` call. `materialized` (still the schema default when the field is omitted) is the opt-in for the rename prompt (A12), remote generators and stored URLs; SGS0303 already catches a non-pure generator under `derived`.
+29. **`init`'s `next` walks the whole loop** (detect-key, catalog, preview, build), and `catalog`'s already led to `preview`.
+30. **Preview metrics run on the app's samples** when there are at least 20 (`metricsOn: "samples"`), else on 150 synthetic items (`"synthetic"`); `grid.of` gives the sample count beside the 24-column sheet cap.

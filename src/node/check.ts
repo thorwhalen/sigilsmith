@@ -241,8 +241,20 @@ export async function check(loaded: LoadedConfig, opts: { only?: Section[] } = {
     data.budget = { kernelGzip, generators, totalGzip, maxGzipBytes: max };
     if (max !== null && totalGzip === null) ds.push(diag('SGS0401', 'warning', 'sizes not measured for this package build; cannot check the budget', { fix: { summary: 'run `npm run measure` in the sigilsmith package', applicability: 'unspecified' } }));
     if (max !== null && totalGzip !== null && totalGzip > max) {
-      const biggest = Object.entries(generators).sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))[0];
-      ds.push(diag('SGS0401', 'error', `kernel + modules + generators = ${totalGzip} B gzip, over the ${max} B budget`, { where: { generators }, fix: { summary: `drop or replace the largest (${biggest?.[0]}: ${biggest?.[1]} B), or raise budget.maxGzipBytes`, applicability: 'maybe-incorrect', commands: [`npx ${PKG_NAME} catalog --implemented --max-gzip ${Math.max(0, max - (kernelGzip ?? 0))}`] } }));
+      // Room for one generator in place of the largest: the budget minus everything else.
+      // When the kernel and modules alone exceed the budget, no generator fits and the
+      // only fix is a larger budget, so no catalog command is offered.
+      const gens = Object.entries(generators).filter(([r]) => !r.startsWith('('));
+      const biggest = gens.sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))[0];
+      const fixed = totalGzip - gens.reduce((a, [, g]) => a + (g ?? 0), 0);
+      const room = max - (totalGzip - (biggest?.[1] ?? 0));
+      const fix =
+        fixed >= max
+          ? { summary: `the kernel and modules alone take ${fixed} B, over the ${max} B total; raise budget.maxGzipBytes to at least ${totalGzip}`, applicability: 'maybe-incorrect' as const, edits: [{ file: loaded.path, path: 'budget.maxGzipBytes', set: totalGzip }] }
+          : room > 0 && biggest
+            ? { summary: `replace the largest generator (${biggest[0]}: ${biggest[1]} B) with one of at most ${room} B, drop it, or raise budget.maxGzipBytes to ${totalGzip}`, applicability: 'maybe-incorrect' as const, commands: [`npx ${PKG_NAME} catalog --implemented --max-gzip ${room}`] }
+            : { summary: `drop a generator${biggest ? ` (largest: ${biggest[0]}, ${biggest[1]} B)` : ''} or raise budget.maxGzipBytes to ${totalGzip}`, applicability: 'maybe-incorrect' as const, edits: [{ file: loaded.path, path: 'budget.maxGzipBytes', set: totalGzip }] };
+      ds.push(diag('SGS0401', 'error', `kernel + modules + generators = ${totalGzip} B gzip, over the ${max} B total budget (budget.maxGzipBytes counts everything sigilsmith adds)`, { where: { kernelGzip, generators }, fix }));
     }
     mark('budget', ds);
   }

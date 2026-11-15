@@ -63,7 +63,7 @@ export const OPERATIONS = [
     input: {
       style: z.array(z.enum(['abstract', 'geometric', 'illustrative', 'photorealistic'])).optional(),
       semantic: z.array(z.enum(['hash', 'metadata', 'embedding', 'llm'])).optional(),
-      maxGzip: z.number().int().positive().optional().describe('Maximum incremental gzip bytes per generator.'),
+      maxGzip: z.number().int().nonnegative().optional().describe('Maximum gzip bytes per generator, over the kernel. Not the total: `budget.maxGzipBytes` in the config counts the kernel and modules too.'),
       noNetwork: z.boolean().optional(),
       minPx: z.number().int().positive().optional().describe('The size (px) the images must stay legible at.'),
       implemented: z.boolean().optional().describe('Only generators that can be wired today.'),
