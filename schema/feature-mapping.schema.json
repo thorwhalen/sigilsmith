@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "$comment": {
+      "type": "string"
+    },
+    "use": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*(\\/[a-z0-9-]+)?@\\d+$",
+      "description": "The generator that draws these items."
+    },
+    "encodings": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]*(\\/[a-z0-9-]+)?@\\d+$",
+        "description": "Generator reference: `<id>@<major>`. The major pins the output contract."
+      },
+      "additionalProperties": {
+        "type": "object",
+        "propertyNames": {
+          "type": "string"
+        },
+        "additionalProperties": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "value": {}
+              },
+              "required": [
+                "value"
+              ],
+              "additionalProperties": false,
+              "description": "A constant."
+            },
+            {
+              "type": "object",
+              "properties": {
+                "from": {
+                  "type": "string"
+                },
+                "range": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "round": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "from",
+                "range"
+              ],
+              "additionalProperties": false,
+              "description": "Interpolate a numeric, ordinal or binary dimension linearly into [a, b]."
+            },
+            {
+              "type": "object",
+              "properties": {
+                "from": {
+                  "type": "string"
+                },
+                "map": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {}
+                },
+                "default": {}
+              },
+              "required": [
+                "from",
+                "map"
+              ],
+              "additionalProperties": false,
+              "description": "Look a value (ordinal level, category, \"true\"/\"false\", or the number as text) up."
+            }
+          ]
+        }
+      },
+      "description": "Generator ref → param path (dotted) → encoding."
+    }
+  },
+  "required": [
+    "use",
+    "encodings"
+  ],
+  "additionalProperties": false,
+  "title": "sigilsmith feature mapping",
+  "description": "Which generator draws the items of a feature set, and how each of its params is computed from one feature dimension."
+}

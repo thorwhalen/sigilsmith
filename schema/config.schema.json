@@ -582,6 +582,343 @@
       },
       "additionalProperties": false
     },
+    "features": {
+      "default": [],
+      "description": "Feature-driven sigils: per item set, a feature schema, a mapping to generator params, and optionally a vector table.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "when": {
+            "description": "Which items this set covers (as a policy rule); omitted: every item.",
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": [
+                      "string",
+                      "number"
+                    ]
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "includes": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "includes"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "exists": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "exists"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "field": {
+            "default": "features",
+            "description": "Item field holding the vector; checked before `vectors`.",
+            "type": "string"
+          },
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "description": "Path (relative to the config) of a JSON file holding the feature schema."
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "$schema": {
+                    "type": "string"
+                  },
+                  "$comment": {
+                    "type": "string"
+                  },
+                  "dims": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "numeric"
+                            },
+                            "min": {
+                              "type": "number"
+                            },
+                            "max": {
+                              "type": "number"
+                            },
+                            "default": {
+                              "type": "number"
+                            },
+                            "description": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "min",
+                            "max"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "ordinal"
+                            },
+                            "levels": {
+                              "minItems": 2,
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "default": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "levels"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "categorical"
+                            },
+                            "values": {
+                              "minItems": 1,
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "default": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "values"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "kind": {
+                              "type": "string",
+                              "const": "binary"
+                            },
+                            "default": {
+                              "type": "boolean"
+                            },
+                            "description": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "kind"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "dims"
+                ],
+                "additionalProperties": false,
+                "description": "The dimensions of a feature vector: numeric (min/max), ordinal (levels), categorical (values) or binary."
+              }
+            ]
+          },
+          "mapping": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "description": "Path (relative to the config) of a JSON file holding the mapping."
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "$schema": {
+                    "type": "string"
+                  },
+                  "$comment": {
+                    "type": "string"
+                  },
+                  "use": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9][a-z0-9-]*(\\/[a-z0-9-]+)?@\\d+$",
+                    "description": "The generator that draws these items."
+                  },
+                  "encodings": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "pattern": "^[a-z0-9][a-z0-9-]*(\\/[a-z0-9-]+)?@\\d+$",
+                      "description": "Generator reference: `<id>@<major>`. The major pins the output contract."
+                    },
+                    "additionalProperties": {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "value": {}
+                            },
+                            "required": [
+                              "value"
+                            ],
+                            "additionalProperties": false,
+                            "description": "A constant."
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "from": {
+                                "type": "string"
+                              },
+                              "range": {
+                                "type": "array",
+                                "prefixItems": [
+                                  {
+                                    "type": "number"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ],
+                                "items": false,
+                                "minItems": 2,
+                                "maxItems": 2
+                              },
+                              "round": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "from",
+                              "range"
+                            ],
+                            "additionalProperties": false,
+                            "description": "Interpolate a numeric, ordinal or binary dimension linearly into [a, b]."
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "from": {
+                                "type": "string"
+                              },
+                              "map": {
+                                "type": "object",
+                                "propertyNames": {
+                                  "type": "string"
+                                },
+                                "additionalProperties": {}
+                              },
+                              "default": {}
+                            },
+                            "required": [
+                              "from",
+                              "map"
+                            ],
+                            "additionalProperties": false,
+                            "description": "Look a value (ordinal level, category, \"true\"/\"false\", or the number as text) up."
+                          }
+                        ]
+                      }
+                    },
+                    "description": "Generator ref → param path (dotted) → encoding."
+                  }
+                },
+                "required": [
+                  "use",
+                  "encodings"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "vectors": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "description": "Path (relative to the config) of a JSON file holding the vectors (item key → vector; `$`-prefixed keys are ignored)."
+              },
+              {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {}
+              }
+            ]
+          }
+        },
+        "required": [
+          "schema",
+          "mapping"
+        ],
+        "additionalProperties": false
+      }
+    },
     "samples": {
       "description": "Sample items (JSON array) used by detect-key, check and preview.",
       "type": "string"

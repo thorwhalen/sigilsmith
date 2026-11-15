@@ -64,6 +64,52 @@ export const RemoteSpecSchema = z.union([
   z.object({ transport: z.literal('module'), module: z.string().regex(/#/) }).strict().describe('A custom transport exported by your code, e.g. BYOK.'),
 ]);
 
+// ---------------------------------------------------------------------------
+// Feature sets (src/features.ts): schema, mapping and vectors, each a file or inline.
+
+const DimBase = { description: z.string().optional() };
+
+export const FeatureDimSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('numeric'), min: z.number(), max: z.number(), default: z.number().optional(), ...DimBase }).strict(),
+  z.object({ kind: z.literal('ordinal'), levels: z.array(z.string()).min(2), default: z.string().optional(), ...DimBase }).strict(),
+  z.object({ kind: z.literal('categorical'), values: z.array(z.string()).min(1), default: z.string().optional(), ...DimBase }).strict(),
+  z.object({ kind: z.literal('binary'), default: z.boolean().optional(), ...DimBase }).strict(),
+]);
+
+export const FeatureSchemaSchema = z
+  .object({ $schema: z.string().optional(), $comment: z.string().optional(), dims: z.record(z.string(), FeatureDimSchema) })
+  .strict()
+  .describe('The dimensions of a feature vector: numeric (min/max), ordinal (levels), categorical (values) or binary.');
+
+export const EncodingSchema = z.union([
+  z.object({ value: z.unknown() }).strict().describe('A constant.'),
+  z.object({ from: z.string(), range: z.tuple([z.number(), z.number()]), round: z.boolean().optional() }).strict().describe('Interpolate a numeric, ordinal or binary dimension linearly into [a, b].'),
+  z.object({ from: z.string(), map: z.record(z.string(), z.unknown()), default: z.unknown().optional() }).strict().describe('Look a value (ordinal level, category, "true"/"false", or the number as text) up.'),
+]);
+
+export const FeatureMappingSchema = z
+  .object({
+    $schema: z.string().optional(),
+    $comment: z.string().optional(),
+    use: RefSchema.describe('The generator that draws these items.'),
+    encodings: z.record(RefSchema, z.record(z.string(), EncodingSchema)).describe('Generator ref → param path (dotted) → encoding.'),
+  })
+  .strict();
+
+export const FeatureVectorsSchema = z.record(z.string(), z.record(z.string(), z.union([z.number(), z.string(), z.boolean(), z.null()]))).describe('Item key → feature vector.');
+
+const fileOr = <T extends z.ZodType>(s: T, what: string) => z.union([z.string().min(1).describe(`Path (relative to the config) of a JSON file holding the ${what}.`), s]);
+
+export const FeatureSetConfigSchema = z
+  .object({
+    when: z.record(z.string(), MatcherSchema).optional().describe('Which items this set covers (as a policy rule); omitted: every item.'),
+    field: z.string().default('features').describe('Item field holding the vector; checked before `vectors`.'),
+    schema: fileOr(FeatureSchemaSchema, 'feature schema'),
+    mapping: fileOr(FeatureMappingSchema, 'mapping'),
+    vectors: fileOr(z.record(z.string(), z.unknown()), 'vectors (item key → vector; `$`-prefixed keys are ignored)').optional(),
+  })
+  .strict();
+
 export const ConfigSchema = z
   .object({
     $schema: z.string().optional(),
@@ -90,6 +136,7 @@ export const ConfigSchema = z
       .object({ choices: z.array(RefSchema).default([]), perType: z.boolean().default(true), params: z.record(RefSchema, z.array(z.string())).default({}) })
       .strict()
       .default({ choices: [], perType: true, params: {} }),
+    features: z.array(FeatureSetConfigSchema).default([]).describe('Feature-driven sigils: per item set, a feature schema, a mapping to generator params, and optionally a vector table.'),
     samples: z.string().optional().describe('Sample items (JSON array) used by detect-key, check and preview.'),
     output: z.object({ gen: z.string().default('src/sigilsmith.gen.ts') }).strict().default({ gen: 'src/sigilsmith.gen.ts' }),
     check: z.object({ src: z.array(z.string()).default(['src']), ignore: z.array(z.string()).default(['node_modules', 'dist']) }).strict().default({ src: ['src'], ignore: ['node_modules', 'dist'] }),

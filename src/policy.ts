@@ -2,7 +2,7 @@
  * Selection policy (A6, B3, B6): which generator draws a given item.
  *
  * Order: end-user preference (within the developer's allowed choices) → policy rules
- * in order → preset suggestions for the item type → `policy.default`. Custom images
+ * in order → the first matching feature set's `use` → preset suggestions for the item type → `policy.default`. Custom images
  * are handled one level up (delivery), before any of this runs.
  *
  * Weighted choices are deterministic per item: the bucket is a hash of the salt and
@@ -66,6 +66,10 @@ export function select(item: Item, key: string, cfg: ResolvedConfig, user?: User
     const rule = cfg.policy.rules[i]!;
     if (matches(item, rule.when)) return { ...resolveUse(rule.use, key, cfg.policy.salt), via: `rule:${i}`, ruleIndex: i };
   }
+  // Feature sets choose their generator after explicit rules (inlined, not imported from
+  // features.ts, which depends on this module).
+  const fsIndex = cfg.features?.findIndex((s) => !s.when || matches(item, s.when)) ?? -1;
+  if (fsIndex >= 0) return { ref: cfg.features![fsIndex]!.mapping.use, via: `features:${fsIndex}` };
   for (const preset of cfg.presets) {
     const entry = (type && preset.byType[type]) || preset.byType['*'];
     if (entry?.use) return { ref: entry.use, via: `preset:${preset.name}` };

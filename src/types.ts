@@ -6,6 +6,8 @@
  * time (CLI, `check`, `build`).
  */
 
+import type { FeatureSet } from './features.js';
+
 /** Anything the app wants an identity image for: a song, a user, a project. */
 export type Item = Record<string, unknown>;
 
@@ -113,6 +115,8 @@ export interface ResolvedConfig {
   delivery: { strategy: 'materialized' | 'derived' | 'hybrid'; format: 'svg' | 'png' };
   regeneration: { policy: 'auto' | 'ask' | 'always' | 'never' };
   userSettings: { choices: string[]; perType: boolean; params: Record<string, string[]> };
+  /** Feature sets (schema, mapping, optional vector table), inlined by `build`. Absent in configs without one. */
+  features?: FeatureSet[];
 }
 
 /** Layer 5: what an end user chose, within `userSettings`. */
@@ -123,7 +127,7 @@ export interface UserLayer {
   params?: Record<string, Record<string, unknown>>;
 }
 
-export type LayerName = 'generator' | `preset:${string}` | 'project' | `rule:${number}` | 'user';
+export type LayerName = 'generator' | `preset:${string}` | 'project' | `rule:${number}` | 'features' | 'user';
 
 export interface LeafProvenance {
   path: string;
@@ -134,7 +138,7 @@ export interface LeafProvenance {
 
 export interface SelectionTrace {
   ref: string;
-  via: 'custom' | 'user' | 'explicit' | `rule:${number}` | `preset:${string}` | 'default';
+  via: 'custom' | 'user' | 'explicit' | `rule:${number}` | `features:${number}` | `preset:${string}` | 'default';
   weights?: Record<string, number>;
   bucket?: number;
 }
@@ -152,4 +156,6 @@ export interface Plan {
   fields: Record<string, string>;
   missingInputs: string[];
   seed: string;
+  /** Present when a feature set covers the item: which set, where the vector came from, what each encoded param read. */
+  features?: { set: number; via: 'field' | 'table' | 'none'; vector: Record<string, unknown>; sources: Record<string, string>; problems: string[] };
 }

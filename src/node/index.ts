@@ -6,7 +6,8 @@
  * The CLI is a thin layer over these functions, and an MCP or HTTP surface would be
  * too: one list of operations, several surfaces.
  */
-export { ConfigSchema, ManifestSchema, TargetSpecSchema, RefSchema, type Config, type ConfigInput, type Manifest } from './schema.js';
+export { ConfigSchema, ManifestSchema, TargetSpecSchema, RefSchema, FeatureSchemaSchema, FeatureMappingSchema, FeatureDimSchema, EncodingSchema, type Config, type ConfigInput, type Manifest } from './schema.js';
+export { inlineFeatureSets, validateFeatureSets, checkFeatureSamples } from './features.js';
 export { loadConfig, resolveConfig, loadSamples, referencedRefs, type LoadedConfig } from './config.js';
 export { catalog, loadCatalog, readSizes, type CatalogQuery } from './catalog.js';
 export { detectKey, KEY_PRIORITY, type KeyReport } from './detect.js';

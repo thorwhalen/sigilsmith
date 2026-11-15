@@ -9,6 +9,7 @@ export default defineConfig({
   entry: {
     index: 'src/index.ts',
     remote: 'src/remote.ts',
+    features: 'src/features.ts',
     delivery: 'src/delivery.ts',
     'targets/index': 'src/targets/index.ts',
     'zodal/index': 'src/zodal/index.ts',
@@ -23,6 +24,7 @@ export default defineConfig({
     'generators/initials/v1': 'src/generators/initials/v1.ts',
     'generators/emoji/v1': 'src/generators/emoji/v1.ts',
     'generators/minidenticons/v1': 'src/generators/minidenticons/v1.ts',
+    'generators/glyph/v1': 'src/generators/glyph/v1.ts',
   },
   format: ['esm'],
   dts: true,

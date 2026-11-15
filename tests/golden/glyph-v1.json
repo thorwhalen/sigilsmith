@@ -1,0 +1,24 @@
+{
+  "ref": "glyph@1",
+  "fingerprint": "7b4cef512a8575b695fdfc67dbacd28c",
+  "hashes": {
+    "0": "ac62968ed5f901b30b9aa7d88cb28b1dd8593589dc6c1da0d504777b679400ef",
+    "a": "2cee01b3361de39a3cb7f14b2ee826dc9b5045cae251ebefae6429aa2c0503f6",
+    "sigil": "78bc82e42041bfc744fdf0bef19a4b3f107bdcafbb14d6a3bbe27f6048ee8792",
+    "Blue Monday": "c59ed4c623ec9606ff476a40ccc8094e69a397def3b5a14d32826349f7b3fb1f",
+    "ada@example.com": "21ca7cd7313b6b1d1e66fb88eb0261dca1aec529e48239f47cc6fbeb9707fa34",
+    "Ωμέγα": "595cf507f4f14aa1b7d272e8b9b1c22667acd0440c41d233bc67738a87a15c0e",
+    "🎵 song": "c59ed4c623ec9606ff476a40ccc8094e69a397def3b5a14d32826349f7b3fb1f",
+    "f47ac10b-58cc-4372-a567-0e02b2c3d479": "ed9c1e5b15ea57d53b2e061b9b0e2c2c0f567ce45a83b8d1b09730251324f057"
+  },
+  "alt": {
+    "0": "ac62968ed5f901b30b9aa7d88cb28b1dd8593589dc6c1da0d504777b679400ef",
+    "a": "2cee01b3361de39a3cb7f14b2ee826dc9b5045cae251ebefae6429aa2c0503f6",
+    "sigil": "78bc82e42041bfc744fdf0bef19a4b3f107bdcafbb14d6a3bbe27f6048ee8792",
+    "Blue Monday": "c59ed4c623ec9606ff476a40ccc8094e69a397def3b5a14d32826349f7b3fb1f",
+    "ada@example.com": "21ca7cd7313b6b1d1e66fb88eb0261dca1aec529e48239f47cc6fbeb9707fa34",
+    "Ωμέγα": "595cf507f4f14aa1b7d272e8b9b1c22667acd0440c41d233bc67738a87a15c0e",
+    "🎵 song": "c59ed4c623ec9606ff476a40ccc8094e69a397def3b5a14d32826349f7b3fb1f",
+    "f47ac10b-58cc-4372-a567-0e02b2c3d479": "ed9c1e5b15ea57d53b2e061b9b0e2c2c0f567ce45a83b8d1b09730251324f057"
+  }
+}

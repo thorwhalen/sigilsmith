@@ -3,7 +3,7 @@
  * prints (docs/research/agent-first-design.md §6–7).
  *
  * Codes are `SGS` + 4 digits, grouped by hundreds: 01xx config, 02xx key, 03xx
- * generator, 04xx budget, 05xx determinism and identity, 06xx targets, 07xx drift.
+ * generator, 04xx budget, 05xx determinism and identity, 06xx targets, 07xx drift, 08xx features.
  * Every code has an offline page (`sigilsmith explain-code <code>`), built from
  * `CODES` below, which is the single source for those pages and the skill's errors list.
  */
@@ -75,6 +75,9 @@ export const CODES: Record<string, { title: string; cause: string; fix: string }
   SGS0706: { title: 'generator ref hard-coded in app code', cause: 'App code names a generator ref, so changing the choice means editing code instead of the config.', fix: 'Choose generators in the config (policy rules, user settings); app code passes the item only.' },
   SGS0707: { title: 'Math.random near sigilsmith', cause: 'Randomness next to identity images makes them change between renders.', fix: 'Remove it; identity images are seeded from the item.' },
   SGS0708: { title: 'key field hard-coded in app code', cause: 'App code names the key field next to a sigilsmith call; renaming the field then needs a code change.', fix: 'Pass the whole item; the config owns the key.' },
+  SGS0801: { title: 'feature set invalid', cause: 'A feature schema, mapping or vector file is missing, is not JSON, does not match its schema, or the mapping reads a dimension the schema lacks or leaves levels unmapped.', fix: 'Edit the file and path named in `where`; `explain` shows which dimension set each param.' },
+  SGS0802: { title: 'feature vector does not fit', cause: 'A sample item has no vector, a value outside its dimension (unknown category, number out of range, wrong type), or a dimension the schema lacks.', fix: 'Fix the vector (or its derivation), or extend the schema; missing values fall back to the dimension `default`.' },
+  SGS0803: { title: 'mapping loses features', cause: 'Items whose features differ are drawn with the same params, or a dimension drives no param: the image cannot show the difference.', fix: 'Map another dimension to a free visual channel (shape, fill, rings, orbit, mark, tone), or accept it if the difference does not matter visually.' },
   SGS0709: { title: 'regeneration not wired', cause: 'A selectable generator reads inputs that can change (titles, names) and images are stored, but the app never calls onInputsChanged, so stored images go stale silently.', fix: 'Call onInputsChanged(sigil, item, record, { confirm }) after edits, or set regeneration.policy to "never".' },
 };
 

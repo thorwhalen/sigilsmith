@@ -10,5 +10,6 @@ You are working on the package itself. Agents *using* sigilsmith in an app read 
 - Adding a generator: `src/generators/<id>/meta.ts` (id, major, kind, defaults, default inputs: plain data) + `v1.ts` (`{ ...meta, render }`) + `manifest.ts` (zod params whose defaults come from `meta`, and a lazy `import('./v1.js')`) + one line in `src/node/builtins.ts` + one entry in `tsup.config.ts`. No core edits. Never import a `v<N>.ts` statically from Node tooling: it may need an optional peer.
 - Diagnostics: add codes to `CODES` in `src/node/diagnostics.ts` (they feed `explain-code` and `skills/sigilsmith/references/errors.md`); every error carries a fix.
 - zodal workarounds live in `src/zodal/shims/` (and `src/layers.ts`), each headed `SHIM: upstream …`. Do not add silent workarounds elsewhere.
+- Feature sets: kernel-side code is `src/features.ts` (its own subpath, `sigilsmith/features`, passed to `createSigil` as `features`; never import it from `src/sigil.ts`, which keeps the kernel small); Node-side reading and checks are `src/node/features.ts`; the user guide is `skills/sigilsmith/references/features.md`.
 - The package name lives only in `package.json` and `src/meta.ts`.
 - Definition of done: `npm run typecheck && npm run build && npm test` green, and in `examples/demo`: `npx sigilsmith check` all ✓.
