@@ -13,6 +13,7 @@ export { canonicalKey, keyOf, labelOf, getPath, parsePath, normalizePart, SigilK
 export { selectInputs } from './inputs.js';
 export { foldLayers, mergePatch } from './layers.js';
 export { select, weightedPick, matches } from './policy.js';
+export type { FeatureDim, FeatureSchema, FeatureVector, FeatureValue, Encoding, SingleEncoding, FeatureMapping, FeatureSet, EncodedFeatures, NormalizedFeature, FeaturePlan, FeaturePlanner } from './features.js';
 export { cyrb128, hash32, sfc32, seededRng, sha256Hex } from './hash.js';
 export { oklchToHex, paletteFromHash } from './palette.js';
 export { svgToDataUrl, toDisplayUrl, toBytes } from './svg.js';

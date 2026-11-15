@@ -23,6 +23,8 @@ import { detectKey } from './detect.js';
 import { diag, envelope, type Diagnostic, type Envelope } from './diagnostics.js';
 import { nodeSigil } from './runtime.js';
 import { checkTargets } from './targets.js';
+import { checkFeatureSamples } from './features.js';
+import type { Plan } from '../types.js';
 
 export type Section = 'config' | 'fresh' | 'data' | 'identity' | 'determinism' | 'budget' | 'peers' | 'bypass' | 'targets';
 export const SECTIONS: Section[] = ['config', 'fresh', 'data', 'identity', 'determinism', 'budget', 'peers', 'bypass', 'targets'];
@@ -197,13 +199,19 @@ export async function check(loaded: LoadedConfig, opts: { only?: Section[] } = {
     else {
       const ds: Diagnostic[] = [];
       const keys: Array<string | undefined> = [];
+      const plans: Array<Plan | undefined> = [];
       try {
         const s = await nodeSigil(loaded, { remote: true });
-        for (const it of items) keys.push(await s.plan(it).then((p) => p.key, () => undefined));
+        for (const it of items) {
+          const p = await s.plan(it).catch(() => undefined);
+          plans.push(p);
+          keys.push(p?.key);
+        }
       } catch (e) {
         ds.push(diag('SGS0203', 'error', `runtime check failed: ${(e as Error).message}`));
       }
-      mark('data', [...ds, ...checkData(loaded, items, samplesFile ?? '', keys)]);
+      const feats = loaded.features.length ? checkFeatureSamples(loaded.features, items, plans) : [];
+      mark('data', [...ds, ...checkData(loaded, items, samplesFile ?? '', keys), ...feats]);
     }
   }
 
@@ -246,6 +254,7 @@ export async function check(loaded: LoadedConfig, opts: { only?: Section[] } = {
     const modules = (sizes as { modules?: Record<string, { gzipBytes: number }> }).modules ?? {};
     if (cfg.delivery.strategy !== 'derived') generators['(delivery module)'] = modules.delivery?.gzipBytes ?? null;
     if (usesReact(loaded)) generators['(react adapter)'] = modules.react?.gzipBytes ?? null;
+    if (loaded.features.length) generators['(features module)'] = modules.features?.gzipBytes ?? null;
     const known = [kernelGzip, ...Object.values(generators)];
     const totalGzip = known.every((x) => x !== null) ? (known as number[]).reduce((a, b) => a + b, 0) : null;
     const max = cfg.budget.maxGzipBytes ?? null;

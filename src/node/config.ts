@@ -16,6 +16,8 @@ import { diag, type Diagnostic } from './diagnostics.js';
 import { ConfigSchema, type Config } from './schema.js';
 import { sha256Hex } from '../hash.js';
 import { stableStringify } from '../ids.js';
+import type { FeatureSet } from '../features.js';
+import { inlineFeatureSets, validateFeatureSets } from './features.js';
 
 export interface LoadedConfig {
   path: string;
@@ -25,6 +27,8 @@ export interface LoadedConfig {
   resolved: ResolvedConfig | null;
   diagnostics: Diagnostic[];
   hash: string;
+  /** Feature sets with their files read and validated (empty when the config has none). */
+  features: FeatureSet[];
 }
 
 const SECRET_RE = /^(sk-|sk_|rk_|pk_live|AIza|ghp_|xox[bp]-|r8_)[A-Za-z0-9_-]{8,}/;
@@ -42,6 +46,7 @@ export function referencedRefs(cfg: Config): string[] {
   for (const name of cfg.presets) for (const e of Object.values(PRESETS[name]?.byType ?? {})) if (e.use) refs.add(e.use);
   if (Object.keys(cfg.remote).some((r) => refs.has(r))) refs.add(cfg.policy.placeholder);
   if (cfg.targets.site?.ref) refs.add(cfg.targets.site.ref);
+  for (const s of cfg.features) if (typeof s.mapping === 'object') refs.add(s.mapping.use);
   return [...refs].sort();
 }
 
@@ -90,7 +95,7 @@ export function validateSemantics(cfg: Config, file: string): Diagnostic[] {
   return out;
 }
 
-export function resolveConfig(cfg: Config): ResolvedConfig {
+export function resolveConfig(cfg: Config, features: FeatureSet[] = []): ResolvedConfig {
   const k = cfg.key;
   const spec: ResolvedConfig['key']['spec'] = 'field' in k ? { kind: 'field', field: k.field } : 'fields' in k ? { kind: 'fields', fields: k.fields } : { kind: 'custom', ref: k.custom };
   return {
@@ -104,6 +109,8 @@ export function resolveConfig(cfg: Config): ResolvedConfig {
     delivery: cfg.delivery,
     regeneration: cfg.regeneration,
     userSettings: cfg.userSettings,
+    // Only present when used, so configs without features resolve (and hash) exactly as before.
+    ...(features.length ? { features } : {}),
   };
 }
 
@@ -113,7 +120,7 @@ export async function configHash(raw: unknown): Promise<string> {
 
 export async function loadConfig(path?: string, cwd = process.cwd()): Promise<LoadedConfig> {
   const file = resolve(cwd, path ?? CONFIG_FILE);
-  const base = { path: file, dir: dirname(file), raw: null, config: null, resolved: null, hash: '' };
+  const base = { path: file, dir: dirname(file), raw: null, config: null, resolved: null, hash: '', features: [] as FeatureSet[] };
   if (!existsSync(file)) return { ...base, diagnostics: [diag('SGS0101', 'error', `no config at \`${file}\``, { fix: { summary: 'create one', applicability: 'machine-applicable', commands: ['npx sigilsmith init'] } })] };
   let raw: unknown;
   try {
@@ -122,13 +129,25 @@ export async function loadConfig(path?: string, cwd = process.cwd()): Promise<Lo
     return { ...base, diagnostics: [diag('SGS0102', 'error', `config is not valid JSON: ${(e as Error).message}`, { where: { file } })] };
   }
   const parsed = ConfigSchema.safeParse(raw);
-  const hash = await configHash(raw);
+  let hash = await configHash(raw);
   if (!parsed.success) {
     const diagnostics = parsed.error.issues.map((i) => diag('SGS0102', 'error', i.message, { where: { file: CONFIG_FILE, path: i.path.join('.') || '(root)' } }));
     return { ...base, raw, hash, diagnostics };
   }
-  const diagnostics = validateSemantics(parsed.data, CONFIG_FILE);
-  return { ...base, raw, hash, config: parsed.data, resolved: resolveConfig(parsed.data), diagnostics };
+  const cfg = parsed.data;
+  const inl = inlineFeatureSets(cfg.features, dirname(file));
+  if (cfg.features.length) {
+    // The schema, mapping and vector files are part of what the wiring module embeds.
+    hash = await configHash({ config: raw, features: inl.sets });
+    // Later steps (referencedRefs, validation) see the inlined mappings, not file paths.
+    cfg.features = cfg.features.map((s, i) => ({ ...s, ...(inl.aligned[i] ? { schema: inl.aligned[i]!.schema, mapping: inl.aligned[i]!.mapping } : {}) }));
+  }
+  const diagnostics = [
+    ...validateSemantics(cfg, CONFIG_FILE),
+    ...inl.diagnostics,
+    ...validateFeatureSets(inl.aligned, (ref) => Boolean(BUILTIN_BY_REF[ref] || cfg.remote[ref]), { remoteRefs: Object.keys(cfg.remote) }),
+  ];
+  return { ...base, raw, hash, config: cfg, resolved: resolveConfig(cfg, inl.sets), diagnostics, features: inl.sets };
 }
 
 export function loadSamples(dir: string, path: string | undefined): { items: Item[]; file?: string; error?: string } {

@@ -8,6 +8,7 @@ import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { remoteFromSpec, type RemoteSpec, type Transport } from '../remote.js';
+import { planFeatures } from '../features.js';
 import { createSigil, type Sigil } from '../sigil.js';
 import type { GeneratorLoader, Item } from '../types.js';
 import { NODE_LOADERS } from './builtins.js';
@@ -56,5 +57,5 @@ export async function nodeSigil(loaded: LoadedConfig, opts: { remote?: boolean }
   }
   let keyFn: ((item: Item) => string) | undefined;
   if ('custom' in cfg.key) keyFn = await importRef<(item: Item) => string>(loaded.dir, cfg.key.custom);
-  return createSigil({ config: loaded.resolved!, generators, ...(keyFn ? { keyFn } : {}), onWarn: () => {} });
+  return createSigil({ config: loaded.resolved!, generators, features: planFeatures, ...(keyFn ? { keyFn } : {}), onWarn: () => {} });
 }

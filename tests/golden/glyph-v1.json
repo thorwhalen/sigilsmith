@@ -1,0 +1,39 @@
+{
+  "ref": "glyph@1",
+  "fingerprint": "e68142e4521ddab93d8ef4650a8f5325",
+  "hashes": {
+    "0": "ee949465191d445089c639d870e6f754dcd8f2daca996416edd3c64ddaa705ef",
+    "a": "b68bb769bd37f8e13d697f90a660fdae1f4dfbebb1878770ce11801c60211860",
+    "sigil": "78108ece418207b7c9619dc29f165b2af099297c8c3108afff7d592a4e3d1dd4",
+    "Blue Monday": "b8d7ec01a53a4c8224a257a5eee6150058968cb343384dd7a15053e2af2d9b9a",
+    "ada@example.com": "733ef1f3b449d1f1fa210b65341c42f897f1b87a89aec3b84911a877b04aff5c",
+    "Ωμέγα": "0296133b039eb8b566c96612be46ed270081d9febbd3bfc4c0debf8e74c4e2d4",
+    "🎵 song": "b8d7ec01a53a4c8224a257a5eee6150058968cb343384dd7a15053e2af2d9b9a",
+    "f47ac10b-58cc-4372-a567-0e02b2c3d479": "ac340e9d6cf4d6b75ff9d2499d091b7d155ca4d117ff550c498c1805508b8ae2"
+  },
+  "altParams": {
+    "hue": 200,
+    "chroma": 0.2,
+    "tone": "dark",
+    "shape": "star",
+    "size": 0.7,
+    "fill": "stripes",
+    "rings": 2,
+    "orbit": 5,
+    "mark": "pulse",
+    "rotation": 15,
+    "jitter": 0.5,
+    "tile": "circle",
+    "accentShift": 30
+  },
+  "alt": {
+    "0": "e4d1e9fb052b0d625989831565fd1eb35c2fcb317d2ba6dfa4a89bd1cb0b4aee",
+    "a": "980bda67bf8ff57403f36d88648fd09c10fb704695c469eb13324db47e8a3e99",
+    "sigil": "322f5e2f9b5ebe2b073841a0d2fda6b0862bdbb163f0bfce729fc185078fcda6",
+    "Blue Monday": "2a3926a567cdcb290c249c041dea0a51d0f4d62824c6cf4248f881f515313aa3",
+    "ada@example.com": "9d28c5433969606d0424f2096de34a717b42674c8556334ea4c8c079d2ae7530",
+    "Ωμέγα": "8d52b867ee7c6b970b3952869fb742c1320ddc6a8979402450926c1412260401",
+    "🎵 song": "831ec6936d67805ce5664c758d01de0b073a3be03fcdfbe2dbbba55de4fe3206",
+    "f47ac10b-58cc-4372-a567-0e02b2c3d479": "cb8cd6cef5fca5e3e6dba4214522e10fafd948e5f4c56b3648b2446a78bf012d"
+  }
+}

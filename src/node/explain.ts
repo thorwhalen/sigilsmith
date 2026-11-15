@@ -13,6 +13,8 @@ export interface Explanation {
   item: Item;
   key: { value: string; via: Plan['keyVia']; spec: unknown; missing: string[]; layer: 'project' };
   generator: { ref: string; via: Plan['selection']['via']; weights?: Record<string, number>; bucket?: number; determinism: string };
+  /** The feature set covering the item: its vector, and which dimension set each encoded param. */
+  features?: Plan['features'];
   inputs: { specs: Plan['inputs']; values: Record<string, string>; missing: string[] };
   params: Array<{ path: string; value: unknown; layer: string; shadowed: Array<{ layer: string; value: unknown }> }>;
   delivery: { strategy: string; note: string };
@@ -42,6 +44,7 @@ export async function explainItems(loaded: LoadedConfig, items: Item[]): Promise
       key: { value: plan.key, via: plan.keyVia, spec: cfg.key, missing: plan.keyMissing, layer: 'project' },
       generator: { ref, via: plan.selection.via, ...(plan.selection.weights ? { weights: plan.selection.weights, bucket: plan.selection.bucket! } : {}), determinism },
       inputs: { specs: plan.inputs, values: plan.fields, missing: plan.missingInputs },
+      ...(plan.features ? { features: plan.features } : {}),
       params: plan.provenance.filter((p) => p.path.startsWith('params.')).map((p) => ({ ...p, path: p.path.slice(7) })),
       delivery: {
         strategy,

@@ -1,0 +1,356 @@
+[
+  {
+    "id": "flute",
+    "ref": "glyph@1",
+    "via": "features:0",
+    "params": {
+      "hue": 150,
+      "chroma": 0.14,
+      "accentShift": 150,
+      "tone": "light",
+      "shape": "flower",
+      "size": 0.45,
+      "fill": "solid",
+      "rings": 0,
+      "orbit": 1,
+      "mark": "sine",
+      "rotation": 0,
+      "jitter": 0.15,
+      "tile": "rounded",
+      "palette": {
+        "chroma": 0.12
+      }
+    },
+    "layers": {
+      "inputs": "generator",
+      "params.accentShift": "generator",
+      "params.chroma": "generator",
+      "params.fill": "features",
+      "params.hue": "features",
+      "params.jitter": "generator",
+      "params.mark": "features",
+      "params.orbit": "features",
+      "params.palette.chroma": "features",
+      "params.rings": "generator",
+      "params.rotation": "generator",
+      "params.shape": "features",
+      "params.size": "features",
+      "params.tile": "generator",
+      "params.tone": "generator"
+    },
+    "features": {
+      "set": 0,
+      "via": "field",
+      "vector": {
+        "family": "wind",
+        "register": "high",
+        "voices": 1
+      },
+      "sources": {
+        "shape": "family",
+        "hue": "register",
+        "size": "register",
+        "orbit": "voices",
+        "fill": "chords",
+        "mark": "=",
+        "palette.chroma": "="
+      },
+      "problems": [],
+      "tag": "{\"fill\":\"solid\",\"hue\":150,\"mark\":\"sine\",\"orbit\":1,\"palette\":{\"chroma\":0.12},\"shape\":\"flower\",\"size\":0.45}"
+    },
+    "seed": "flute",
+    "ids": {
+      "contentId": "sg_84fa9382642457ca024b1a649d74b45a",
+      "inputsDigest": "c7c520d8eff90f22"
+    },
+    "svg": "0f8e1f354082332e79111dfb4eebb7d372fb5976a7894c4708d59a75dec8510e"
+  },
+  {
+    "id": "cello",
+    "ref": "glyph@1",
+    "via": "features:0",
+    "params": {
+      "hue": 250,
+      "chroma": 0.14,
+      "accentShift": 150,
+      "tone": "light",
+      "shape": "star",
+      "size": 0.7,
+      "fill": "stripes",
+      "rings": 0,
+      "orbit": 2,
+      "mark": "sine",
+      "rotation": 0,
+      "jitter": 0.15,
+      "tile": "rounded",
+      "palette": {
+        "chroma": 0.12
+      }
+    },
+    "layers": {
+      "inputs": "generator",
+      "params.accentShift": "generator",
+      "params.chroma": "generator",
+      "params.fill": "features",
+      "params.hue": "features",
+      "params.jitter": "generator",
+      "params.mark": "features",
+      "params.orbit": "features",
+      "params.palette.chroma": "features",
+      "params.rings": "generator",
+      "params.rotation": "generator",
+      "params.shape": "features",
+      "params.size": "features",
+      "params.tile": "generator",
+      "params.tone": "generator"
+    },
+    "features": {
+      "set": 0,
+      "via": "field",
+      "vector": {
+        "family": "string",
+        "register": "low",
+        "voices": 2,
+        "chords": true
+      },
+      "sources": {
+        "shape": "family",
+        "hue": "register",
+        "size": "register",
+        "orbit": "voices",
+        "fill": "chords",
+        "mark": "=",
+        "palette.chroma": "="
+      },
+      "problems": [],
+      "tag": "{\"fill\":\"stripes\",\"hue\":250,\"mark\":\"sine\",\"orbit\":2,\"palette\":{\"chroma\":0.12},\"shape\":\"star\",\"size\":0.7}"
+    },
+    "seed": "cello",
+    "ids": {
+      "contentId": "sg_09a11b82ec9362cea180550c944a82e0",
+      "inputsDigest": "fef42034da1e7b6a"
+    },
+    "svg": "06308ad4c3af38c20f68839819a56ca2c01839eb8d4a1b5fe8db8ba3af026979"
+  },
+  {
+    "id": "kick",
+    "ref": "glyph@1",
+    "via": "features:0",
+    "params": {
+      "hue": 20,
+      "chroma": 0.14,
+      "accentShift": 150,
+      "tone": "light",
+      "shape": "square",
+      "size": 0.575,
+      "fill": "solid",
+      "rings": 0,
+      "orbit": 0,
+      "mark": "sine",
+      "rotation": 0,
+      "jitter": 0.15,
+      "tile": "rounded",
+      "palette": {
+        "chroma": 0.12
+      }
+    },
+    "layers": {
+      "inputs": "generator",
+      "params.accentShift": "generator",
+      "params.chroma": "generator",
+      "params.fill": "features",
+      "params.hue": "features",
+      "params.jitter": "generator",
+      "params.mark": "features",
+      "params.orbit": "features",
+      "params.palette.chroma": "features",
+      "params.rings": "generator",
+      "params.rotation": "generator",
+      "params.shape": "features",
+      "params.size": "features",
+      "params.tile": "generator",
+      "params.tone": "generator"
+    },
+    "features": {
+      "set": 0,
+      "via": "field",
+      "vector": {
+        "family": "drum",
+        "voices": 0
+      },
+      "sources": {
+        "shape": "family",
+        "hue": "family",
+        "size": "register",
+        "orbit": "voices",
+        "fill": "chords",
+        "mark": "=",
+        "palette.chroma": "="
+      },
+      "problems": [],
+      "tag": "{\"fill\":\"solid\",\"hue\":20,\"mark\":\"sine\",\"orbit\":0,\"palette\":{\"chroma\":0.12},\"shape\":\"square\",\"size\":0.575}"
+    },
+    "seed": "kick",
+    "ids": {
+      "contentId": "sg_26e08b3dff193e3267958c354a35008e",
+      "inputsDigest": "8aa213047992f135"
+    },
+    "svg": "38758db6a5ce137a293615a89e381474389afc22b8a87f65cc9c4b70236f434c"
+  },
+  {
+    "id": "tabled",
+    "ref": "glyph@1",
+    "via": "features:0",
+    "params": {
+      "hue": 250,
+      "chroma": 0.14,
+      "accentShift": 150,
+      "tone": "light",
+      "shape": "star",
+      "size": 0.7,
+      "fill": "stripes",
+      "rings": 0,
+      "orbit": 3,
+      "mark": "sine",
+      "rotation": 0,
+      "jitter": 0.15,
+      "tile": "rounded",
+      "palette": {
+        "chroma": 0.12
+      }
+    },
+    "layers": {
+      "inputs": "generator",
+      "params.accentShift": "generator",
+      "params.chroma": "generator",
+      "params.fill": "features",
+      "params.hue": "features",
+      "params.jitter": "generator",
+      "params.mark": "features",
+      "params.orbit": "features",
+      "params.palette.chroma": "features",
+      "params.rings": "generator",
+      "params.rotation": "generator",
+      "params.shape": "features",
+      "params.size": "features",
+      "params.tile": "generator",
+      "params.tone": "generator"
+    },
+    "features": {
+      "set": 0,
+      "via": "table",
+      "vector": {
+        "family": "string",
+        "register": "low",
+        "voices": 3,
+        "chords": true
+      },
+      "sources": {
+        "shape": "family",
+        "hue": "register",
+        "size": "register",
+        "orbit": "voices",
+        "fill": "chords",
+        "mark": "=",
+        "palette.chroma": "="
+      },
+      "problems": [],
+      "tag": "{\"fill\":\"stripes\",\"hue\":250,\"mark\":\"sine\",\"orbit\":3,\"palette\":{\"chroma\":0.12},\"shape\":\"star\",\"size\":0.7}"
+    },
+    "seed": "tabled",
+    "ids": {
+      "contentId": "sg_3d779edd01eb4bd301285a95c3b43d2a",
+      "inputsDigest": "0227034852aace81"
+    },
+    "svg": "4c74bafe424de2cf9ddd472b3a33e50b9ee80a1a1811ec26464d485551840fc4"
+  },
+  {
+    "id": "bare",
+    "ref": "glyph@1",
+    "via": "features:0",
+    "params": {
+      "hue": 200,
+      "chroma": 0.14,
+      "accentShift": 150,
+      "tone": "light",
+      "shape": "circle",
+      "size": 0.575,
+      "fill": "solid",
+      "rings": 0,
+      "orbit": 0,
+      "mark": "sine",
+      "rotation": 0,
+      "jitter": 0.15,
+      "tile": "rounded",
+      "palette": {
+        "chroma": 0.12
+      }
+    },
+    "layers": {
+      "inputs": "generator",
+      "params.accentShift": "generator",
+      "params.chroma": "generator",
+      "params.fill": "features",
+      "params.hue": "features",
+      "params.jitter": "generator",
+      "params.mark": "features",
+      "params.orbit": "features",
+      "params.palette.chroma": "features",
+      "params.rings": "generator",
+      "params.rotation": "generator",
+      "params.shape": "generator",
+      "params.size": "features",
+      "params.tile": "generator",
+      "params.tone": "generator"
+    },
+    "features": {
+      "set": 0,
+      "via": "none",
+      "vector": {},
+      "sources": {
+        "hue": "register",
+        "size": "register",
+        "orbit": "voices",
+        "fill": "chords",
+        "mark": "=",
+        "palette.chroma": "="
+      },
+      "problems": [
+        "no feature vector (item field `features` or the vector table)",
+        "`family`: missing"
+      ],
+      "tag": "{\"fill\":\"solid\",\"hue\":200,\"mark\":\"sine\",\"orbit\":0,\"palette\":{\"chroma\":0.12},\"size\":0.575}"
+    },
+    "seed": "bare",
+    "ids": {
+      "contentId": "sg_1ee65410a556914e61b0b19c261bd3c7",
+      "inputsDigest": "d0d3ee5e6b77dfae"
+    },
+    "svg": "a41ea1a7f8ef085738e0bc2eb31722b7b872c34c27830ae2f185f5b36abafbad"
+  },
+  {
+    "id": "song",
+    "ref": "grid@1",
+    "via": "default",
+    "params": {
+      "cells": 5,
+      "density": 0.5,
+      "shape": "rounded",
+      "padding": 0.16
+    },
+    "layers": {
+      "inputs": "generator",
+      "params.cells": "project",
+      "params.density": "generator",
+      "params.padding": "generator",
+      "params.shape": "generator"
+    },
+    "features": null,
+    "seed": "song",
+    "ids": {
+      "contentId": "sg_f1a4118574a83eb9d78152ad65565a44",
+      "inputsDigest": "63f75c890b05405e"
+    },
+    "svg": "3213ab5d9bd387d1e84db754c1c8a6965d061aaae53114a9d16dca37983c4f8c"
+  }
+]

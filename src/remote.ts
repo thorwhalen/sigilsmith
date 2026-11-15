@@ -75,7 +75,7 @@ export function byokTransport(opts: { getKey: () => Promise<string | undefined>;
 /**
  * Keyless DiceBear HTTP API (SVG). The public api.dicebear.com is free for
  * NON-COMMERCIAL use only and rate-limited; commercial apps self-host it and pass
- * `baseUrl`. Only a hash of the seed leaves the browser. The URL pins the major
+ * `baseUrl`. Only a hash of the seed (and any `params.options`) leaves the browser. The URL pins the major
  * (`9.x`); minor releases may still change output, so results are cached and the
  * generator is declared cached-nondeterministic.
  */
@@ -85,7 +85,18 @@ export function dicebearTransport(opts: { style?: string; baseUrl?: string; vers
   return async (req) => {
     // Send a hash, never the raw seed: the seed is the item key (it may be an email address).
     const seed = (await sha256Hex(`dicebear\u0000${req.seed}`)).slice(0, 24);
-    const url = `${baseUrl}/${version}/${encodeURIComponent(style)}/svg?seed=${seed}`;
+    // `params.options` (e.g. from a feature mapping) become DiceBear style options: scalars, or
+    // arrays of scalars joined with commas. Anything else, and a `seed` option, is dropped.
+    const options = req.params.options as Record<string, unknown> | undefined;
+    const scalar = (v: unknown) => typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean';
+    const extra = options && typeof options === 'object'
+      ? Object.keys(options)
+          .filter((k) => k !== 'seed' && (scalar(options[k]) || (Array.isArray(options[k]) && (options[k] as unknown[]).every(scalar))))
+          .sort()
+          .map((k) => `&${encodeURIComponent(k)}=${encodeURIComponent(Array.isArray(options[k]) ? (options[k] as unknown[]).join(',') : String(options[k]))}`)
+          .join('')
+      : '';
+    const url = `${baseUrl}/${version}/${encodeURIComponent(style)}/svg?seed=${seed}${extra}`;
     const res = await f(url);
     if (!res.ok) throw new Error(`DiceBear answered HTTP ${res.status}`);
     return svgImage(await res.text());

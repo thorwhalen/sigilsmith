@@ -43,10 +43,27 @@ sigilsmith is a *builder* package. You (or, more often, your coding agent) use i
 | `shapes@1` | abstract × hash | 699 B | Bauhaus shapes, in-house |
 | `initials@1` | geometric × metadata | 786 B | letters from the label, colour from the key |
 | `emoji@1` | illustrative × metadata | 1429 B | keyword match on title/tags, else hash |
+| `glyph@1` | geometric × metadata | ~2.1 kB | feature glyph: hue, shape, fill, rings, orbit, mark, tone and size are params a feature mapping drives |
 | `minidenticons@1` | geometric × hash | 695 B | adapter over the MIT `minidenticons` (peer, pinned 4.2.1) |
 | remote (`proxy`, `module`/BYOK, `dicebear`, `mock`) | any | 2.7 kB module | cached by content id, instant placeholder, keys never in the bundle; the public DiceBear API is free for non-commercial use only (`check` warns until you acknowledge it or self-host) |
 
 Measured with esbuild + gzip -9 on 2026-11-14 (`npm run measure`); third-party libraries are measured in `spikes/README.md`.
+
+## Feature-driven sigils
+
+Identicons make items look *different*; a feature set makes them look *meaningfully* different, so similar items look related. Three JSON files, maintained without code: a **schema** of dimensions (`numeric`, `ordinal`, `categorical`, `binary`), the items' **vectors** (on the item or in a table by key), and a **mapping** from dimensions to a generator's params.
+
+```jsonc
+"features": [{ "when": { "kind": "instrument" }, "schema": "instrument.features.schema.json", "mapping": "instrument.sigil-mapping.json" }]
+```
+```json
+{ "use": "glyph@1", "encodings": { "glyph@1": {
+  "hue":   { "from": "family", "map": { "wind": 190, "string": 30, "percussion": 350 } },
+  "orbit": { "from": "voices", "range": [0, 6], "round": true },
+  "mark":  { "from": "percussive", "map": { "true": "pulse", "false": "none" } } } } }
+```
+
+The encoded params are a plan layer of their own (`explain` shows the dimension behind each), `check` reports vectors that do not fit the schema and features the mapping cannot show, and the browser loads `sigilsmith/features` (~1.1 kB) only when a config uses it. The mapping is keyed by generator, so the same features can drive a remote style (DiceBear options) with no code. Guide: [`skills/sigilsmith/references/features.md`](skills/sigilsmith/references/features.md).
 
 ## Policies, settings, delivery
 
