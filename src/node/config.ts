@@ -145,7 +145,7 @@ export async function loadConfig(path?: string, cwd = process.cwd()): Promise<Lo
   const diagnostics = [
     ...validateSemantics(cfg, CONFIG_FILE),
     ...inl.diagnostics,
-    ...validateFeatureSets(inl.aligned, (ref) => Boolean(BUILTIN_BY_REF[ref] || cfg.remote[ref])),
+    ...validateFeatureSets(inl.aligned, (ref) => Boolean(BUILTIN_BY_REF[ref] || cfg.remote[ref]), { remoteRefs: Object.keys(cfg.remote) }),
   ];
   return { ...base, raw, hash, config: cfg, resolved: resolveConfig(cfg, inl.sets), diagnostics, features: inl.sets };
 }

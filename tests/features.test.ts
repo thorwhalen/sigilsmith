@@ -185,3 +185,23 @@ describe('feature sets in the config (files, validation, check, build)', () => {
     expect(readFileSync(join(plain, 'src/sigilsmith.gen.ts'), 'utf8')).not.toMatch(/features/);
   });
 });
+
+describe('glyph@1 keeps every channel distinct', () => {
+  it('size stays strictly increasing with rings and satellites mapped', async () => {
+    const { renderModule } = await import('../src/node/build.js');
+    const glyph = (await import('../src/generators/glyph/v1.js')).default;
+    for (const extra of [{ rings: 3, orbit: 4 }, { rings: 2, orbit: 4 }, { rings: 0, orbit: 0 }]) {
+      const svgs = new Set<string>();
+      for (const size of [0.4, 0.5, 0.6, 0.7, 0.85]) {
+        const img = await renderModule(glyph, 'x', { ...extra, size, jitter: 0 });
+        svgs.add(img.type === 'svg' ? img.svg : '');
+      }
+      expect(svgs.size, JSON.stringify(extra)).toBe(5);
+    }
+  });
+  it('warns when an entry of an encoding list hides the ones after it', async () => {
+    const { validateFeatureSets } = await import('../src/node/features.js');
+    const set: FeatureSet = { field: 'features', schema, mapping: { use: 'glyph@1', encodings: { 'glyph@1': { hue: [{ value: 3 }, { from: 'family', map: { wind: 1, string: 2, drum: 3 } }] } } } };
+    expect(validateFeatureSets([set], () => true).map((d) => d.message).join()).toMatch(/never reached/);
+  });
+});

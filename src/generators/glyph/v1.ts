@@ -116,9 +116,10 @@ const glyph: GeneratorModule<GlyphParams> = {
     const rings = Math.round(clamp(params.rings, 0, 3));
     const orbit = Math.round(clamp(params.orbit, 0, 8));
     const jitter = clamp(params.jitter, 0, 1);
-    // The silhouette shrinks to leave room for its rings and satellites, so they never
-    // overlap the shape, each other, or the tile edge.
-    const R = Math.min(45 * clamp(params.size, 0.2, 0.85), (orbit > 0 ? 35 : 46) - 6 * rings);
+    // `size` spans the room left by the rings and satellites (so they never overlap the
+    // shape, each other or the tile edge), and stays strictly increasing within it.
+    const room = (orbit > 0 ? 33 : 40) - 6 * rings;
+    const R = 8 + (room - 8) * ((clamp(params.size, 0.2, 0.85) - 0.2) / 0.65);
     const rot = Math.round(clamp(params.rotation, -360, 360) + (rJ - 0.5) * 60 * jitter);
 
     const bg = dark ? oklchToHex(0.27, c * 0.45, hue) : oklchToHex(0.95, c * 0.3, hue);

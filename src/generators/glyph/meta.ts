@@ -20,7 +20,7 @@ export interface GlyphParams {
   tone: 'light' | 'dark';
   /** The silhouette at the centre. */
   shape: (typeof GLYPH_SHAPES)[number];
-  /** Silhouette radius as a fraction of the tile's half-width. */
+  /** Silhouette size, 0.2 to 0.85, within the room its rings and satellites leave. */
   size: number;
   /** Surface of the silhouette. */
   fill: (typeof GLYPH_FILLS)[number];

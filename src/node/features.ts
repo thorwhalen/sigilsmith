@@ -10,7 +10,7 @@
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { encodeFeatures, featureSetIndex, featureVectorOf, normalizeFeature, type FeatureSet, type FeatureVector, type SingleEncoding } from '../features.js';
+import { encodeFeatures, featureSetIndex, featureVectorOf, normalizeFeature, UNSAFE_SEGMENTS, type FeatureSet, type FeatureVector, type SingleEncoding } from '../features.js';
 import { stableStringify } from '../ids.js';
 import type { Item, Plan } from '../types.js';
 import { BUILTIN_BY_REF } from './builtins.js';
@@ -90,15 +90,17 @@ function levelsOf(dim: FeatureSet['schema']['dims'][string]): string[] | null {
 
 function setPath(target: Record<string, unknown>, path: string, value: unknown) {
   const parts = path.split('.');
+  if (parts.some((p) => UNSAFE_SEGMENTS.has(p))) return;
   let cur = target;
   for (const p of parts.slice(0, -1)) cur = (cur[p] ??= {}) as Record<string, unknown>;
   cur[parts.at(-1)!] = value;
 }
 
 /** Mapping vs schema vs generator params. */
-export function validateFeatureSets(sets: ReadonlyArray<FeatureSet | undefined>, isKnownRef: (ref: string) => boolean): Diagnostic[] {
+export function validateFeatureSets(sets: ReadonlyArray<FeatureSet | undefined>, isKnownRef: (ref: string) => boolean, opts: { remoteRefs?: readonly string[] } = {}): Diagnostic[] {
   const out: Diagnostic[] = [];
-  const knownId = (k: string) => !k.includes('@') && Object.keys(BUILTIN_BY_REF).some((r) => r.startsWith(`${k}@`));
+  const allRefs = [...Object.keys(BUILTIN_BY_REF), ...(opts.remoteRefs ?? [])];
+  const knownId = (k: string) => !k.includes('@') && allRefs.some((r) => r.startsWith(`${k}@`));
   sets.forEach((set, i) => {
     if (!set) return;
     const at = `features.${i}.mapping`;
@@ -107,13 +109,18 @@ export function validateFeatureSets(sets: ReadonlyArray<FeatureSet | undefined>,
     const used = new Set<string>();
     for (const [ref, encs] of Object.entries(set.mapping.encodings)) {
       if (!isKnownRef(ref) && !knownId(ref)) out.push(diag('SGS0104', 'error', `${at}.encodings: unknown generator ref \`${ref}\``, { where: { path: `${at}.encodings.${ref}` } }));
-      const paramsSchema = (BUILTIN_BY_REF[ref] ?? Object.values(BUILTIN_BY_REF).filter((b) => b.meta.id === ref).sort((a, b) => b.meta.major - a.meta.major)[0])?.paramsSchema;
+      // An id key is checked against the major `use` names when it is that generator, else the newest built-in major.
+      const forId = set.mapping.use.split('@')[0] === ref ? BUILTIN_BY_REF[set.mapping.use] : undefined;
+      const paramsSchema = (BUILTIN_BY_REF[ref] ?? forId ?? Object.values(BUILTIN_BY_REF).filter((b) => b.meta.id === ref).sort((a, b) => b.meta.major - a.meta.major)[0])?.paramsSchema;
       for (const [path, encOrList] of Object.entries(encs)) {
         const where = { path: `${at}.encodings.${ref}.${path}` };
         const list = Array.isArray(encOrList) ? encOrList : [encOrList];
         list.forEach((enc, li) => {
           // In a list, only the last entry has to cover every level: earlier ones fall through.
           const last = li === list.length - 1;
+          if (!last && ('value' in enc || ('map' in enc && enc.default !== undefined) || 'range' in enc)) {
+            out.push(diag('SGS0801', 'warning', `\`${path}\`: entry ${li + 1} of its list always yields a value (a constant, a range or a map with a default), so the entries after it are never reached`, { where }));
+          }
           if (!('value' in enc)) {
             const dim = set.schema.dims[enc.from];
             used.add(enc.from);

@@ -24,7 +24,7 @@ export default defineGeneratorManifest(
     accentShift: z.number().int().min(0).max(359).default(mod.defaults.accentShift).describe('Hue offset of the second colour (rings, satellites, the lower half of `half`): 150 contrasts, 20-40 stays in the family.'),
     tone: z.enum(['light', 'dark']).default(mod.defaults.tone).describe('Light or dark tile.'),
     shape: z.enum(GLYPH_SHAPES).default(mod.defaults.shape).describe('Silhouette at the centre.'),
-    size: z.number().min(0.2).max(0.85).default(mod.defaults.size).describe('Silhouette radius, fraction of the half-tile.'),
+    size: z.number().min(0.2).max(0.85).default(mod.defaults.size).describe('Silhouette size, 0.2 (smallest) to 0.85 (largest that leaves room for its rings and satellites).'),
     fill: z.enum(GLYPH_FILLS).default(mod.defaults.fill).describe('Surface texture of the silhouette.'),
     rings: z.number().int().min(0).max(3).default(mod.defaults.rings).describe('Concentric rings around the silhouette.'),
     orbit: z.number().int().min(0).max(8).default(mod.defaults.orbit).describe('Satellite dots around the silhouette.'),
