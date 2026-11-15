@@ -21,7 +21,7 @@ Generated from `src/node/diagnostics.ts` by `npm run docs`. Groups: 01xx config,
 | SGS0302 | invalid generator params | Params in the config don't match the generator's schema. | Fix the param named in `where.path`; `catalog --ref <ref>` lists valid params. |
 | SGS0303 | derived delivery with a non-pure generator | `derived` renders on every view, which needs a pure, local generator; remote or cached-nondeterministic ones would re-run every time. | Use `materialized` or `hybrid`, or a pure generator. |
 | SGS0304 | generator peer missing or mismatched | An adapter generator needs its upstream library at the pinned version, because its output depends on it. | Install the exact version named in `fix.commands`. |
-| SGS0401 | over budget | Kernel plus selected generators exceed `budget.maxGzipBytes`. | Drop a generator, pick smaller ones (`catalog --max-gzip`), or raise the budget. |
+| SGS0401 | over budget | Everything sigilsmith adds to the bundle (kernel, delivery/React/remote modules in use, and every selectable generator) exceeds `budget.maxGzipBytes`, which is a total. | Replace the largest generator with one that fits the room named in the fix (`catalog --max-gzip` filters per generator), drop one, or raise the budget. |
 | SGS0402 | rasterizer missing | PNG output was requested but no rasterizer is available. | In Node, `npm i -D @resvg/resvg-js`; in the browser, pass `rasterize`. |
 | SGS0501 | non-deterministic output | Rendering the same item twice gave different bytes. | A generator uses randomness or time; use ctx.rng only. |
 | SGS0502 | generator output changed | A pinned generator's fingerprint no longer matches the lock, so every image it draws has changed. | Revert the dependency change, or accept with `build --accept` after review. |
@@ -32,9 +32,11 @@ Generated from `src/node/diagnostics.ts` by `npm run docs`. Groups: 01xx config,
 | SGS0602 | target not registered | The HTML head lacks the tag for a configured target. | Paste the snippet from `targets --emit` into the head. |
 | SGS0603 | target file missing or wrong size | A file a target needs is missing from the public dir, or its pixel size is wrong. | Run `sigilsmith targets --emit`. |
 | SGS0604 | link-preview URL not absolute | Crawlers resolve og:image/twitter:image only from absolute URLs. | Set `targets.baseUrl` and use an absolute URL. |
+| SGS0606 | target file exists | `targets --emit` will not replace a file it did not write (the lock records what it wrote), such as a hand-made icon with the same name. | Emit elsewhere with `--out <dir>` and pick what to keep, or replace it with `--force`. |
+| SGS0607 | page already has icons | The page in `targets.html` declares its own favicon or touch icon; a site icon from sigilsmith would compete with it (browsers prefer SVG; hosts may derive icons from the page). | Drop the site targets the page already covers from `targets.ids`, or replace its icons on purpose. |
 | SGS0605 | manifest icons incomplete | The web app manifest lacks a 192, 512 or maskable icon. | Merge the `icons` snippet from `targets --emit` into the manifest. |
 | SGS0701 | key field missing from data | The configured key field is absent from the sample data: probably renamed. | Point `key.field` at the new name (one line), or run `detect-key --write`. |
-| SGS0702 | input field missing from data | An input or rule field named in the config appears in no sample item. | Rename it in the config to match the data. |
+| SGS0702 | input field missing from data | An input, rule or item-type field named in the config appears in no sample item (or the samples are missing or too few). | Rename it in the config to match the data. For `itemType`, set `"itemType": null` when items have no type field (only a warning unless a rule matches on it). |
 | SGS0703 | wiring module stale | The config changed since the wiring module was generated. | Run `sigilsmith build`. |
 | SGS0704 | wiring module missing | The generated module the app imports does not exist. | Run `sigilsmith build`. |
 | SGS0705 | generator imported directly | App code imports a generator module or a generator library (e.g. minidenticons), bypassing the config. | Import `sigil` from the wiring module instead. |

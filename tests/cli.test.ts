@@ -134,7 +134,7 @@ describe('budget (A4, B5)', () => {
     const dir = makeProject({ ...BASIC, budget: { maxGzipBytes: 3000 } });
     const env = await check(await loadConfig(undefined, dir), { only: ['budget'] });
     const d = env.diagnostics.find((x) => x.code === 'SGS0401')!;
-    expect(d.message).toMatch(/over the 3000 B budget/);
+    expect(d.message).toMatch(/over the 3000 B total budget/);
     expect(env.data.budget!.kernelGzip).toBeGreaterThan(1000);
   });
 });

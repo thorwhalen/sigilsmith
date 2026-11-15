@@ -129,3 +129,45 @@ export function detectKey(items: Item[], opts: { priority?: string[] } = {}): Ke
   if (chosen) for (const s of chosen.suspects) warnings.push(s.detail);
   return { total: items.length, candidates: candidates.sort((a, b) => a.rank - b.rank), chosen, warnings };
 }
+
+/** Names that usually hold an item's category, best first. */
+export const ITEM_TYPE_NAMES = ['type', 'kind', 'category', 'mediaType', 'media_type', 'itemType', 'item_type', 'source', 'format', 'class', 'genre'];
+
+export interface ItemTypeReport {
+  /** The proposed field, or null when no field looks like a category. */
+  field: string | null;
+  /** Distinct values of the proposed field in the samples. */
+  values: string[];
+  why: string;
+}
+
+/**
+ * Propose the field that names an item's type (what presets and `when` rules match on):
+ * a top-level string field present in nearly every sample, with few distinct values.
+ * A conventional name (`type`, `kind`, `category`, …) wins over an unnamed one; with no
+ * samples there is nothing to look at, and `null` says so instead of guessing.
+ */
+export function detectItemType(items: Item[], opts: { names?: string[]; maxDistinct?: number; minPresence?: number } = {}): ItemTypeReport {
+  const { names = ITEM_TYPE_NAMES, maxDistinct = 12, minPresence = 0.9 } = opts;
+  if (!items.length) return { field: null, values: [], why: 'no samples to look at' };
+  const fields = [...new Set(items.slice(0, 200).flatMap((it) => Object.keys(it)))];
+  const candidates = fields
+    .map((f) => {
+      const vals = items.map((it) => getPath(it, f)).filter((v): v is string => typeof v === 'string').map((v) => normalizePart(v)).filter((v): v is string => v !== undefined);
+      const distinct = [...new Set(vals)];
+      const presence = vals.length / items.length;
+      const named = names.findIndex((n) => n.toLowerCase() === f.toLowerCase());
+      const textual = vals.length > 0 && vals.every((v) => v.length <= 40 && !ISO_DATE_RE.test(v) && !/^-?\d+(\.\d+)?$/.test(v));
+      const categorical = distinct.length >= 1 && distinct.length <= Math.min(maxDistinct, Math.max(1, Math.floor(items.length / 2)));
+      return { f, distinct, presence, named, ok: textual && categorical && presence >= minPresence && !KEY_PRIORITY.includes(f) && !DISPLAY_RE.test(f) };
+    })
+    .filter((c) => c.ok && (c.named >= 0 || c.distinct.length >= 2))
+    .sort((a, b) => (a.named < 0 ? 1e3 : a.named) - (b.named < 0 ? 1e3 : b.named) || a.distinct.length - b.distinct.length);
+  const best = candidates[0];
+  if (!best) return { field: null, values: [], why: `no field in the samples has a few repeated values in at least ${minPresence * 100}% of items` };
+  return {
+    field: best.f,
+    values: best.distinct.slice(0, maxDistinct),
+    why: best.named >= 0 ? `\`${best.f}\` is a conventional type field with ${best.distinct.length} value(s)` : `\`${best.f}\` has ${best.distinct.length} repeated values across the samples`,
+  };
+}

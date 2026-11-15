@@ -63,7 +63,18 @@ function checkData(loaded: LoadedConfig, items: Item[], samplesFile: string, key
   if (dups.length) out.push(diag('SGS0204', 'error', `key is not unique: ${dups.length} value(s) shared by several items, e.g. ${JSON.stringify(dups[0]![0])} (items ${dups[0]![1].join(', ')})`, { where: { config: 'key', data: samplesFile }, fix: { summary: 'use a unique or composite key', applicability: 'maybe-incorrect', commands: [`npx ${PKG_NAME} detect-key ${relative(loaded.dir, samplesFile)}`] } }));
   for (const f of cfg.key.fallback) if (present(f) === 0) out.push(diag('SGS0702', 'warning', `fallback key field \`${f}\` appears in no sample item`, { where: { config: 'key.fallback', data: samplesFile } }));
   const named = new Set<string>();
-  if (cfg.itemType) named.add(cfg.itemType.field);
+  // The item-type field only matters when a rule matches on it (rules are checked below)
+  // or a preset maps types; otherwise a missing one is a stale default, not broken data.
+  const typeField = cfg.itemType?.field;
+  const typeInRules = typeField !== undefined && cfg.policy.rules.some((r) => typeField in r.when);
+  if (typeField && !typeInRules && present(typeField) === 0) {
+    out.push(
+      diag('SGS0702', 'warning', `item-type field \`${typeField}\` appears in no sample item${cfg.presets.length ? `, so presets (${cfg.presets.join(', ')}) apply only their "*" entry` : ''}`, {
+        where: { config: 'itemType', data: samplesFile },
+        fix: { summary: 'point itemType.field at the field that names an item\'s type, or set "itemType": null if items have none', applicability: 'maybe-incorrect', edits: [{ file: CONFIG_FILE, path: 'itemType', set: null }] },
+      }),
+    );
+  }
   for (const g of Object.values(cfg.generators)) for (const i of g.inputs ?? []) named.add(fieldOf(i));
   cfg.policy.rules.forEach((r) => {
     Object.keys(r.when).forEach((f) => named.add(f));
@@ -241,8 +252,20 @@ export async function check(loaded: LoadedConfig, opts: { only?: Section[] } = {
     data.budget = { kernelGzip, generators, totalGzip, maxGzipBytes: max };
     if (max !== null && totalGzip === null) ds.push(diag('SGS0401', 'warning', 'sizes not measured for this package build; cannot check the budget', { fix: { summary: 'run `npm run measure` in the sigilsmith package', applicability: 'unspecified' } }));
     if (max !== null && totalGzip !== null && totalGzip > max) {
-      const biggest = Object.entries(generators).sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))[0];
-      ds.push(diag('SGS0401', 'error', `kernel + modules + generators = ${totalGzip} B gzip, over the ${max} B budget`, { where: { generators }, fix: { summary: `drop or replace the largest (${biggest?.[0]}: ${biggest?.[1]} B), or raise budget.maxGzipBytes`, applicability: 'maybe-incorrect', commands: [`npx ${PKG_NAME} catalog --implemented --max-gzip ${Math.max(0, max - (kernelGzip ?? 0))}`] } }));
+      // Room for one generator in place of the largest: the budget minus everything else.
+      // When the kernel and modules alone exceed the budget, no generator fits and the
+      // only fix is a larger budget, so no catalog command is offered.
+      const gens = Object.entries(generators).filter(([r]) => !r.startsWith('('));
+      const biggest = gens.sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))[0];
+      const fixed = totalGzip - gens.reduce((a, [, g]) => a + (g ?? 0), 0);
+      const room = max - (totalGzip - (biggest?.[1] ?? 0));
+      const fix =
+        fixed >= max
+          ? { summary: `the kernel and modules alone take ${fixed} B, over the ${max} B total; raise budget.maxGzipBytes to at least ${totalGzip}`, applicability: 'maybe-incorrect' as const, edits: [{ file: loaded.path, path: 'budget.maxGzipBytes', set: totalGzip }] }
+          : room > 0 && biggest
+            ? { summary: `replace the largest generator (${biggest[0]}: ${biggest[1]} B) with one of at most ${room} B, drop it, or raise budget.maxGzipBytes to ${totalGzip}`, applicability: 'maybe-incorrect' as const, commands: [`npx ${PKG_NAME} catalog --implemented --max-gzip ${room}`] }
+            : { summary: `drop a generator${biggest ? ` (largest: ${biggest[0]}, ${biggest[1]} B)` : ''} or raise budget.maxGzipBytes to ${totalGzip}`, applicability: 'maybe-incorrect' as const, edits: [{ file: loaded.path, path: 'budget.maxGzipBytes', set: totalGzip }] };
+      ds.push(diag('SGS0401', 'error', `kernel + modules + generators = ${totalGzip} B gzip, over the ${max} B total budget (budget.maxGzipBytes counts everything sigilsmith adds)`, { where: { kernelGzip, generators }, fix }));
     }
     mark('budget', ds);
   }

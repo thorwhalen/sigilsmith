@@ -63,7 +63,7 @@ export const OPERATIONS = [
     input: {
       style: z.array(z.enum(['abstract', 'geometric', 'illustrative', 'photorealistic'])).optional(),
       semantic: z.array(z.enum(['hash', 'metadata', 'embedding', 'llm'])).optional(),
-      maxGzip: z.number().int().positive().optional().describe('Maximum incremental gzip bytes per generator.'),
+      maxGzip: z.number().int().nonnegative().optional().describe('Maximum gzip bytes per generator, over the kernel. Not the total: `budget.maxGzipBytes` in the config counts the kernel and modules too.'),
       noNetwork: z.boolean().optional(),
       minPx: z.number().int().positive().optional().describe('The size (px) the images must stay legible at.'),
       implemented: z.boolean().optional().describe('Only generators that can be wired today.'),
@@ -135,11 +135,11 @@ export const OPERATIONS = [
     name: 'targets',
     title: 'List or emit integration targets',
     description: 'Without emit: list the targets (favicon, Apple touch icon, manifest icons, og:image, Media Session art, ...) with sizes, formats and whether they need a stored URL. With emit: write their files to the public dir and return the registration snippets.',
-    input: { config, emit: z.boolean().optional(), ids: z.array(z.string()).optional(), item: z.record(z.string(), z.unknown()).optional(), out: z.string().optional(), includeLegacy: z.boolean().optional() },
+    input: { config, emit: z.boolean().optional(), ids: z.array(z.string()).optional(), item: z.record(z.string(), z.unknown()).optional(), out: z.string().optional(), force: z.boolean().optional().describe('Replace existing files that sigilsmith did not write (hand-made icons with the same name).'), includeLegacy: z.boolean().optional() },
     annotations: WRITE,
     run: async (i, ctx) => {
       if (!i.emit) return listTargetsCmd({ includeLegacy: Boolean(i.includeLegacy) });
-      return withConfig(ctx, i.config, 'targets', (l) => emitTargets(l, { ...(i.ids?.length ? { ids: i.ids } : {}), ...(i.item ? { item: i.item } : {}), ...(i.out ? { outDir: i.out } : {}) }));
+      return withConfig(ctx, i.config, 'targets', (l) => emitTargets(l, { ...(i.ids?.length ? { ids: i.ids } : {}), ...(i.item ? { item: i.item } : {}), ...(i.out ? { outDir: i.out } : {}), force: Boolean(i.force) }));
     },
   }),
   define({

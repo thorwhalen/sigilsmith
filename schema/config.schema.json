@@ -535,6 +535,7 @@
       "type": "object",
       "properties": {
         "maxGzipBytes": {
+          "description": "Total gzip bytes sigilsmith may add to the app: kernel + the delivery, React and remote modules in use + every generator the config can select. Not per generator (that is `catalog --max-gzip`).",
           "type": "integer",
           "exclusiveMinimum": 0,
           "maximum": 9007199254740991
@@ -649,6 +650,10 @@
         },
         "baseUrl": {
           "description": "Absolute site URL; required for og:image.",
+          "type": "string"
+        },
+        "basePath": {
+          "description": "Path the app is served under, prefixed to the hrefs `targets --emit` prints: \"/\" (the default), \"/myapp/\" for a sub-path, or \"\" for relative hrefs. Ignored for targets that need `baseUrl`.",
           "type": "string"
         },
         "publicDir": {

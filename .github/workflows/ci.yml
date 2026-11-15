@@ -23,6 +23,8 @@ jobs:
       - run: npm run typecheck
       - run: npm run build
       - run: npm test
+      - name: Install into a fresh app beside the latest optional peers
+        run: scripts/install-smoke.sh
 
   publish:
     needs: test

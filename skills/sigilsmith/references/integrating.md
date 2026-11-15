@@ -14,8 +14,8 @@ Vanilla: `const img = await sigil.render(item); el.src = toDisplayUrl(img);` (`t
 
 ## Delivery (`delivery.strategy`)
 
-- `materialized` (default): on item creation, `deliver(sigil, item, { store })` (from `sigilsmith/delivery`) renders in the browser, stores the bytes under a content id (`sg_…`, a hash of generator, inputs and params) and returns a `SigilRecord` with its `url`. Save the record on the item. Same inputs, same id: uploads are idempotent and cacheable forever (`Cache-Control: immutable`).
-- `derived`: nothing stored; `<Sigil>` renders on every view. Only for pure generators (`check` enforces it).
+- `materialized` (the schema default when the field is omitted; `init` writes `derived`): on item creation, `deliver(sigil, item, { store })` (from `sigilsmith/delivery`) renders in the browser, stores the bytes under a content id (`sg_…`, a hash of generator, inputs and params) and returns a `SigilRecord` with its `url`. Save the record on the item. Same inputs, same id: uploads are idempotent and cacheable forever (`Cache-Control: immutable`).
+- `derived` (what `init` writes): nothing stored; `<Sigil>` renders on every view. Only for pure generators (`check` enforces it). Images follow their inputs: if a generator reads the title, renaming the item changes its image, with no prompt.
 - `hybrid`: shows a local render at once, stores in the background (`delivered.stored`).
 
 Storage is the `store` argument: `memoryStore()` by default; any zodal blob provider through `fromDataProvider(provider)` from `sigilsmith/zodal` (`createHttpBlobProvider` from `@zodal/store-http` for your API, `createIndexedDBBlobProvider` from `@zodal/store-localstorage` for offline). Custom uploads use `storeCustom(bytes, mime, { store })` and are never overwritten.
