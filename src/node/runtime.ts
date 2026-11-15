@@ -11,7 +11,7 @@ import { remoteFromSpec, type RemoteSpec, type Transport } from '../remote.js';
 import { planFeatures } from '../features.js';
 import { createSigil, type Sigil } from '../sigil.js';
 import type { GeneratorLoader, Item } from '../types.js';
-import { NODE_LOADERS } from './builtins.js';
+import { nodeLoaders } from './builtins.js';
 import type { LoadedConfig } from './config.js';
 
 /**
@@ -46,7 +46,7 @@ export async function importRef<T>(dir: string, ref: string): Promise<T> {
 
 export async function nodeSigil(loaded: LoadedConfig, opts: { remote?: boolean } = {}): Promise<Sigil> {
   const cfg = loaded.config!;
-  const generators: Record<string, GeneratorLoader> = { ...NODE_LOADERS };
+  const generators: Record<string, GeneratorLoader> = nodeLoaders(loaded.dir);
   for (const [ref, spec] of Object.entries(cfg.remote)) {
     const [id, major] = ref.split('@') as [string, string];
     if (opts.remote === false) continue;

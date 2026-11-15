@@ -17,7 +17,8 @@ const REACT_GLUE = "import { Sigil } from 'sigilsmith/react';\nexport const Row 
 
 describe('budget (#3)', () => {
   it('the starter config passes the budget on the React path with any one local generator', async () => {
-    const refs = (await catalog({ implemented: true })).data.results.flatMap((r) => (r.ref && r.implemented ? [r.ref] : []));
+    // Extras (content thumbnails) are opted into, with their own budget: see the screenshot tests.
+    const refs = (await catalog({ implemented: true })).data.results.flatMap((r) => (r.ref && r.implemented && r.tier !== 'extra' ? [r.ref] : []));
     expect(refs.length).toBeGreaterThanOrEqual(5);
     for (const ref of refs) {
       const cfg = { ...starterConfig({}), policy: { default: ref, rules: [] } };

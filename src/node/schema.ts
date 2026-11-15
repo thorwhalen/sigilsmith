@@ -210,7 +210,8 @@ export const ManifestSchema = z
     major: z.number().int().positive().optional(),
     ref: RefSchema.optional(),
     importPath: z.string().optional(),
-    kind: z.enum(['hash', 'semantic']).optional(),
+    tier: z.enum(['core', 'extra']).optional().describe('`extra`: outside the generator set (`sigilsmith/extras/*`), a content thumbnail rather than an identity image; shipped only when selected.'),
+    kind: z.enum(['hash', 'semantic', 'content']).optional(),
     defaultInputs: z.array(InputSpecSchema).optional(),
     peer: z.object({ name: z.string(), version: z.string() }).optional().describe('Upstream library the host must install, pinned exactly.'),
   })

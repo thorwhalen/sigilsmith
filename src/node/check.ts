@@ -18,7 +18,7 @@ import { computeLock, HEADER_HASH_RE, installedVersion, type Lock } from './buil
 import { BUILTIN_BY_REF } from './builtins.js';
 import { readSizes } from './catalog.js';
 import { CONFIG_FILE } from '../meta.js';
-import { loadSamples, referencedRefs, type LoadedConfig } from './config.js';
+import { loadSamples, referencedRefs, shippedRefs, type LoadedConfig } from './config.js';
 import { detectKey } from './detect.js';
 import { diag, envelope, type Diagnostic, type Envelope } from './diagnostics.js';
 import { nodeSigil } from './runtime.js';
@@ -217,9 +217,11 @@ export async function check(loaded: LoadedConfig, opts: { only?: Section[] } = {
 
   if (run('identity') || run('determinism')) {
     const lockFile = resolve(loaded.dir, LOCK_FILE);
-    const { lock: now } = await computeLock(loaded);
+    const { lock: now, diagnostics: renderFailures } = await computeLock(loaded);
+    // Sample items that failed to render (a broken file, a bad param) are reported once, in
+    // the first of the two sections that runs.
     if (run('identity')) {
-      const ds: Diagnostic[] = [];
+      const ds: Diagnostic[] = [...renderFailures];
       if (!existsSync(lockFile)) ds.push(diag('SGS0503', 'error', `no ${LOCK_FILE}`, { fix: { summary: 'create it', applicability: 'machine-applicable', commands: [`npx ${PKG_NAME} build`] } }));
       else {
         const old = JSON.parse(readFileSync(lockFile, 'utf8')) as Lock;
@@ -234,7 +236,7 @@ export async function check(loaded: LoadedConfig, opts: { only?: Section[] } = {
       mark('identity', ds);
     }
     if (run('determinism')) {
-      const ds: Diagnostic[] = [];
+      const ds: Diagnostic[] = run('identity') ? [] : [...renderFailures];
       const again = await computeLock(loaded);
       for (const [r, g] of Object.entries(now.generators)) if (again.lock.generators[r]?.fingerprint !== g.fingerprint) ds.push(diag('SGS0501', 'error', `\`${r}\` rendered different bytes for the same inputs`));
       for (const [k, s] of Object.entries(now.samples)) if (again.lock.samples[k]?.image !== s.image) ds.push(diag('SGS0501', 'error', `item \`${k}\` rendered different bytes twice`));
@@ -245,7 +247,7 @@ export async function check(loaded: LoadedConfig, opts: { only?: Section[] } = {
   if (run('budget')) {
     const ds: Diagnostic[] = [];
     const sizes = readSizes();
-    const refs = referencedRefs(cfg).filter((r) => BUILTIN_BY_REF[r]);
+    const refs = shippedRefs(cfg).filter((r) => BUILTIN_BY_REF[r]);
     const generators = Object.fromEntries(refs.map((r) => [r, sizes.generators[r]?.gzipBytes ?? null]));
     const kernelGzip = sizes.kernel?.gzipBytes ?? null;
     // Remote generators share one module (transports, cache, progressive placeholder).

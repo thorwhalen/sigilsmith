@@ -25,7 +25,7 @@ sigilsmith is a *builder* package. You (or, more often, your coding agent) use i
 | Command | Does |
 |---|---|
 | `init [--samples f]` | starter config (key detected from your samples) and an `AGENTS.md` block |
-| `catalog [--style … --max-gzip N --no-network --implemented]` (`--max-gzip` is per generator) | the menu: 6 implemented generators and 61 surveyed technologies, filtered by your constraints, with reasons for exclusions |
+| `catalog [--style … --max-gzip N --no-network --implemented]` (`--max-gzip` is per generator) | the menu: 7 implemented generators, the screenshot extra and 61 surveyed technologies, filtered by your constraints, with reasons for exclusions |
 | `preview [--generators a@1,b@1]` | contact sheet (items × 16/32/64/128 px × light/dark) as HTML and PNG, plus near-duplicate metrics |
 | `detect-key <samples> [--write]` | finds the field (or composite) that identifies items; flags unstable choices |
 | `explain [--index N]` | for an item: key, generator and the rule that chose it, inputs, and the layer every param came from |
@@ -45,6 +45,7 @@ sigilsmith is a *builder* package. You (or, more often, your coding agent) use i
 | `emoji@1` | illustrative × metadata | 1429 B | keyword match on title/tags, else hash |
 | `glyph@1` | geometric × metadata | ~2.1 kB | feature glyph: hue, shape, fill, rings, orbit, mark, tone and size are params a feature mapping drives |
 | `minidenticons@1` | geometric × hash | 695 B | adapter over the MIT `minidenticons` (peer, pinned 4.2.1) |
+| `screenshot@1` (extra) | illustrative × metadata | 2.3 kB | the item's key screenshot, cropped to the region that identifies it (`screenshotFocus`), with a sigil when there is none; `sigilsmith/extras/screenshot/v1`, [details](skills/sigilsmith/references/screenshot.md) |
 | remote (`proxy`, `module`/BYOK, `dicebear`, `mock`) | any | 2.7 kB module | cached by content id, instant placeholder, keys never in the bundle; the public DiceBear API is free for non-commercial use only (`check` warns until you acknowledge it or self-host) |
 
 Measured with esbuild + gzip -9 on 2026-11-14 (`npm run measure`); third-party libraries are measured in `spikes/README.md`.

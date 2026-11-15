@@ -7,12 +7,11 @@
  * params, provenance, without drawing), `render`, and compute the content ids used
  * for storage and regeneration.
  */
-import { cyrb128, seededRng } from './hash.js';
+import { renderContext } from './context.js';
 import { selectInputs } from './inputs.js';
 import { keyOf, labelOf } from './key.js';
 import type { FeaturePlanner } from './features.js';
 import { foldLayers, type Layer } from './layers.js';
-import { paletteFromHash } from './palette.js';
 import { itemTypeOf, select } from './policy.js';
 import type { GeneratorLoader, GeneratorModule, Item, Plan, ResolvedConfig, SigilImage, UserLayer } from './types.js';
 
@@ -85,7 +84,8 @@ export function createSigil(opts: CreateSigilOptions): Sigil {
     for (const preset of config.presets) {
       const entry = (itemType && preset.byType[itemType]) || preset.byType['*'];
       if (!entry) continue;
-      const inputs = mod.kind === 'semantic' ? entry.semanticInputs : entry.hashInputs;
+      // Content extras (`kind: 'content'`) read the item's own media fields: presets never replace their inputs.
+      const inputs = mod.kind === 'semantic' ? entry.semanticInputs : mod.kind === 'hash' ? entry.hashInputs : undefined;
       const params = entry.params?.[ref] ?? entry.params?.[mod.id];
       layers.push({ name: `preset:${preset.name}`, patch: { ...(inputs ? { inputs } : {}), ...(params ? { params } : {}) } });
     }
@@ -133,16 +133,7 @@ export function createSigil(opts: CreateSigilOptions): Sigil {
 
   async function renderPlanned(p: Plan, size: number): Promise<SigilImage> {
     const mod = await load(p.selection.ref);
-    const [h] = cyrb128(`${p.seed}\u0000${p.selection.ref}`);
-    return mod.render({
-      seed: p.seed,
-      hash: h,
-      rng: seededRng(`${p.seed}\u0000${p.selection.ref}`),
-      palette: paletteFromHash(h, (p.params.palette as object | undefined) ?? {}),
-      fields: p.fields,
-      params: p.params,
-      size,
-    });
+    return mod.render(renderContext(p.selection.ref, p.seed, p.fields, p.params, size));
   }
 
   return {
