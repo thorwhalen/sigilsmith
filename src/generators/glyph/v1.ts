@@ -47,9 +47,12 @@ function silhouette(shape: GlyphParams['shape'], R: number, rot: number, blob: n
     case 'star':
       return poly(5, 0.45);
     case 'flower': {
+      // Six round petals: arcs bulging outward between points on an inner circle.
       const k = 6;
-      let d = `M${pt(R * 0.3, rot)}`;
-      for (let i = 0; i < k; i++) d += `Q${pt(R * 1.3, rot + ((i + 0.5) * 360) / k)} ${pt(R * 0.3, rot + ((i + 1) * 360) / k)}`;
+      const ri = R * 0.62;
+      const rp = R * 0.34;
+      let d = `M${pt(ri, rot)}`;
+      for (let i = 1; i <= k; i++) d += `A${n(rp)} ${n(rp)} 0 1 1 ${pt(ri, rot + (i * 360) / k)}`;
       return `<path d="${d}Z"`;
     }
     case 'blob': {

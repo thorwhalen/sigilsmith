@@ -14,9 +14,9 @@
       "standaloneGzipBytes": 2210
     },
     "glyph@1": {
-      "minBytes": 4722,
-      "gzipBytes": 2067,
-      "brotliBytes": 1905,
+      "minBytes": 4724,
+      "gzipBytes": 2070,
+      "brotliBytes": 1930,
       "standaloneGzipBytes": 2573
     },
     "grid@1": {
