@@ -26,6 +26,10 @@ metadata:
 
 When a list's items differ in ways users choose by (instruments, presets, scenes, games, project types), give the image meaning instead of a hash: a **feature schema** (the dimensions), **vectors** (one per item, derived from the item definitions), and a **mapping** from dimensions to the params of `glyph@1` (or any generator, including a remote one). All three are JSON files named under `features` in the config; `build` inlines them, `explain` shows which dimension set each param, `check` flags vectors that do not fit (SGS0802) and features the mapping cannot show (SGS0803). Whether a list should have sigils at all, the channel cheat sheet and the loop: [references/features.md](references/features.md).
 
+## Lists whose items have a picture of their own: the screenshot extra
+
+When each item has a screenshot a user would recognise (a game's signature moment), `screenshot@1` (an extra, outside the kernel) shows it cropped to the region that identifies the item (`screenshotFocus`: `"x,y"`, `"x,y,zoom"` or `"x,y,w,h"`), and the app's own sigil when there is none: guard the rule with `{ "when": { "screenshot": { "exists": true } }, "use": "screenshot@1" }`. Data, config, delivery and failures (SGS0305): [references/screenshot.md](references/screenshot.md).
+
 ## Rules that are easy to break
 
 - Never import `sigilsmith/generators/...` or a generator library in app code, and never write a ref like `'grid@1'` in app code: `check bypass` fails on both. `Math.random` near sigilsmith is flagged too (a warning).

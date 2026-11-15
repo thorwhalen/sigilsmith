@@ -34,6 +34,9 @@ export interface Palette {
   hue: number;
 }
 
+/** The part of `fetch` a module needs to read a file, so a host (or the CLI) can serve files its own way. */
+export type FetchLike = (url: string) => Promise<{ ok: boolean; status: number; arrayBuffer(): Promise<ArrayBuffer> }>;
+
 export interface RenderContext<P = Record<string, unknown>> {
   /** Canonical serialization of the input values: the identity being drawn. */
   seed: string;
@@ -56,8 +59,12 @@ export interface GeneratorModule<P extends object = Record<string, unknown>> {
   id: string;
   /** Output contract version. A released major never changes its output. */
   major: number;
-  /** `hash` generators read the key by default; `semantic` ones read meaningful fields. */
-  kind: 'hash' | 'semantic';
+  /**
+   * `hash` generators read the key by default; `semantic` ones read meaningful fields;
+   * `content` ones (extras such as the screenshot) read the item's own media fields, which
+   * presets never replace.
+   */
+  kind: 'hash' | 'semantic' | 'content';
   defaults: P;
   defaultInputs: InputSpec[];
   /** Determinism class; `derived` delivery requires `pure`. */

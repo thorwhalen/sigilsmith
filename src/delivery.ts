@@ -11,6 +11,7 @@
  * default; `fromDataProvider` (in `sigilsmith/zodal`) adapts any zodal blob provider.
  */
 import { sha256Hex } from './hash.js';
+import { sniffMime } from './image-info.js';
 import { digestInputOf, idsOf, inputsDigestOf } from './ids.js';
 import type { Sigil } from './sigil.js';
 import { toBytes, toDisplayUrl, svgToDataUrl } from './svg.js';
@@ -136,12 +137,6 @@ export async function deliver(sigil: Sigil, item: Item, o: DeliverOptions = {}):
   return { record: base, display: toDisplayUrl(image), plan, stored };
 }
 
-const SNIFF: Array<[string, (b: Uint8Array) => boolean]> = [
-  ['image/png', (b) => b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47],
-  ['image/jpeg', (b) => b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff],
-  ['image/gif', (b) => b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x38],
-  ['image/webp', (b) => b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 && b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50],
-];
 
 /**
  * Store a user-supplied image through the same path (B6). Raster formats only, by
@@ -152,7 +147,7 @@ const SNIFF: Array<[string, (b: Uint8Array) => boolean]> = [
 export async function storeCustom(data: Uint8Array, mime: string, o: { store?: ImageStore; maxBytes?: number; allowSvg?: boolean } = {}): Promise<SigilRecord> {
   const { maxBytes = 2_000_000, allowSvg = false } = o;
   if (data.length > maxBytes) throw new Error(`SGS0110: upload is ${data.length} bytes, over the ${maxBytes} byte limit`);
-  const sniffed = SNIFF.find(([, test]) => test(data))?.[0];
+  const sniffed = sniffMime(data);
   const isSvg = !sniffed && mime === 'image/svg+xml';
   if (!sniffed && !(isSvg && allowSvg)) throw new Error(`SGS0110: upload is not a PNG, JPEG, GIF or WebP image${isSvg ? ' (SVG needs allowSvg and server-side sanitising)' : ''}`);
   const contentId = `sg_${(await sha256Hex(data)).slice(0, 32)}`;

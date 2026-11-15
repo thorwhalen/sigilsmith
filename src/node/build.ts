@@ -13,12 +13,12 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { sha256Hex } from '../hash.js';
 import { GEN_FILE, LOCK_FILE, PKG_NAME } from '../meta.js';
-import { seededRng, cyrb128 } from '../hash.js';
-import { paletteFromHash } from '../palette.js';
+import { renderContext } from '../context.js';
 import type { GeneratorModule, Item, SigilImage } from '../types.js';
 import { BUILTIN_BY_REF } from './builtins.js';
+import type { Fixture } from './define.js';
 import { PACKAGE_ROOT } from './catalog.js';
-import { loadSamples, referencedRefs, type LoadedConfig } from './config.js';
+import { loadSamples, referencedRefs, shippedRefs, type LoadedConfig } from './config.js';
 import { diag, envelope, type Diagnostic, type Envelope } from './diagnostics.js';
 import { nodeSigil } from './runtime.js';
 
@@ -29,17 +29,20 @@ export function packageVersion(): string {
 /** Fixed inputs for fingerprints: changing them would invalidate every lock, so they are frozen too. */
 export const GOLDEN_SEEDS = ['a', 'sigil', 'Blue Monday', 'ada@example.com', '0', 'Ωμέγα', '🎵 song', 'f47ac10b-58cc-4372-a567-0e02b2c3d479'];
 
-export async function renderModule(mod: GeneratorModule<any>, seed: string, params?: Record<string, unknown>): Promise<SigilImage> {
-  const ref = `${mod.id}@${mod.major}`;
-  const [h] = cyrb128(`${seed}\u0000${ref}`);
+export async function renderModule(mod: GeneratorModule<any>, seed: string, params?: Record<string, unknown>, fields: Record<string, string> = { key: seed, label: seed, title: seed }): Promise<SigilImage> {
   const p = { ...(mod.defaults as Record<string, unknown>), ...(params ?? {}) };
-  return mod.render({ seed, hash: h, rng: seededRng(`${seed}\u0000${ref}`), palette: paletteFromHash(h), fields: { key: seed, label: seed, title: seed }, params: p, size: 64 });
+  return mod.render(renderContext(`${mod.id}@${mod.major}`, seed, fields, p, 64));
 }
 
-export async function fingerprint(mod: GeneratorModule<any>): Promise<string> {
+/** Hash of a module's output on the golden seeds and its own fixtures: the lock pins it, so any change in what it draws is caught (SGS0502). */
+export async function fingerprint(mod: GeneratorModule<any>, fixtures: Fixture[] = []): Promise<string> {
   const parts: string[] = [];
   for (const s of GOLDEN_SEEDS) {
     const img = await renderModule(mod, s);
+    parts.push(img.type === 'svg' ? img.svg : img.type);
+  }
+  for (const f of fixtures) {
+    const img = await renderModule(mod, JSON.stringify(Object.values(f.fields)), f.params, f.fields);
     parts.push(img.type === 'svg' ? img.svg : img.type);
   }
   return (await sha256Hex(parts.join('\n'))).slice(0, 32);
@@ -76,18 +79,18 @@ export async function computeLock(loaded: LoadedConfig): Promise<{ lock: Lock; d
   const cfg = loaded.config!;
   const diagnostics: Diagnostic[] = [];
   const generators: Lock['generators'] = {};
-  for (const ref of referencedRefs(cfg)) {
+  for (const ref of shippedRefs(cfg)) {
     const b = BUILTIN_BY_REF[ref];
     if (!b) continue; // remote generators are cached-nondeterministic: nothing to fingerprint
     const peer = b.manifest.peer;
     let mod: GeneratorModule<any>;
     try {
-      mod = await b.load();
+      mod = await b.load({ dir: loaded.dir });
     } catch (e) {
       diagnostics.push(diag('SGS0304', 'error', `cannot load \`${ref}\`: ${(e as Error).message.split('\n')[0]}`, { fix: { summary: peer ? `install ${peer.name}@${peer.version}` : 'reinstall sigilsmith', applicability: 'machine-applicable', ...(peer ? { commands: [`npm i -E ${peer.name}@${peer.version}`] } : {}) } }));
       continue;
     }
-    generators[ref] = { fingerprint: await fingerprint(mod), ...(peer ? { peer: { name: peer.name, version: installedVersion(loaded.dir, peer.name) } } : {}) };
+    generators[ref] = { fingerprint: await fingerprint(mod, b.fixtures), ...(peer ? { peer: { name: peer.name, version: installedVersion(loaded.dir, peer.name) } } : {}) };
   }
   const samples: Lock['samples'] = {};
   const { items, error } = loadSamples(loaded.dir, cfg.samples);

@@ -1,6 +1,6 @@
 {
   "name": "sigilsmith",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Agent-first builder for deterministic identity images (identicons, avatars, thumbnails, favicons): a catalog of generators behind one facade, an SSOT config, and a CLI that chooses, previews, explains and checks.",
   "author": "Thor Whalen",
   "license": "MIT",
@@ -49,6 +49,10 @@
     "./generators/*": {
       "types": "./dist/generators/*.d.ts",
       "import": "./dist/generators/*.js"
+    },
+    "./extras/*": {
+      "types": "./dist/extras/*.d.ts",
+      "import": "./dist/extras/*.js"
     },
     "./features": {
       "types": "./dist/features.d.ts",

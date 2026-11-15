@@ -50,6 +50,23 @@ export function referencedRefs(cfg: Config): string[] {
   return [...refs].sort();
 }
 
+/**
+ * `referencedRefs` plus the generators those modules can draw themselves (an extra's
+ * fallback), under every params the config can give them: what the budget counts and
+ * the lock fingerprints.
+ */
+export function shippedRefs(cfg: Config): string[] {
+  const refs = new Set(referencedRefs(cfg));
+  for (const ref of [...refs]) {
+    const b = BUILTIN_BY_REF[ref];
+    if (!b?.implies) continue;
+    const base = { ...(b.meta.defaults as Record<string, unknown>), ...(cfg.generators[ref]?.params ?? {}) };
+    const variants = [base, ...cfg.policy.rules.flatMap((r) => (r.params?.[ref] ? [{ ...base, ...r.params[ref] }] : []))];
+    for (const v of variants) for (const r of b.implies(v)) refs.add(r);
+  }
+  return [...refs].sort();
+}
+
 export function validateSemantics(cfg: Config, file: string): Diagnostic[] {
   const out: Diagnostic[] = [];
   for (const name of cfg.presets) {

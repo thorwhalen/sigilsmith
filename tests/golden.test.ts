@@ -11,6 +11,8 @@
  *
  * A missing golden file fails. Write it deliberately with `UPDATE_GOLDEN=1 npx vitest
  * run tests/golden.test.ts`, and never for a released major: ship a new major instead.
+ * `UPDATE_GOLDEN=<name>` (e.g. `screenshot-v1`) rewrites that one existing file, for a
+ * major that has not been released yet.
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
@@ -23,7 +25,8 @@ import { baseConfig, loaders } from './fixtures.js';
 
 function matchGolden(name: string, value: unknown) {
   const file = new URL(`./golden/${name}.json`, import.meta.url);
-  if (process.env.UPDATE_GOLDEN && !existsSync(file)) writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
+  const update = process.env.UPDATE_GOLDEN;
+  if ((update && !existsSync(file)) || update === name) writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
   if (!existsSync(file)) throw new Error(`missing golden file tests/golden/${name}.json; write it deliberately with UPDATE_GOLDEN=1`);
   expect(value).toEqual(JSON.parse(readFileSync(file, 'utf8')));
 }
@@ -36,6 +39,8 @@ const ALT_PARAMS: Record<string, Record<string, unknown>> = {
   'initials@1': { maxLetters: 3, tone: 'soft' },
   'emoji@1': { keywords: false, shape: 'circle' },
   'minidenticons@1': { saturation: 30, lightness: 60, background: 'none' },
+  // No `screenshot` field in the golden harness: this freezes the fallback path (the crop path is frozen in screenshot.test.ts).
+  'screenshot@1': { fallback: 'rings', shape: 'circle', ring: 3 },
   'glyph@1': { hue: 200, chroma: 0.2, tone: 'dark', shape: 'star', size: 0.7, fill: 'stripes', rings: 2, orbit: 5, mark: 'pulse', rotation: 15, jitter: 0.5, tile: 'circle', accentShift: 30 },
 };
 
@@ -108,7 +113,7 @@ for (const b of BUILTINS) {
         const img = await renderModule(module, s, ALT_PARAMS[ref]);
         alt[s] = await sha256Hex(img.type === 'svg' ? img.svg : img.type);
       }
-      matchGolden(ref.replace('@', '-v'), { ref, fingerprint: await fingerprint(module), hashes, altParams: ALT_PARAMS[ref], alt });
+      matchGolden(ref.replace('@', '-v'), { ref, fingerprint: await fingerprint(module, b.fixtures), hashes, altParams: ALT_PARAMS[ref], alt });
     });
   });
 }

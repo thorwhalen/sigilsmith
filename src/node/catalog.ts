@@ -85,6 +85,8 @@ export interface CatalogRow {
   sizeRange: [number | null, number | null];
   verdict: string;
   importPath?: string;
+  /** `extra`: outside the generator set, imported from `sigilsmith/extras/*`. */
+  tier?: 'extra';
   /** Licence and service-terms restrictions a developer must know before choosing this. */
   terms?: string[];
   /** How to wire it, for entries used through `remote` rather than a generator module. */
@@ -111,6 +113,7 @@ function row(m: Manifest, full: boolean): CatalogRow {
     sizeRange: [m.sizeRange.minPx, m.sizeRange.maxPx],
     verdict: m.verdict,
     ...(m.importPath ? { importPath: m.importPath } : {}),
+    ...(m.tier === 'extra' ? { tier: 'extra' as const } : {}),
     ...(m.license.restrictions.length ? { terms: m.license.restrictions } : {}),
     ...((m as { usage?: string }).usage ? { usage: (m as { usage?: string }).usage } : {}),
     ...(full ? { params: m.params } : {}),
