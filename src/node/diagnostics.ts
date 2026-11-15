@@ -64,6 +64,7 @@ export const CODES: Record<string, { title: string; cause: string; fix: string }
   SGS0602: { title: 'target not registered', cause: 'The HTML head lacks the tag for a configured target.', fix: 'Paste the snippet from `targets --emit` into the head.' },
   SGS0603: { title: 'target file missing or wrong size', cause: 'A file a target needs is missing from the public dir, or its pixel size is wrong.', fix: `Run \`${PKG_NAME} targets --emit\`.` },
   SGS0604: { title: 'link-preview URL not absolute', cause: 'Crawlers resolve og:image/twitter:image only from absolute URLs.', fix: 'Set `targets.baseUrl` and use an absolute URL.' },
+  SGS0606: { title: 'target file exists', cause: '`targets --emit` will not replace a file it did not write (the lock records what it wrote), such as a hand-made icon with the same name.', fix: 'Emit elsewhere with `--out <dir>` and pick what to keep, or replace it with `--force`.' },
   SGS0605: { title: 'manifest icons incomplete', cause: 'The web app manifest lacks a 192, 512 or maskable icon.', fix: 'Merge the `icons` snippet from `targets --emit` into the manifest.' },
   SGS0701: { title: 'key field missing from data', cause: 'The configured key field is absent from the sample data: probably renamed.', fix: 'Point `key.field` at the new name (one line), or run `detect-key --write`.' },
   SGS0702: { title: 'input field missing from data', cause: 'An input or rule field named in the config appears in no sample item.', fix: 'Rename it in the config to match the data.' },

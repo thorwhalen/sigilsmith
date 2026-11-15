@@ -6,8 +6,9 @@
  * (`targets.site` in the config); item targets (og:image, Media Session artwork) from
  * an item. PNGs need @resvg/resvg-js; the SVG favicon does not.
  */
+import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { dirname, relative, resolve } from 'node:path';
 import { contentIdOf } from '../ids.js';
 import { getTarget, listTargets, snippet, TARGETS, type TargetSpec } from '../targets/index.js';
 import type { Item } from '../types.js';
@@ -15,7 +16,17 @@ import type { LoadedConfig } from './config.js';
 import { diag, envelope, type Diagnostic, type Envelope } from './diagnostics.js';
 import { composeSvg, loadResvg, missingResvg, packIco, pngSize, svgToPng } from './raster.js';
 import { nodeSigil } from './runtime.js';
-import { PKG_NAME } from '../meta.js';
+import { CONFIG_FILE, LOCK_FILE, PKG_NAME } from '../meta.js';
+import type { Lock } from './build.js';
+
+const sha256 = (data: Uint8Array | string) => createHash('sha256').update(data).digest('hex');
+
+/** Prefix for printed hrefs: the absolute site URL, else `targets.basePath` ("" = relative), else "/". */
+function hrefBase(targets: { baseUrl?: string | undefined; basePath?: string | undefined }): string {
+  if (targets.baseUrl) return targets.baseUrl.replace(/\/?$/, '/');
+  if (targets.basePath === undefined) return '/';
+  return targets.basePath === '' ? '' : targets.basePath.replace(/\/?$/, '/');
+}
 
 export function listTargetsCmd(opts: { includeLegacy?: boolean } = {}): Envelope<{ targets: Array<Pick<TargetSpec, 'id' | 'title' | 'status' | 'scope' | 'requiresStoredUrl' | 'absoluteUrl' | 'notes'> & { files: string[]; svgAccepted: boolean }> }> {
   return envelope('targets', {
@@ -29,13 +40,13 @@ export function listTargetsCmd(opts: { includeLegacy?: boolean } = {}): Envelope
 
 export async function emitTargets(
   loaded: LoadedConfig,
-  opts: { ids?: string[]; item?: Item; outDir?: string } = {},
-): Promise<Envelope<{ files: Array<{ path: string; bytes: number }>; snippets: Record<string, string> }>> {
+  opts: { ids?: string[]; item?: Item; outDir?: string; force?: boolean } = {},
+): Promise<Envelope<{ files: Array<{ path: string; bytes: number }>; kept: string[]; snippets: Record<string, string> }>> {
   const cfg = loaded.config!;
   const diagnostics: Diagnostic[] = [];
   const ids = opts.ids?.length ? opts.ids : cfg.targets.ids;
   const outDir = resolve(loaded.dir, opts.outDir ?? cfg.targets.publicDir);
-  const base = cfg.targets.baseUrl ? cfg.targets.baseUrl.replace(/\/?$/, '/') : '/';
+  const base = hrefBase(cfg.targets);
   const sigil = await nodeSigil(loaded, { remote: false });
   const files: Array<{ path: string; bytes: number }> = [];
   const snippets: Record<string, string> = {};
@@ -43,10 +54,25 @@ export async function emitTargets(
   if (!hasResvg) diagnostics.push(missingResvg());
   const siteItem: Item = { id: cfg.targets.site?.seed ?? PKG_NAME, title: cfg.targets.site?.seed ?? PKG_NAME };
   const siteRef = cfg.targets.site?.ref;
+  // Replace only files this command wrote before (recorded in the lock), or identical ones.
+  const lockFile = resolve(loaded.dir, LOCK_FILE);
+  const lock = existsSync(lockFile) ? (JSON.parse(readFileSync(lockFile, 'utf8')) as Lock) : null;
+  const emitted: Record<string, string> = { ...(lock?.emitted ?? {}) };
+  const kept: string[] = [];
   const write = (rel: string, data: Uint8Array | string) => {
     const f = resolve(outDir, rel);
+    const key = relative(loaded.dir, f);
+    if (existsSync(f) && !opts.force) {
+      const now = sha256(readFileSync(f));
+      if (now !== sha256(data) && now !== emitted[key]) {
+        kept.push(key);
+        diagnostics.push(diag('SGS0606', 'error', `\`${key}\` exists and was not written by sigilsmith; left as is`, { where: { file: key }, fix: { summary: 'emit to another directory and compare, or replace it', applicability: 'maybe-incorrect', commands: [`npx ${PKG_NAME} targets --emit --out .sigilsmith/targets`, `npx ${PKG_NAME} targets --emit --force`] } }));
+        return;
+      }
+    }
     mkdirSync(dirname(f), { recursive: true });
     writeFileSync(f, data);
+    emitted[key] = sha256(data);
     files.push({ path: f, bytes: typeof data === 'string' ? Buffer.byteLength(data) : data.length });
   };
   for (const id of ids) {
@@ -89,7 +115,11 @@ export async function emitTargets(
     if (t.absoluteUrl && !cfg.targets.baseUrl) diagnostics.push(diag('SGS0604', 'warning', `\`${id}\` needs an absolute URL; set \`targets.baseUrl\``, { fix: { summary: 'set the site URL', applicability: 'has-placeholders', edits: [{ file: 'sigilsmith.config.json', path: 'targets.baseUrl', set: 'https://<your-site>' }] } }));
     snippets[id] = snippet(t, vars);
   }
-  return envelope('targets', { files: files.map((f) => ({ ...f, path: f.path })), snippets }, diagnostics, [{ command: `npx ${PKG_NAME} check`, why: 'validate that the tags are in your HTML and the files are the right size' }]);
+  if (lock && files.length) writeFileSync(lockFile, `${JSON.stringify({ ...lock, emitted }, null, 2)}\n`);
+  else if (!lock && files.length) diagnostics.push(diag('SGS0503', 'info', `no ${LOCK_FILE} to record the emitted files in; a later \`targets --emit\` will treat them as hand-made`, { fix: { summary: 'build first, then emit', applicability: 'machine-applicable', commands: [`npx ${PKG_NAME} build`, `npx ${PKG_NAME} targets --emit`] } }));
+  if (cfg.targets.basePath === undefined && !cfg.targets.baseUrl && Object.keys(snippets).length)
+    diagnostics.push(diag('SGS0601', 'info', 'hrefs are root-absolute ("/icon.svg"); if the app is served under a sub-path, set `targets.basePath` ("/myapp/", or "" for relative hrefs) and emit again', { fix: { summary: 'set the base path', applicability: 'has-placeholders', edits: [{ file: CONFIG_FILE, path: 'targets.basePath', set: '' }] } }));
+  return envelope('targets', { files: files.map((f) => ({ ...f, path: f.path })), kept, snippets }, diagnostics, [{ command: `npx ${PKG_NAME} check`, why: 'validate that the tags are in your HTML and the files are the right size' }]);
 }
 
 /** Validate the host's registration: tags in the HTML head, manifest icons, file sizes. */

@@ -97,6 +97,7 @@ export const ConfigSchema = z
       .object({
         ids: z.array(z.string()).default([]),
         baseUrl: z.string().optional().describe('Absolute site URL; required for og:image.'),
+        basePath: z.string().optional().describe('Path the app is served under, prefixed to the hrefs `targets --emit` prints: "/" (the default), "/myapp/" for a sub-path, or "" for relative hrefs. Ignored for targets that need `baseUrl`.'),
         publicDir: z.string().default('public'),
         html: z.string().optional().describe('HTML file whose <head> `check targets` inspects.'),
         manifest: z.string().optional().describe('Web app manifest file `check targets` inspects.'),

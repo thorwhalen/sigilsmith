@@ -27,7 +27,9 @@ Commands
   detect-key <samples.json> [--write]   find the item key; --write records it in the config
   explain [--item JSON | --index N | --all]   key, generator, inputs, params and their layers
   build [--accept] [--out f]        write the wiring module and the lock
-  targets [--emit] [--ids a,b] [--item JSON] [--out dir]   list targets / emit files + snippets
+  targets [--emit] [--ids a,b] [--item JSON] [--out dir] [--force]
+                                    list targets / emit files + snippets; never replaces
+                                    a file it did not write unless --force
   check [--only a,b]                verify: ${SECTIONS.join(', ')}
   explain-code <SGSxxxx>            what a diagnostic means and how to fix it
   mcp [--cwd dir]                   the same operations as an MCP server over stdio
@@ -88,7 +90,7 @@ async function main(argv: string[]): Promise<number> {
     explain: () => ({ config, item: opt('item', (x) => JSON.parse(String(x))), index: opt('index', Number), all: opt('all', Boolean), samples: opt('samples', String) }),
     build: () => ({ config, out: opt('out', String), accept: opt('accept', Boolean) }),
     preview: () => ({ config, generators: list(v.generators), samples: opt('samples', String), out: opt('out', String) }),
-    targets: () => ({ config, emit: opt('emit', Boolean), ids: list(v.ids), item: opt('item', (x) => JSON.parse(String(x))), out: opt('out', String), includeLegacy: opt('include-legacy', Boolean) }),
+    targets: () => ({ config, emit: opt('emit', Boolean), ids: list(v.ids), item: opt('item', (x) => JSON.parse(String(x))), out: opt('out', String), force: opt('force', Boolean), includeLegacy: opt('include-legacy', Boolean) }),
     check: () => ({ config, only: list(v.only) }),
     'explain-code': () => (arg ? { code: arg } : null),
   };

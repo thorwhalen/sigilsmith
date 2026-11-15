@@ -417,3 +417,9 @@ Sizes after these changes: kernel 3,922 B gzip (3,583 brotli); delivery 1,644 B;
 28. **`init` writes `delivery.strategy: "derived"`.** The starter generator is pure, so the commonest first use (a list view) needs no storage, upload route or `deliver()` call. `materialized` (still the schema default when the field is omitted) is the opt-in for the rename prompt (A12), remote generators and stored URLs; SGS0303 already catches a non-pure generator under `derived`.
 29. **`init`'s `next` walks the whole loop** (detect-key, catalog, preview, build), and `catalog`'s already led to `preview`.
 30. **Preview metrics run on the app's samples** when there are at least 20 (`metricsOn: "samples"`), else on 150 synthetic items (`"synthetic"`); `grid.of` gives the sample count beside the 24-column sheet cap.
+
+### Second integration (arioso, 2026-11-15) and what changed
+
+31. **Peer ranges** (#5): `@zodal/dials-*` accept `^0.1.0 || ^0.2.0` (sigilsmith's settings tests pass against dials 0.2.0), and the unused `@zodal/core` peer is gone: no module imports it, and its `^0.2.0` range made `npm i sigilsmith` fail in any app on the published dials 0.1.0 (which peers core `^0.1.2`). CI now runs `scripts/install-smoke.sh`, which installs the packed tarball into fresh apps beside the latest release of each peer family, so a range that excludes a current release fails the build.
+32. **`targets.basePath`** (#6): emitted snippets use it as the href prefix (`"/"` by default, `"/myapp/"`, or `""` for relative hrefs), and an emit without it says how to set it.
+33. **`targets --emit` replaces only its own files** (#6): the lock records the sha256 of every file it wrote (`emitted`, kept across rebuilds); an existing file that is neither identical nor recorded is left alone with SGS0606, and `--force` replaces it.

@@ -57,6 +57,8 @@ export interface Lock {
   config: string;
   generators: Record<string, { fingerprint: string; peer?: { name: string; version: string | null } }>;
   samples: Record<string, { ref: string; image: string }>;
+  /** Files `targets --emit` wrote (project-relative path → sha256), so it only replaces its own. */
+  emitted?: Record<string, string>;
 }
 
 export function installedVersion(dir: string, name: string): string | null {
@@ -188,7 +190,8 @@ export async function build(loaded: LoadedConfig, opts: { out?: string; accept?:
   if (!opts.dryRun && !blocked) {
     mkdirSync(dirname(outFile), { recursive: true });
     writeFileSync(outFile, source);
-    writeFileSync(lockFile, `${JSON.stringify(lock, null, 2)}\n`);
+    const emitted = existsSync(lockFile) ? (JSON.parse(readFileSync(lockFile, 'utf8')) as Lock).emitted : undefined;
+    writeFileSync(lockFile, `${JSON.stringify(emitted ? { ...lock, emitted } : lock, null, 2)}\n`);
     wrote.push(relative(loaded.dir, outFile), relative(loaded.dir, lockFile));
   }
   return envelope('build', { wiring: relative(loaded.dir, outFile), lock: relative(loaded.dir, lockFile), refs: referencedRefs(cfg), wrote }, diagnostics, [{ command: `npx ${PKG_NAME} check`, why: 'verify budget, identity, drift and targets' }]);

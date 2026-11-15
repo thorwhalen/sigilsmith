@@ -101,9 +101,8 @@
   },
   "peerDependencies": {
     "@resvg/resvg-js": "^2.6.2",
-    "@zodal/core": "^0.2.0",
-    "@zodal/dials-core": "^0.1.0",
-    "@zodal/dials-ui": "^0.1.0",
+    "@zodal/dials-core": "^0.1.0 || ^0.2.0",
+    "@zodal/dials-ui": "^0.1.0 || ^0.2.0",
     "@zodal/store": "^0.2.0",
     "minidenticons": "^4.2.1",
     "react": "^18 || ^19",
@@ -118,9 +117,6 @@
       "optional": true
     },
     "@resvg/resvg-js": {
-      "optional": true
-    },
-    "@zodal/core": {
       "optional": true
     },
     "@zodal/store": {

@@ -652,6 +652,10 @@
           "description": "Absolute site URL; required for og:image.",
           "type": "string"
         },
+        "basePath": {
+          "description": "Path the app is served under, prefixed to the hrefs `targets --emit` prints: \"/\" (the default), \"/myapp/\" for a sub-path, or \"\" for relative hrefs. Ignored for targets that need `baseUrl`.",
+          "type": "string"
+        },
         "publicDir": {
           "default": "public",
           "type": "string"

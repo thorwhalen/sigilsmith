@@ -2,14 +2,15 @@
  * Fixes from the first real integration (thorwhalen/sigilsmith#3, #4): the starter
  * budget passes the documented React path, SGS0401 offers a fix that can work, and
  * `init` reads the item type from samples, starts on `derived` delivery and points
- * at every step of the loop.
+ * at every step of the loop. From the second (arioso, #5, #6): targets print hrefs under
+ * a configurable base path, and `--emit` never replaces a file it did not write.
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { STARTER_BUDGET_GZIP, init, starterConfig } from '../src/node/commands.js';
 import { detectItemType } from '../src/node/detect.js';
-import { catalog, check, loadConfig } from '../src/node/index.js';
+import { build, catalog, check, emitTargets, loadConfig } from '../src/node/index.js';
 import { makeProject } from './project.js';
 
 const REACT_GLUE = "import { Sigil } from 'sigilsmith/react';\nexport const Row = () => null;\n";
@@ -77,5 +78,50 @@ describe('init (#4)', () => {
     const dir = makeProject({});
     const env = init(dir, { force: true, agents: false });
     expect(env.next[0]!.command).toMatch(/detect-key sigilsmith\.samples\.json --write/);
+  });
+});
+
+describe('targets (#6)', () => {
+  const targets = (extra: Record<string, unknown> = {}) => ({ key: { field: 'id' }, policy: { default: 'grid@1' }, targets: { ids: ['favicon-svg'], site: { seed: 's' }, ...extra } });
+
+  it('hrefs follow targets.basePath: "/" by default (with a hint), a sub-path, or relative', async () => {
+    const root = await emitTargets(await loadConfig(undefined, makeProject(targets())));
+    expect(root.data.snippets['favicon-svg']).toContain('href="/icon.svg"');
+    expect(root.diagnostics.some((d) => d.message.includes('targets.basePath'))).toBe(true);
+    const sub = await emitTargets(await loadConfig(undefined, makeProject(targets({ basePath: '/myapp' }))));
+    expect(sub.data.snippets['favicon-svg']).toContain('href="/myapp/icon.svg"');
+    const rel = await emitTargets(await loadConfig(undefined, makeProject(targets({ basePath: '' }))));
+    expect(rel.data.snippets['favicon-svg']).toContain('href="icon.svg"');
+    expect(rel.diagnostics.some((d) => d.message.includes('targets.basePath'))).toBe(false);
+  });
+
+  it('--emit leaves a hand-made file alone, replaces its own, and --force replaces anything', async () => {
+    const dir = makeProject(targets({ basePath: '' }));
+    await build(await loadConfig(undefined, dir));
+    mkdirSync(join(dir, 'public'), { recursive: true });
+    const icon = join(dir, 'public/icon.svg');
+    writeFileSync(icon, '<svg>hand-made</svg>');
+    const refused = await emitTargets(await loadConfig(undefined, dir));
+    expect(refused.diagnostics.find((d) => d.code === 'SGS0606')).toBeTruthy();
+    expect(refused.data.kept).toEqual(['public/icon.svg']);
+    expect(readFileSync(icon, 'utf8')).toBe('<svg>hand-made</svg>');
+
+    const forced = await emitTargets(await loadConfig(undefined, dir), { force: true });
+    expect(forced.data.files).toHaveLength(1);
+    const ours = readFileSync(icon, 'utf8');
+    expect(JSON.parse(readFileSync(join(dir, 'sigilsmith.lock.json'), 'utf8')).emitted['public/icon.svg']).toMatch(/^[0-9a-f]{64}$/);
+
+    // A config change redraws the icon; the recorded file is ours, so it is replaced without --force.
+    const cfgFile = join(dir, 'sigilsmith.config.json');
+    const cfg = JSON.parse(readFileSync(cfgFile, 'utf8'));
+    writeFileSync(cfgFile, JSON.stringify({ ...cfg, targets: { ...cfg.targets, site: { seed: 'other' } } }));
+    const again = await emitTargets(await loadConfig(undefined, dir));
+    expect(again.diagnostics.find((d) => d.code === 'SGS0606')).toBeUndefined();
+    expect(readFileSync(icon, 'utf8')).not.toBe(ours);
+
+    // And a rebuild keeps the record.
+    await build(await loadConfig(undefined, dir), { accept: true });
+    expect(JSON.parse(readFileSync(join(dir, 'sigilsmith.lock.json'), 'utf8')).emitted).toBeTruthy();
+    expect(existsSync(icon)).toBe(true);
   });
 });

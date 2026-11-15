@@ -32,6 +32,7 @@ Generated from `src/node/diagnostics.ts` by `npm run docs`. Groups: 01xx config,
 | SGS0602 | target not registered | The HTML head lacks the tag for a configured target. | Paste the snippet from `targets --emit` into the head. |
 | SGS0603 | target file missing or wrong size | A file a target needs is missing from the public dir, or its pixel size is wrong. | Run `sigilsmith targets --emit`. |
 | SGS0604 | link-preview URL not absolute | Crawlers resolve og:image/twitter:image only from absolute URLs. | Set `targets.baseUrl` and use an absolute URL. |
+| SGS0606 | target file exists | `targets --emit` will not replace a file it did not write (the lock records what it wrote), such as a hand-made icon with the same name. | Emit elsewhere with `--out <dir>` and pick what to keep, or replace it with `--force`. |
 | SGS0605 | manifest icons incomplete | The web app manifest lacks a 192, 512 or maskable icon. | Merge the `icons` snippet from `targets --emit` into the manifest. |
 | SGS0701 | key field missing from data | The configured key field is absent from the sample data: probably renamed. | Point `key.field` at the new name (one line), or run `detect-key --write`. |
 | SGS0702 | input field missing from data | An input or rule field named in the config appears in no sample item. | Rename it in the config to match the data. |
