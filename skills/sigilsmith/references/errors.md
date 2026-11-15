@@ -33,9 +33,10 @@ Generated from `src/node/diagnostics.ts` by `npm run docs`. Groups: 01xx config,
 | SGS0603 | target file missing or wrong size | A file a target needs is missing from the public dir, or its pixel size is wrong. | Run `sigilsmith targets --emit`. |
 | SGS0604 | link-preview URL not absolute | Crawlers resolve og:image/twitter:image only from absolute URLs. | Set `targets.baseUrl` and use an absolute URL. |
 | SGS0606 | target file exists | `targets --emit` will not replace a file it did not write (the lock records what it wrote), such as a hand-made icon with the same name. | Emit elsewhere with `--out <dir>` and pick what to keep, or replace it with `--force`. |
+| SGS0607 | page already has icons | The page in `targets.html` declares its own favicon or touch icon; a site icon from sigilsmith would compete with it (browsers prefer SVG; hosts may derive icons from the page). | Drop the site targets the page already covers from `targets.ids`, or replace its icons on purpose. |
 | SGS0605 | manifest icons incomplete | The web app manifest lacks a 192, 512 or maskable icon. | Merge the `icons` snippet from `targets --emit` into the manifest. |
 | SGS0701 | key field missing from data | The configured key field is absent from the sample data: probably renamed. | Point `key.field` at the new name (one line), or run `detect-key --write`. |
-| SGS0702 | input field missing from data | An input or rule field named in the config appears in no sample item. | Rename it in the config to match the data. |
+| SGS0702 | input field missing from data | An input, rule or item-type field named in the config appears in no sample item (or the samples are missing or too few). | Rename it in the config to match the data. For `itemType`, set `"itemType": null` when items have no type field (only a warning unless a rule matches on it). |
 | SGS0703 | wiring module stale | The config changed since the wiring module was generated. | Run `sigilsmith build`. |
 | SGS0704 | wiring module missing | The generated module the app imports does not exist. | Run `sigilsmith build`. |
 | SGS0705 | generator imported directly | App code imports a generator module or a generator library (e.g. minidenticons), bypassing the config. | Import `sigil` from the wiring module instead. |

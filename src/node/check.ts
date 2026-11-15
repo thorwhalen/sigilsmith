@@ -63,7 +63,18 @@ function checkData(loaded: LoadedConfig, items: Item[], samplesFile: string, key
   if (dups.length) out.push(diag('SGS0204', 'error', `key is not unique: ${dups.length} value(s) shared by several items, e.g. ${JSON.stringify(dups[0]![0])} (items ${dups[0]![1].join(', ')})`, { where: { config: 'key', data: samplesFile }, fix: { summary: 'use a unique or composite key', applicability: 'maybe-incorrect', commands: [`npx ${PKG_NAME} detect-key ${relative(loaded.dir, samplesFile)}`] } }));
   for (const f of cfg.key.fallback) if (present(f) === 0) out.push(diag('SGS0702', 'warning', `fallback key field \`${f}\` appears in no sample item`, { where: { config: 'key.fallback', data: samplesFile } }));
   const named = new Set<string>();
-  if (cfg.itemType) named.add(cfg.itemType.field);
+  // The item-type field only matters when a rule matches on it (rules are checked below)
+  // or a preset maps types; otherwise a missing one is a stale default, not broken data.
+  const typeField = cfg.itemType?.field;
+  const typeInRules = typeField !== undefined && cfg.policy.rules.some((r) => typeField in r.when);
+  if (typeField && !typeInRules && present(typeField) === 0) {
+    out.push(
+      diag('SGS0702', 'warning', `item-type field \`${typeField}\` appears in no sample item${cfg.presets.length ? `, so presets (${cfg.presets.join(', ')}) apply only their "*" entry` : ''}`, {
+        where: { config: 'itemType', data: samplesFile },
+        fix: { summary: 'point itemType.field at the field that names an item\'s type, or set "itemType": null if items have none', applicability: 'maybe-incorrect', edits: [{ file: CONFIG_FILE, path: 'itemType', set: null }] },
+      }),
+    );
+  }
   for (const g of Object.values(cfg.generators)) for (const i of g.inputs ?? []) named.add(fieldOf(i));
   cfg.policy.rules.forEach((r) => {
     Object.keys(r.when).forEach((f) => named.add(f));

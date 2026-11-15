@@ -10,6 +10,7 @@ import type { Item } from '../types.js';
 import { loadSamples, type LoadedConfig } from './config.js';
 import { detectItemType, detectKey, type ItemTypeReport, type KeyReport } from './detect.js';
 import { diag, envelope, type Diagnostic, type Envelope } from './diagnostics.js';
+import { METRICS_MIN_SAMPLES } from './preview.js';
 
 export const AGENTS_BEGIN = `<!-- ${PKG_NAME}:begin (managed by \`${PKG_NAME} init\`; edit the config, not this block) -->`;
 export const AGENTS_END = `<!-- ${PKG_NAME}:end -->`;
@@ -37,6 +38,9 @@ export function agentsBlock(genPath: string): string {
  * `catalog --max-gzip`).
  */
 export const STARTER_BUDGET_GZIP = 8000;
+
+/** Fewer real items than this and key and type detection are guesses (SKILL.md asks for 20–200). */
+export const MIN_SAMPLES = 20;
 
 /**
  * The config `init` writes. Delivery starts `derived`: the starter generator is pure,
@@ -84,6 +88,7 @@ export function init(dir: string, opts: { samples?: string; force?: boolean; age
     if (report.chosen) key = { ...report.chosen.key, fallback: [] };
     for (const w of report.warnings) diagnostics.push(diag('SGS0205', 'warning', w));
     detected = { key: report.chosen, itemType: detectItemType(items) };
+    if (!error && items.length < MIN_SAMPLES) diagnostics.push(diag('SGS0702', 'warning', `only ${items.length} sample item(s): key detection, the item type and drift checks rest on them, and preview metrics fall back to synthetic items below ${METRICS_MIN_SAMPLES}`, { fix: { summary: `save ${MIN_SAMPLES}–200 real items to ${opts.samples}, then \`detect-key ${opts.samples} --write\``, applicability: 'has-placeholders' } }));
   }
   const itemType = detected ? detected.itemType.field : undefined;
   if (existsSync(cfgFile) && !opts.force) skipped.push(CONFIG_FILE);

@@ -125,3 +125,35 @@ describe('targets (#6)', () => {
     expect(existsSync(icon)).toBe(true);
   });
 });
+
+describe('second-integration follow-ups (#4, #6 comments)', () => {
+  const plain = [1, 2, 3, 4, 5, 6].map((i) => ({ id: `s${i}`, name: `Source ${i}` }));
+
+  it('a missing item-type field is a warning with a null fix, unless a rule matches on it', async () => {
+    const env = await check(await loadConfig(undefined, makeProject({ key: { field: 'id' }, policy: { default: 'grid@1' } }, plain)), { only: ['data'] });
+    const d = env.diagnostics.find((x) => x.code === 'SGS0702')!;
+    expect(d.severity).toBe('warning');
+    expect(d.fix!.edits![0]).toMatchObject({ path: 'itemType', set: null });
+    const ruled = await check(await loadConfig(undefined, makeProject({ key: { field: 'id' }, policy: { default: 'grid@1', rules: [{ when: { type: 'video' }, use: 'rings@1' }] } }, plain)), { only: ['data'] });
+    expect(ruled.diagnostics.find((x) => x.code === 'SGS0702')!.severity).toBe('error');
+    const none = await check(await loadConfig(undefined, makeProject({ key: { field: 'id' }, itemType: null, policy: { default: 'grid@1' } }, plain)), { only: ['data'] });
+    expect(none.diagnostics.filter((x) => x.code === 'SGS0702')).toEqual([]);
+  });
+
+  it('init warns when there are fewer samples than detection needs', () => {
+    const env = init(makeProject({}, plain), { samples: 'items.json', force: true, agents: false });
+    expect(env.diagnostics.find((d) => d.code === 'SGS0702')!.message).toMatch(/only 6 sample/);
+  });
+
+  it('emitting site icons warns when the page already declares its own', async () => {
+    const dir = makeProject({ key: { field: 'id' }, policy: { default: 'grid@1' }, targets: { ids: ['favicon-svg', 'og-image'], html: 'index.html', basePath: '', site: { seed: 's' } } });
+    writeFileSync(join(dir, 'index.html'), '<head><link href="icon-512.png" rel="apple-touch-icon"></head>');
+    const env = await emitTargets(await loadConfig(undefined, dir));
+    const d = env.diagnostics.find((x) => x.code === 'SGS0607')!;
+    expect(d.message).toContain('icon-512.png');
+    expect(d.fix!.edits![0]).toMatchObject({ path: 'targets.ids', set: ['og-image'] });
+    writeFileSync(join(dir, 'index.html'), '<head><link rel="icon" href="icon.svg" type="image/svg+xml"></head>');
+    const ours = await emitTargets(await loadConfig(undefined, dir));
+    expect(ours.diagnostics.find((x) => x.code === 'SGS0607')).toBeUndefined();
+  });
+});
