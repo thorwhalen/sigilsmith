@@ -14,6 +14,8 @@ export interface GlyphParams {
   hue: number;
   /** Colourfulness of the main colours (OKLCH chroma). */
   chroma: number;
+  /** Hue offset, in degrees, of the second colour (rings, satellites, the lower half of `half`). */
+  accentShift: number;
   /** Light or dark tile. */
   tone: 'light' | 'dark';
   /** The silhouette at the centre. */
@@ -39,9 +41,9 @@ export interface GlyphParams {
 export const meta: GeneratorMeta<GlyphParams> = {
   id: 'glyph',
   major: 1,
-  kind: 'semantic',
+  kind: 'hash',
   determinism: 'pure',
   regeneration: 'always',
-  defaults: { hue: -1, chroma: 0.14, tone: 'light', shape: 'circle', size: 0.55, fill: 'solid', rings: 0, orbit: 0, mark: 'none', rotation: 0, jitter: 0.15, tile: 'rounded' },
+  defaults: { hue: -1, chroma: 0.14, accentShift: 150, tone: 'light', shape: 'circle', size: 0.55, fill: 'solid', rings: 0, orbit: 0, mark: 'none', rotation: 0, jitter: 0.15, tile: 'rounded' },
   defaultInputs: ['$key'],
 };

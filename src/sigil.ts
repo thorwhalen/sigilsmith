@@ -91,16 +91,18 @@ export function createSigil(opts: CreateSigilOptions): Sigil {
     }
     const proj = config.generators[ref];
     if (proj) layers.push({ name: 'project', patch: { ...(proj.inputs ? { inputs: proj.inputs } : {}), ...(proj.params ? { params: proj.params } : {}) } });
-    if (rule && ruleIndex !== undefined) {
-      const rp = rule.params?.[ref];
-      layers.push({ name: `rule:${ruleIndex}`, patch: { ...(rule.inputs ? { inputs: rule.inputs } : {}), ...(rp ? { params: rp } : {}) } });
-    }
+    // Feature params sit above the project's and below a rule's, so the config can still
+    // override one item's look with a rule.
     let feat: ReturnType<FeaturePlanner>;
     if (config.features) {
       if (!opts.features) warn('the config has feature sets but no feature planner was passed; rebuild the wiring module (`sigilsmith build`)');
       else feat = opts.features(item, k.key, ref, config);
       if (feat?.params) layers.push({ name: 'features', patch: { params: feat.params } });
       if (feat?.info.problems.length) warn(`features for \`${k.key}\`: ${feat.info.problems.join('; ')} (SGS0802)`);
+    }
+    if (rule && ruleIndex !== undefined) {
+      const rp = rule.params?.[ref];
+      layers.push({ name: `rule:${ruleIndex}`, patch: { ...(rule.inputs ? { inputs: rule.inputs } : {}), ...(rp ? { params: rp } : {}) } });
     }
     const allowed = config.userSettings.params[ref] ?? [];
     const up = user?.params?.[ref];
@@ -113,9 +115,6 @@ export function createSigil(opts: CreateSigilOptions): Sigil {
     const selection = { ...sel } as Plan['selection'] & { ruleIndex?: number };
     delete selection.ruleIndex;
     const params = (effective.params as Record<string, unknown>) ?? {};
-    // A feature-driven image changes when its encoded params change: fold them into the
-    // seed, so content ids and the regeneration trigger (the inputs digest) follow.
-    const seed = feat?.seedTag !== undefined ? JSON.stringify([sel2.seed, feat.seedTag]) : sel2.seed;
     return {
       key: k.key,
       keyVia: k.via,
@@ -127,7 +126,7 @@ export function createSigil(opts: CreateSigilOptions): Sigil {
       provenance,
       fields: sel2.fields,
       missingInputs: sel2.missing,
-      seed,
+      seed: sel2.seed,
       ...(feat ? { features: feat.info } : {}),
     };
   }

@@ -69,22 +69,35 @@ export const RemoteSpecSchema = z.union([
 
 const DimBase = { description: z.string().optional() };
 
-export const FeatureDimSchema = z.discriminatedUnion('kind', [
-  z.object({ kind: z.literal('numeric'), min: z.number(), max: z.number(), default: z.number().optional(), ...DimBase }).strict(),
-  z.object({ kind: z.literal('ordinal'), levels: z.array(z.string()).min(2), default: z.string().optional(), ...DimBase }).strict(),
-  z.object({ kind: z.literal('categorical'), values: z.array(z.string()).min(1), default: z.string().optional(), ...DimBase }).strict(),
-  z.object({ kind: z.literal('binary'), default: z.boolean().optional(), ...DimBase }).strict(),
-]);
+export const FeatureDimSchema = z
+  .discriminatedUnion('kind', [
+    z.object({ kind: z.literal('numeric'), min: z.number(), max: z.number(), default: z.number().optional(), ...DimBase }).strict(),
+    z.object({ kind: z.literal('ordinal'), levels: z.array(z.string()).min(2), default: z.string().optional(), ...DimBase }).strict(),
+    z.object({ kind: z.literal('categorical'), values: z.array(z.string()).min(1), default: z.string().optional(), ...DimBase }).strict(),
+    z.object({ kind: z.literal('binary'), default: z.boolean().optional(), ...DimBase }).strict(),
+  ])
+  .superRefine((d, ctx) => {
+    if (d.kind === 'numeric' && !(d.min < d.max)) ctx.addIssue({ code: 'custom', message: `min (${d.min}) must be below max (${d.max})`, path: ['max'] });
+    if ((d.kind === 'ordinal' || d.kind === 'categorical') && d.default !== undefined) {
+      const list = d.kind === 'ordinal' ? d.levels : d.values;
+      if (!list.includes(d.default)) ctx.addIssue({ code: 'custom', message: `default ${JSON.stringify(d.default)} is not one of ${list.join(', ')}`, path: ['default'] });
+    }
+  });
 
 export const FeatureSchemaSchema = z
   .object({ $schema: z.string().optional(), $comment: z.string().optional(), dims: z.record(z.string(), FeatureDimSchema) })
   .strict()
   .describe('The dimensions of a feature vector: numeric (min/max), ordinal (levels), categorical (values) or binary.');
 
-export const EncodingSchema = z.union([
+export const SingleEncodingSchema = z.union([
   z.object({ value: z.unknown() }).strict().describe('A constant.'),
   z.object({ from: z.string(), range: z.tuple([z.number(), z.number()]), round: z.boolean().optional() }).strict().describe('Interpolate a numeric, ordinal or binary dimension linearly into [a, b].'),
-  z.object({ from: z.string(), map: z.record(z.string(), z.unknown()), default: z.unknown().optional() }).strict().describe('Look a value (ordinal level, category, "true"/"false", or the number as text) up.'),
+  z.object({ from: z.string(), map: z.record(z.string(), z.unknown()), default: z.unknown().optional() }).strict().describe('Look a value (ordinal level, category, "true"/"false", or an integer as text) up.'),
+]);
+
+export const EncodingSchema = z.union([
+  SingleEncodingSchema,
+  z.array(SingleEncodingSchema).min(1).describe('Tried in order; the first that yields a value wins (a map without a default yields nothing for an unlisted level).'),
 ]);
 
 export const FeatureMappingSchema = z
@@ -92,7 +105,12 @@ export const FeatureMappingSchema = z
     $schema: z.string().optional(),
     $comment: z.string().optional(),
     use: RefSchema.describe('The generator that draws these items.'),
-    encodings: z.record(RefSchema, z.record(z.string(), EncodingSchema)).describe('Generator ref → param path (dotted) → encoding.'),
+    encodings: z
+      .record(
+        z.union([RefSchema, z.string().regex(/^[a-z0-9][a-z0-9-]*$/, 'a generator ref (`glyph@1`) or id (`glyph`)')]),
+        z.record(z.string().refine((p) => !p.split('.').some((seg) => ['__proto__', 'constructor', 'prototype'].includes(seg)), 'a param path may not use `__proto__`, `constructor` or `prototype`'), EncodingSchema),
+      )
+      .describe('Generator ref (`glyph@1`) or id for any major (`glyph`) → param path (dotted) → encoding.'),
   })
   .strict();
 

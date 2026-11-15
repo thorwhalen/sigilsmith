@@ -10,6 +10,7 @@
  *
  * Frozen: this module's output for a given seed and params never changes.
  */
+import { hash32 } from '../../hash.js';
 import { oklchToHex } from '../../palette.js';
 import { n, svgDoc, svgImage, tile } from '../../svg.js';
 import type { GeneratorModule } from '../../types.js';
@@ -19,10 +20,20 @@ export type { GlyphParams };
 
 const clamp = (x: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, Number.isFinite(x) ? x : lo));
 const pick = <T extends string>(v: string, list: readonly T[], fallback: T): T => (list.includes(v as T) ? (v as T) : fallback);
-const pt = (r: number, deg: number) => {
-  const a = ((deg - 90) * Math.PI) / 180;
-  return `${n(50 + r * Math.cos(a))},${n(50 + r * Math.sin(a))}`;
+/**
+ * cos and sin of an angle in degrees, rounded to 1e-6. Engines may differ in the last bit
+ * of Math.cos/Math.sin, and a vertex on a rounding tie (R = 24.75 at 30°) would then print
+ * differently in Safari and in Node; rounded first, only exact IEEE arithmetic follows.
+ */
+const cs = (deg: number): [number, number] => {
+  const a = (deg * Math.PI) / 180;
+  return [Math.round(Math.cos(a) * 1e6) / 1e6, Math.round(Math.sin(a) * 1e6) / 1e6];
 };
+const xy = (r: number, deg: number): [number, number] => {
+  const [c, s] = cs(deg - 90);
+  return [50 + r * c, 50 + r * s];
+};
+const pt = (r: number, deg: number) => xy(r, deg).map(n).join(',');
 
 function silhouette(shape: GlyphParams['shape'], R: number, rot: number, blob: number[]): string {
   const poly = (k: number, inner?: number) => {
@@ -57,11 +68,7 @@ function silhouette(shape: GlyphParams['shape'], R: number, rot: number, blob: n
     }
     case 'blob': {
       const k = blob.length;
-      const p = blob.map((u, i) => {
-        const a = ((rot + (i * 360) / k - 90) * Math.PI) / 180;
-        const r = R * (0.78 + 0.3 * u);
-        return [50 + r * Math.cos(a), 50 + r * Math.sin(a)] as const;
-      });
+      const p = blob.map((u, i) => xy(R * (0.78 + 0.3 * u), rot + (i * 360) / k));
       const mid = (i: number) => [(p[i]![0] + p[(i + 1) % k]![0]) / 2, (p[i]![1] + p[(i + 1) % k]![1]) / 2] as const;
       const m0 = mid(k - 1);
       let d = `M${n(m0[0])},${n(m0[1])}`;
@@ -80,7 +87,7 @@ function markPath(mark: GlyphParams['mark'], R: number, noise: number[]): string
   const x0 = 50 - w;
   const xs = (i: number, k: number) => x0 + (2 * w * i) / k;
   const pts: Array<[number, number]> = [];
-  if (mark === 'sine') for (let i = 0; i <= 16; i++) pts.push([xs(i, 16), 50 - a * Math.sin((i / 16) * 2 * Math.PI)]);
+  if (mark === 'sine') for (let i = 0; i <= 16; i++) pts.push([xs(i, 16), 50 - a * cs(i * 22.5)[1]]);
   else if (mark === 'zigzag') for (let i = 0; i <= 6; i++) pts.push([xs(i, 6), 50 + (i % 2 ? -a : a) * (i === 0 || i === 6 ? 0 : 1)]);
   else if (mark === 'steps') for (let i = 0; i < 4; i++) {
     const y = 50 + (i % 2 ? a : -a);
@@ -109,46 +116,50 @@ const glyph: GeneratorModule<GlyphParams> = {
     const rings = Math.round(clamp(params.rings, 0, 3));
     const orbit = Math.round(clamp(params.orbit, 0, 8));
     const jitter = clamp(params.jitter, 0, 1);
-    const R = 45 * clamp(params.size, 0.2, 0.85);
+    // The silhouette shrinks to leave room for its rings and satellites, so they never
+    // overlap the shape, each other, or the tile edge.
+    const R = Math.min(45 * clamp(params.size, 0.2, 0.85), (orbit > 0 ? 35 : 46) - 6 * rings);
     const rot = Math.round(clamp(params.rotation, -360, 360) + (rJ - 0.5) * 60 * jitter);
 
     const bg = dark ? oklchToHex(0.27, c * 0.45, hue) : oklchToHex(0.95, c * 0.3, hue);
     const main = oklchToHex(dark ? 0.72 : 0.6, c, hue);
-    const second = oklchToHex(dark ? 0.82 : 0.74, c, (hue + 150) % 360);
+    const second = oklchToHex(dark ? 0.82 : 0.74, c, (hue + Math.round(clamp(params.accentShift, 0, 359))) % 360);
     const ink = dark ? oklchToHex(0.95, c * 0.2, hue) : oklchToHex(0.3, c * 0.6, hue);
-    const id = `gl${(hash >>> 0).toString(36)}`;
+    // Unique per drawing (item and colours), so two glyphs inlined in one page never share a pattern.
+    const id = `gl${(hash >>> 0).toString(36)}${hash32(`${main}${second}${fill}`).toString(36)}`;
 
     let defs = '';
     let attrs: string;
     if (fill === 'solid') attrs = `fill="${main}"`;
-    else if (fill === 'outline') attrs = `fill="none" stroke="${main}" stroke-width="6" stroke-linejoin="round"`;
+    else if (fill === 'outline') attrs = `fill="none" stroke="${main}" stroke-width="7" stroke-linejoin="round"`;
     else if (fill === 'half') {
       defs = `<linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0.5" stop-color="${main}"/><stop offset="0.5" stop-color="${second}"/></linearGradient>`;
       attrs = `fill="url(#${id})"`;
     } else {
-      const motif = fill === 'stripes' ? `<rect width="4" height="8" fill="${main}"/>` : `<circle cx="4" cy="4" r="2.2" fill="${main}"/>`;
+      // Coarse patterns (12-unit period) so they read as texture at 32 px, not as grey.
+      const motif = fill === 'stripes' ? `<rect width="6" height="12" fill="${main}"/>` : `<circle cx="6" cy="6" r="3.4" fill="${main}"/>`;
       const t = fill === 'stripes' ? ' patternTransform="rotate(45)"' : '';
-      defs = `<pattern id="${id}" width="8" height="8" patternUnits="userSpaceOnUse"${t}>${motif}</pattern>`;
-      attrs = `fill="url(#${id})" stroke="${main}" stroke-width="3" stroke-linejoin="round"`;
+      defs = `<pattern id="${id}" width="12" height="12" patternUnits="userSpaceOnUse"${t}>${motif}</pattern>`;
+      attrs = `fill="url(#${id})" stroke="${main}" stroke-width="4" stroke-linejoin="round"`;
     }
 
     let body = tile(bg, params.tile === 'square' || params.tile === 'circle' ? params.tile : 'rounded');
     if (defs) body += `<defs>${defs}</defs>`;
     for (let i = rings; i >= 1; i--) {
-      const r = Math.min(47, R + 6 * i + 1);
-      body += `<circle cx="50" cy="50" r="${n(r)}" fill="none" stroke="${second}" stroke-width="2.5" stroke-opacity="${n(1 - 0.22 * (i - 1))}"/>`;
+      const r = R + 6 * i + 1;
+      body += `<circle cx="50" cy="50" r="${n(r)}" fill="none" stroke="${second}" stroke-width="3" stroke-opacity="${n(1 - 0.22 * (i - 1))}"/>`;
     }
     body += `${silhouette(shape, R, rot, blob)} ${attrs}/>`;
     if (mark !== 'none') {
       const onShape = fill === 'solid' || fill === 'half';
-      body += `<path d="${markPath(mark, R, noise)}" fill="none" stroke="${onShape ? bg : ink}" stroke-width="${n(Math.max(2.5, R * 0.12))}" stroke-linecap="round" stroke-linejoin="round"/>`;
+      body += `<path d="${markPath(mark, R, noise)}" fill="none" stroke="${onShape ? bg : ink}" stroke-width="${n(Math.max(3.5, R * 0.16))}" stroke-linecap="round" stroke-linejoin="round"/>`;
     }
     if (orbit > 0) {
-      const ro = Math.min(44, R + 6 * rings + 8);
+      const ro = R + 6 * rings + 8;
       const phase = rot + oJ * (360 / orbit) * jitter;
       for (let i = 0; i < orbit; i++) {
         const [x, y] = pt(ro, phase + (i * 360) / orbit).split(',');
-        body += `<circle cx="${x}" cy="${y}" r="${n(Math.max(2.5, 5 - orbit * 0.3))}" fill="${second}"/>`;
+        body += `<circle cx="${x}" cy="${y}" r="${n(Math.max(3.2, 5.5 - orbit * 0.3))}" fill="${second}"/>`;
       }
     }
     return svgImage(svgDoc(body));

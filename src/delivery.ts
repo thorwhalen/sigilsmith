@@ -11,7 +11,7 @@
  * default; `fromDataProvider` (in `sigilsmith/zodal`) adapts any zodal blob provider.
  */
 import { sha256Hex } from './hash.js';
-import { idsOf, inputsDigestOf } from './ids.js';
+import { digestInputOf, idsOf, inputsDigestOf } from './ids.js';
 import type { Sigil } from './sigil.js';
 import { toBytes, toDisplayUrl, svgToDataUrl } from './svg.js';
 import type { Item, Plan, SigilImage } from './types.js';
@@ -197,7 +197,7 @@ export async function onInputsChanged(
   opts: { policy?: RegenerationPolicy; confirm?: (ctx: RegenContext) => Promise<'update' | 'keep'>; timeoutMs?: number } = {},
 ): Promise<{ decision: RegenDecision; record: SigilRecord }> {
   const plan = await sigil.plan(item);
-  const nextDigest = await inputsDigestOf(plan.seed);
+  const nextDigest = await inputsDigestOf(digestInputOf(plan));
   if (nextDigest === record.inputsDigest) return { decision: 'unchanged', record };
   const policy = await regenerationPolicyFor(sigil, plan.selection.ref, opts.policy);
   if (record.source === 'custom' || record.frozen || policy === 'never' || record.declinedDigest === nextDigest) return { decision: 'keep', record };

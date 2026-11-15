@@ -2,64 +2,64 @@
   "measuredAt": "2026-11-15",
   "method": "esbuild minify esm browser; generator = (kernel+generator) - kernel",
   "kernel": {
-    "minBytes": 8962,
-    "gzipBytes": 4154,
-    "brotliBytes": 3793
+    "minBytes": 8901,
+    "gzipBytes": 4132,
+    "brotliBytes": 3758
   },
   "generators": {
     "emoji@1": {
       "minBytes": 3381,
-      "gzipBytes": 1434,
-      "brotliBytes": 1232,
+      "gzipBytes": 1431,
+      "brotliBytes": 1238,
       "standaloneGzipBytes": 2210
     },
     "glyph@1": {
-      "minBytes": 4724,
-      "gzipBytes": 2070,
-      "brotliBytes": 1930,
-      "standaloneGzipBytes": 2573
+      "minBytes": 4823,
+      "gzipBytes": 2132,
+      "brotliBytes": 1961,
+      "standaloneGzipBytes": 2838
     },
     "grid@1": {
       "minBytes": 1293,
-      "gzipBytes": 627,
-      "brotliBytes": 565,
+      "gzipBytes": 622,
+      "brotliBytes": 567,
       "standaloneGzipBytes": 742
     },
     "initials@1": {
       "minBytes": 1549,
       "gzipBytes": 784,
-      "brotliBytes": 690,
+      "brotliBytes": 696,
       "standaloneGzipBytes": 1595
     },
     "minidenticons@1": {
       "minBytes": 1481,
       "gzipBytes": 694,
-      "brotliBytes": 615,
+      "brotliBytes": 618,
       "standaloneGzipBytes": 1059
     },
     "rings@1": {
       "minBytes": 1261,
-      "gzipBytes": 595,
-      "brotliBytes": 534,
+      "gzipBytes": 591,
+      "brotliBytes": 539,
       "standaloneGzipBytes": 717
     },
     "shapes@1": {
       "minBytes": 1557,
-      "gzipBytes": 701,
-      "brotliBytes": 623,
+      "gzipBytes": 698,
+      "brotliBytes": 628,
       "standaloneGzipBytes": 821
     }
   },
   "modules": {
     "remote": {
-      "minBytes": 5559,
-      "gzipBytes": 2759,
-      "brotliBytes": 2464
+      "minBytes": 5693,
+      "gzipBytes": 2821,
+      "brotliBytes": 2516
     },
     "delivery": {
-      "minBytes": 3634,
-      "gzipBytes": 1644,
-      "brotliBytes": 1474
+      "minBytes": 3723,
+      "gzipBytes": 1677,
+      "brotliBytes": 1510
     },
     "react": {
       "minBytes": 2826,
@@ -67,9 +67,9 @@
       "brotliBytes": 1277
     },
     "features": {
-      "minBytes": 2582,
-      "gzipBytes": 948,
-      "brotliBytes": 835
+      "minBytes": 2993,
+      "gzipBytes": 1093,
+      "brotliBytes": 980
     }
   }
 }

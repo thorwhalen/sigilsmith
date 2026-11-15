@@ -33,6 +33,11 @@ export async function inputsDigestOf(seed: string): Promise<string> {
   return (await sha256Hex(seed)).slice(0, 16);
 }
 
+/** What the inputs digest covers: the seed, plus the encoded features when a feature set drew the item. */
+export function digestInputOf(plan: Plan): string {
+  return plan.features?.tag !== undefined ? JSON.stringify([plan.seed, plan.features.tag]) : plan.seed;
+}
+
 export async function idsOf(plan: Plan, variant = 'svg'): Promise<{ contentId: string; inputsDigest: string }> {
-  return { contentId: await contentIdOf(plan.selection.ref, plan.seed, plan.params, variant), inputsDigest: await inputsDigestOf(plan.seed) };
+  return { contentId: await contentIdOf(plan.selection.ref, plan.seed, plan.params, variant), inputsDigest: await inputsDigestOf(digestInputOf(plan)) };
 }

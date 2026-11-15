@@ -140,12 +140,12 @@ export async function loadConfig(path?: string, cwd = process.cwd()): Promise<Lo
     // The schema, mapping and vector files are part of what the wiring module embeds.
     hash = await configHash({ config: raw, features: inl.sets });
     // Later steps (referencedRefs, validation) see the inlined mappings, not file paths.
-    cfg.features = cfg.features.map((s, i) => ({ ...s, ...(inl.sets[i] ? { schema: inl.sets[i]!.schema, mapping: inl.sets[i]!.mapping } : {}) }));
+    cfg.features = cfg.features.map((s, i) => ({ ...s, ...(inl.aligned[i] ? { schema: inl.aligned[i]!.schema, mapping: inl.aligned[i]!.mapping } : {}) }));
   }
   const diagnostics = [
     ...validateSemantics(cfg, CONFIG_FILE),
     ...inl.diagnostics,
-    ...validateFeatureSets(inl.sets, (ref) => Boolean(BUILTIN_BY_REF[ref] || cfg.remote[ref])),
+    ...validateFeatureSets(inl.aligned, (ref) => Boolean(BUILTIN_BY_REF[ref] || cfg.remote[ref])),
   ];
   return { ...base, raw, hash, config: cfg, resolved: resolveConfig(cfg, inl.sets), diagnostics, features: inl.sets };
 }

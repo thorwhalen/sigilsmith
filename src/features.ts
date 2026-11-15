@@ -47,16 +47,23 @@ export interface FeatureSchema {
 export type FeatureValue = number | string | boolean;
 export type FeatureVector = Record<string, FeatureValue | null | undefined>;
 
-/** How one generator param is computed. */
-export type Encoding =
+/** How one generator param is computed from one dimension (or a constant). */
+export type SingleEncoding =
   | { value: unknown }
   | { from: string; range: [number, number]; round?: boolean }
   | { from: string; map: Record<string, unknown>; default?: unknown };
 
+/**
+ * An encoding, or a list of them tried in order: the first that yields a value wins (a
+ * `map` without a `default` yields nothing for an unlisted level). So `hue` can come from
+ * `kind` for some items and from `sound` for the rest, while the vector keeps only facts.
+ */
+export type Encoding = SingleEncoding | SingleEncoding[];
+
 export interface FeatureMapping {
   /** The generator that draws items of this feature set (unless a rule or the user picks another). */
   use: string;
-  /** Generator ref → param path (dotted) → encoding. */
+  /** Generator ref (`glyph@1`), or generator id for any major (`glyph`) → param path (dotted) → encoding. */
   encodings: Record<string, Record<string, Encoding>>;
 }
 
@@ -103,8 +110,12 @@ export function normalizeFeature(dim: FeatureDim, raw: unknown): { value?: Norma
   }
 }
 
+/** Path segments that would reach an object's prototype; params never use them. */
+export const UNSAFE_SEGMENTS = new Set(['__proto__', 'constructor', 'prototype']);
+
 function setPath(target: Record<string, unknown>, path: string, value: unknown): void {
   const parts = path.split('.');
+  if (parts.some((p) => UNSAFE_SEGMENTS.has(p))) return;
   let cur = target;
   for (const p of parts.slice(0, -1)) {
     const next = cur[p];
@@ -130,34 +141,34 @@ export function encodeFeatures(schema: FeatureSchema, encodings: Record<string, 
   const params: Record<string, unknown> = {};
   const sources: Record<string, string> = {};
   const problems: string[] = [];
-  for (const [path, enc] of Object.entries(encodings)) {
-    if ('value' in enc) {
-      setPath(params, path, enc.value);
-      sources[path] = '=';
-      continue;
-    }
+  /** One encoding's value: `{ value, from }`, or undefined; problems only when `report`. */
+  const one = (path: string, enc: SingleEncoding, report: boolean): { value: unknown; from: string } | undefined => {
+    if ('value' in enc) return { value: enc.value, from: '=' };
     const dim = schema.dims[enc.from];
     if (!dim) {
       problems.push(`\`${path}\` reads unknown dimension \`${enc.from}\``);
-      continue;
+      return undefined;
     }
     const { value: norm, problem } = normalizeFeature(dim, vector[enc.from]);
-    if (problem) problems.push(`\`${enc.from}\`: ${problem}`);
+    if (problem && (report || problem !== 'missing')) problems.push(`\`${enc.from}\`: ${problem}`);
     if ('range' in enc) {
-      if (!norm) continue;
+      if (!norm) return undefined;
       const [a, b] = enc.range;
       const x = a + (b - a) * norm.t;
-      setPath(params, path, enc.round ? Math.round(x) : round4(x));
-    } else {
-      const hit = norm && Object.prototype.hasOwnProperty.call(enc.map, norm.level) ? enc.map[norm.level] : undefined;
-      if (hit !== undefined) setPath(params, path, hit);
-      else if (enc.default !== undefined) setPath(params, path, enc.default);
-      else {
-        if (norm) problems.push(`\`${path}\`: no mapping for ${enc.from} = ${JSON.stringify(norm.level)}`);
-        continue;
-      }
+      return { value: enc.round ? Math.round(x) : round4(x), from: enc.from };
     }
-    sources[path] = enc.from;
+    if (norm && Object.prototype.hasOwnProperty.call(enc.map, norm.level)) return { value: enc.map[norm.level], from: enc.from };
+    if (enc.default !== undefined) return { value: enc.default, from: enc.from };
+    if (norm && report) problems.push(`\`${path}\`: no mapping for ${enc.from} = ${JSON.stringify(norm.level)}`);
+    return undefined;
+  };
+  for (const [path, enc] of Object.entries(encodings)) {
+    const list = Array.isArray(enc) ? enc : [enc];
+    let hit: { value: unknown; from: string } | undefined;
+    for (let i = 0; i < list.length && !hit; i++) hit = one(path, list[i]!, i === list.length - 1);
+    if (!hit) continue;
+    setPath(params, path, hit.value);
+    sources[path] = hit.from;
   }
   return { params, sources, problems: [...new Set(problems)] };
 }
@@ -172,7 +183,7 @@ export function featureSetIndex(item: Item, sets: readonly FeatureSet[] | undefi
 export function featureVectorOf(item: Item, key: string, set: FeatureSet): { vector: FeatureVector; via: 'field' | 'table' | 'none' } {
   const own = getPath(item, set.field);
   if (own !== null && typeof own === 'object' && !Array.isArray(own)) return { vector: own as FeatureVector, via: 'field' };
-  const row = set.vectors?.[key];
+  const row = set.vectors && Object.prototype.hasOwnProperty.call(set.vectors, key) ? set.vectors[key] : undefined;
   if (row) return { vector: row, via: 'table' };
   return { vector: {}, via: 'none' };
 }
@@ -181,8 +192,7 @@ export function featureVectorOf(item: Item, key: string, set: FeatureSet): { vec
 export interface FeaturePlan {
   /** Params for the `features` layer; absent when the mapping has no encodings for this ref. */
   params?: Record<string, unknown>;
-  /** Folded into the seed so content ids and the inputs digest follow the encoded params. */
-  seedTag?: string;
+
   info: NonNullable<Plan['features']>;
 }
 
@@ -194,11 +204,13 @@ export const planFeatures: FeaturePlanner = (item, key, ref, config) => {
   if (set < 0) return undefined;
   const fs = config.features![set]!;
   const { vector, via } = featureVectorOf(item, key, fs);
-  const enc = fs.mapping.encodings[ref];
+  // Encodings are keyed by ref (`glyph@1`) or by generator id (`glyph`, any major).
+  const own = (k: string) => (Object.prototype.hasOwnProperty.call(fs.mapping.encodings, k) ? fs.mapping.encodings[k] : undefined);
+  const enc = own(ref) ?? own(ref.split('@')[0]!);
   const encoded = enc ? encodeFeatures(fs.schema, enc, vector) : { params: undefined, sources: {}, problems: [] as string[] };
   if (via === 'none') encoded.problems.unshift(`no feature vector (item field \`${fs.field}\` or the vector table)`);
   return {
-    ...(encoded.params ? { params: encoded.params, seedTag: stableStringify(encoded.params) } : {}),
-    info: { set, via, vector, sources: encoded.sources, problems: encoded.problems },
+    ...(encoded.params ? { params: encoded.params } : {}),
+    info: { set, via, vector, sources: encoded.sources, problems: encoded.problems, ...(encoded.params ? { tag: stableStringify(encoded.params) } : {}) },
   };
 };

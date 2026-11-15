@@ -157,5 +157,13 @@ export interface Plan {
   missingInputs: string[];
   seed: string;
   /** Present when a feature set covers the item: which set, where the vector came from, what each encoded param read. */
-  features?: { set: number; via: 'field' | 'table' | 'none'; vector: Record<string, unknown>; sources: Record<string, string>; problems: string[] };
+  features?: {
+    set: number;
+    via: 'field' | 'table' | 'none';
+    vector: Record<string, unknown>;
+    sources: Record<string, string>;
+    problems: string[];
+    /** Canonical form of the encoded params; part of the inputs digest, so the regeneration trigger follows the features. Never part of the render seed. */
+    tag?: string;
+  };
 }

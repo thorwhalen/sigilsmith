@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { createSigil } from '../src/index.js';
 import { encodeFeatures, normalizeFeature, planFeatures, type FeatureSchema, type FeatureSet } from '../src/features.js';
 import { dicebearTransport } from '../src/remote.js';
+import { idsOf } from '../src/ids.js';
 import { build, check, explainItems, loadConfig } from '../src/node/index.js';
 import type { ResolvedConfig } from '../src/types.js';
 import { baseConfig, loaders } from './fixtures.js';
@@ -74,11 +75,28 @@ describe('the features layer in the kernel', () => {
     expect(song.features).toBeUndefined();
     expect(song.selection.via).toBe('rule:1');
   });
-  it('draws different features differently, and folds them into the seed', async () => {
+  it('draws different features differently; a feature change moves the inputs digest, never the render seed', async () => {
     const [a, b] = await Promise.all([sigil.render(flute), sigil.render(drum)]);
     expect(a).not.toEqual(b);
+    const before = await sigil.plan(flute);
     const moved = await sigil.plan({ ...flute, features: { ...flute.features, family: 'string' } });
-    expect(moved.seed).not.toBe((await sigil.plan(flute)).seed);
+    expect(moved.seed).toBe(before.seed); // unmapped randomness (rotation, blob) stays put
+    expect((await idsOf(moved)).inputsDigest).not.toBe((await idsOf(before)).inputsDigest);
+    expect((await idsOf(moved)).contentId).not.toBe((await idsOf(before)).contentId);
+  });
+  it('a rule still overrides one item\'s feature params', async () => {
+    const ruled = createSigil({ config: { ...config, policy: { ...config.policy, rules: [{ when: { id: 'flute' }, use: 'glyph@1', params: { 'glyph@1': { tone: 'dark' } } }] } }, generators: all, features: planFeatures, onWarn: () => {} });
+    const p = await ruled.plan(flute);
+    expect(p.params.tone).toBe('dark');
+    expect(p.provenance.find((x) => x.path === 'params.tone')).toMatchObject({ layer: 'rule:0', shadowed: [{ layer: 'features' }, { layer: 'generator' }] });
+  });
+  it('tries encoding lists in order, accepts id-keyed encodings, and never writes through __proto__', () => {
+    const r = encodeFeatures(schema, { hue: [{ from: 'family', map: { drum: 10 } }, { from: 'register', map: { low: 1, mid: 2, high: 3 } }], ['__proto__.x' as string]: { value: 1 } }, flute.features);
+    expect(r.params).toEqual({ hue: 3 });
+    expect(r.sources.hue).toBe('register');
+    expect(({} as Record<string, unknown>).x).toBeUndefined();
+    const byId = planFeatures(flute, 'flute', 'glyph@1', { ...config, features: [{ ...set, mapping: { use: 'glyph@1', encodings: { glyph: { hue: { value: 7 } } } } }] });
+    expect(byId?.params).toEqual({ hue: 7 });
   });
   it('without a planner the mapping is ignored, with a warning', async () => {
     const warns: string[] = [];
@@ -98,7 +116,7 @@ describe('remote generators take feature options (the light-API seam)', () => {
   it('forwards params.options to DiceBear as query options, sorted', async () => {
     const urls: string[] = [];
     const t = dicebearTransport({ style: 'shapes', fetch: (async (u: string) => { urls.push(u); return new Response('<svg/>', { status: 200 }); }) as unknown as typeof fetch });
-    await t({ ref: 'db@1', seed: 's', fields: {}, params: { options: { shape1: ['ellipse', 'polygon'], backgroundColor: '0a5b83' } }, size: 64 });
+    await t({ ref: 'db@1', seed: 's', fields: {}, params: { options: { shape1: ['ellipse', 'polygon'], backgroundColor: '0a5b83', seed: 'raw-key', nested: { a: 1 } } }, size: 64 });
     expect(urls[0]).toMatch(/\/shapes\/svg\?seed=[0-9a-f]{24}&backgroundColor=0a5b83&shape1=ellipse%2Cpolygon$/);
   });
 });
@@ -119,6 +137,18 @@ describe('feature sets in the config (files, validation, check, build)', () => {
     writeFileSync(join(dir, 'features.mapping.json'), JSON.stringify({ ...mapping, encodings: { 'glyph@1': { hue: { value: 10 } } } }));
     expect((await loadConfig(undefined, dir)).hash).not.toBe(l.hash);
   });
+  it('reports stray map keys, numeric maps, non-integer ranges and bad dimensions', async () => {
+    const bad = { use: 'glyph@1', encodings: { 'glyph@1': { shape: { from: 'family', map: { wnid: 'star' }, default: 'circle' }, size: { from: 'voices', map: { '1.5': 0.5 } }, orbit: { from: 'voices', range: [0, 3] } } } };
+    const msgs = (await loadConfig(undefined, project({}, bad))).diagnostics.map((d) => `${d.code} ${d.message}`).join('\n');
+    expect(msgs).toMatch(/SGS0801.*"wnid", which is not a level/);
+    expect(msgs).toMatch(/SGS0801.*maps numeric `voices`/);
+    expect(msgs).toMatch(/SGS0302.*orbit.*0\.75/);
+    const dir = project();
+    writeFileSync(join(dir, 'features.schema.json'), JSON.stringify({ dims: { a: { kind: 'numeric', min: 3, max: 1 }, b: { kind: 'categorical', values: ['x'], default: 'y' } } }));
+    const dims = (await loadConfig(undefined, dir)).diagnostics.map((d) => d.message).join('\n');
+    expect(dims).toMatch(/min \(3\) must be below max/);
+    expect(dims).toMatch(/default "y" is not one of x/);
+  });
   it('reports unknown dimensions, unmapped levels, impossible params and missing files', async () => {
     const bad = { use: 'glyph@1', encodings: { 'glyph@1': { hue: { from: 'colour', range: [0, 1] }, tone: { from: 'family', map: { wind: 'dark' } }, orbit: { from: 'voices', range: [0, 99] } } } };
     const l = await loadConfig(undefined, project({}, bad));
@@ -135,7 +165,8 @@ describe('feature sets in the config (files, validation, check, build)', () => {
     const env = await check(await loadConfig(undefined, dir), { only: ['data'] });
     const msgs = env.diagnostics.map((d) => `${d.code} ${d.message}`).join('\n');
     expect(msgs).toMatch(/SGS0802.*kazoo.*no feature vector/);
-    expect(msgs).not.toMatch(/SGS0803.*flute/); // flute and oboe share features: same params is right
+    expect(env.diagnostics.filter((d) => d.code === 'SGS0803' && d.severity === 'warning')).toEqual([]); // flute and oboe share features: same params is right
+    expect(msgs).toMatch(/SGS0803 2 items share the same features/);
     const coarse = project({}, { use: 'glyph@1', encodings: { 'glyph@1': { hue: { from: 'register', map: { low: 1, mid: 1, high: 1 } } } } });
     const env2 = await check(await loadConfig(undefined, coarse), { only: ['data'] });
     expect(env2.diagnostics.map((d) => `${d.code} ${d.message}`).join('\n')).toMatch(/SGS0803.*different features get the same params/);

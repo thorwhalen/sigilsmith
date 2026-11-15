@@ -33,7 +33,7 @@ Validate them in an editor with `$schema`: `node_modules/sigilsmith/schema/featu
 ]
 ```
 
-`build` inlines the three files into the wiring module (and imports `sigilsmith/features`, ~0.95 kB gzip, only when a config has feature sets); the config hash covers their content, so `check fresh` catches an edited mapping.
+`build` inlines the three files into the wiring module (and imports `sigilsmith/features`, ~1.1 kB gzip, only when a config has feature sets); the config hash covers their content, so `check fresh` catches an edited mapping.
 
 ## Choosing encodings (the visual channels of `glyph@1`)
 
@@ -48,11 +48,13 @@ Map each dimension to one channel, matching the channel to the kind of data (Ber
 | binary | `fill`, `mark`, `tone`, `rings` | `{ "from": "percussive", "map": { "true": "pulse", "false": "none" } }` |
 | constant | anything (`tile`, the app's `tone`) | `{ "value": "circle" }` |
 
-Rules of thumb: put the dimension users group by most on **hue**, and the second on **shape**; give each channel to at most one dimension; leave `jitter` (the item's own small rotation offset) low so siblings stay recognisably related; keep five or six channels at most, or 32 px images turn to noise. `check` reports any dimension that drives nothing (`SGS0803`, info), and any items whose features differ but whose params come out equal (`SGS0803`, warning).
+An encoding can also be a **list tried in order**; the first that yields a value wins (a `map` without a `default` yields nothing for an unlisted level). Use it when one channel should follow different facts for different items, without baking that choice into the vector: `"hue": [{ "from": "kind", "map": { "drum": 25, "chords": 280 } }, { "from": "sound", "map": { … } }]`. Encodings may be keyed by generator id (`"glyph"`) instead of a ref (`"glyph@1"`) to apply to any major. `glyph@1` also has `accentShift`, the hue offset of its second colour (rings, satellites, the split fill): 150 contrasts, 20–40 stays in the family.
+
+Rules of thumb: put the dimension users group by most on **hue**, and the second on **shape**, and make sure hue varies *within* each group the list shows (a section of 17 items in one colour cannot be scanned); in lists drawn at 20–32 px only hue, shape, the tile and a solid-versus-outline fill survive, so give those the facts that matter most, and keep patterns, rings and satellites for the gallery; give each channel to at most one dimension; leave `jitter` (the item's own small rotation offset) low so siblings stay recognisably related; keep five or six channels at most, or 32 px images turn to noise. `check` reports any dimension that drives nothing (`SGS0803`, info), and any items whose features differ but whose params come out equal (`SGS0803`, warning).
 
 ## The light-API seam
 
-The mapping is keyed by generator ref, so the same features can drive a remote generator with no code: declare `remote.<ref>` (for example DiceBear) and add an `encodings.<ref>` block whose params go under `options.*`; the DiceBear transport sends them as style options (`options.backgroundColor`, `options.shape1`). Computed images (`glyph@1`) stay the default: free, offline, instant and deterministic.
+The mapping is keyed by generator ref, so the same features can drive a remote generator with no code: declare `remote.<ref>` (for example DiceBear) and add an `encodings.<ref>` block whose params go under `options.*`; the DiceBear transport sends them as style options (`options.backgroundColor`, `options.shape1`). Options are sent in clear beside a hashed seed, so they disclose the features they encode; only scalar values are sent, and never a `seed` option. Computed images (`glyph@1`) stay the default: free, offline, instant and deterministic.
 
 ## The loop for a list
 

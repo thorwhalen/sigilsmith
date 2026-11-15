@@ -11,14 +11,29 @@
     "🎵 song": "c59ed4c623ec9606ff476a40ccc8094e69a397def3b5a14d32826349f7b3fb1f",
     "f47ac10b-58cc-4372-a567-0e02b2c3d479": "ed9c1e5b15ea57d53b2e061b9b0e2c2c0f567ce45a83b8d1b09730251324f057"
   },
+  "altParams": {
+    "hue": 200,
+    "chroma": 0.2,
+    "tone": "dark",
+    "shape": "star",
+    "size": 0.7,
+    "fill": "stripes",
+    "rings": 2,
+    "orbit": 5,
+    "mark": "pulse",
+    "rotation": 15,
+    "jitter": 0.5,
+    "tile": "circle",
+    "accentShift": 30
+  },
   "alt": {
-    "0": "ac62968ed5f901b30b9aa7d88cb28b1dd8593589dc6c1da0d504777b679400ef",
-    "a": "2cee01b3361de39a3cb7f14b2ee826dc9b5045cae251ebefae6429aa2c0503f6",
-    "sigil": "78bc82e42041bfc744fdf0bef19a4b3f107bdcafbb14d6a3bbe27f6048ee8792",
-    "Blue Monday": "c59ed4c623ec9606ff476a40ccc8094e69a397def3b5a14d32826349f7b3fb1f",
-    "ada@example.com": "21ca7cd7313b6b1d1e66fb88eb0261dca1aec529e48239f47cc6fbeb9707fa34",
-    "Ωμέγα": "595cf507f4f14aa1b7d272e8b9b1c22667acd0440c41d233bc67738a87a15c0e",
-    "🎵 song": "c59ed4c623ec9606ff476a40ccc8094e69a397def3b5a14d32826349f7b3fb1f",
-    "f47ac10b-58cc-4372-a567-0e02b2c3d479": "ed9c1e5b15ea57d53b2e061b9b0e2c2c0f567ce45a83b8d1b09730251324f057"
+    "0": "84e482177ec11037d9f8e00105b20f9b5cb4c2f55916eb8e8920b122c1b37cb2",
+    "a": "fcaa8cc084d75008172c1fa41a78a3c883f8afe1c035c339a1a4905529ef8664",
+    "sigil": "9d59fe5a2dfd509e0464a8b5b5af23f37d1ac465c05c0a1df8a4f231059daa9d",
+    "Blue Monday": "61f92a0cfd4f63573efb933eefc4b3165a385fe8c2f008477c0e47e8e2b623df",
+    "ada@example.com": "16c60d5e07b082ca1804f7f7f3139849b3f9e242dd9ac17b9330b2954a3638e7",
+    "Ωμέγα": "b1a9407bb715b7aa80b9afbdaf8ce89d86e3dfbd88ea7ee446f785b35d0aa6f3",
+    "🎵 song": "ab2449ca5bc1e35413019bae74e3618676eb7685f3162cde3097308a655ecb07",
+    "f47ac10b-58cc-4372-a567-0e02b2c3d479": "706e5cb6946d7c8d720122a43a43740454681152268e6b0b242223ee7f91a272"
   }
 }

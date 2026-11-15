@@ -63,7 +63,7 @@ Identicons make items look *different*; a feature set makes them look *meaningfu
   "mark":  { "from": "percussive", "map": { "true": "pulse", "false": "none" } } } } }
 ```
 
-The encoded params are a plan layer of their own (`explain` shows the dimension behind each), `check` reports vectors that do not fit the schema and features the mapping cannot show, and the browser loads `sigilsmith/features` (~0.95 kB) only when a config uses it. The mapping is keyed by generator, so the same features can drive a remote style (DiceBear options) with no code. Guide: [`skills/sigilsmith/references/features.md`](skills/sigilsmith/references/features.md).
+The encoded params are a plan layer of their own (`explain` shows the dimension behind each), `check` reports vectors that do not fit the schema and features the mapping cannot show, and the browser loads `sigilsmith/features` (~1.1 kB) only when a config uses it. The mapping is keyed by generator, so the same features can drive a remote style (DiceBear options) with no code. Guide: [`skills/sigilsmith/references/features.md`](skills/sigilsmith/references/features.md).
 
 ## Policies, settings, delivery
 
