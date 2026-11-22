@@ -42,7 +42,7 @@ const list = (v: unknown) => (typeof v === 'string' && v ? v.split(',').map((s) 
 function print(env: Envelope, json: boolean, human?: (data: any) => string): number {
   if (json) process.stdout.write(`${JSON.stringify(env, null, 2)}\n`);
   else {
-    if (human) process.stdout.write(`${human(env.data)}\n`);
+    if (human && env.data != null) process.stdout.write(`${human(env.data)}\n`);
     for (const d of env.diagnostics) process.stderr.write(`${formatDiagnostic(d)}\n`);
     for (const n of env.next) process.stderr.write(`next: ${n.command}  # ${n.why}\n`);
   }
