@@ -17,6 +17,7 @@ import type { SigilRecord } from '../delivery.js';
 import type { Sigil as SigilApi } from '../sigil.js';
 import { toDisplayUrl } from '../svg.js';
 import type { Item, SigilImage } from '../types.js';
+import { displayCacheFor } from './display-cache.js';
 
 const Ctx = createContext<SigilApi | null>(null);
 
@@ -45,12 +46,16 @@ export interface UseSigilResult {
 export function useSigil(item: Item, opts: { size?: number; record?: SigilRecord | null; sigil?: SigilApi } = {}): UseSigilResult {
   const sigil = useSigilApi(opts.sigil);
   const user = useUserVersion(sigil) as { enabled?: boolean } | undefined;
-  const [state, setState] = useState<Omit<UseSigilResult, 'retry'>>({ status: 'loading' });
-  const [attempt, setAttempt] = useState(0);
   const storedUrl = opts.record?.url;
   const custom = opts.record?.source === 'custom';
   const recordRef = opts.record?.ref;
   const itemKey = JSON.stringify(item);
+  // Everything that decides the image: same key, same image (so it can be shown without rendering).
+  const cacheKey = JSON.stringify([itemKey, opts.size ?? 64, storedUrl ?? null, recordRef ?? null, custom, user ?? null]);
+  const cache = displayCacheFor(sigil);
+  const cached = user?.enabled === false && !custom ? undefined : cache.get(cacheKey);
+  const [state, setState] = useState<Omit<UseSigilResult, 'retry'>>(cached ? { status: 'ready', src: cached } : { status: 'loading' });
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     if (user?.enabled === false && !custom) {
       setState({ status: 'disabled' });
@@ -60,13 +65,25 @@ export function useSigil(item: Item, opts: { size?: number; record?: SigilRecord
       setState({ status: 'ready', src: storedUrl });
       return;
     }
+    const hit = attempt === 0 ? cache.get(cacheKey) : undefined;
+    if (hit) {
+      setState((s) => (s.status === 'ready' && s.src === hit ? s : { status: 'ready', src: hit }));
+      return;
+    }
     let live = true;
-    let objectUrl: string | undefined;
+    let objectUrl: string | undefined; // a placeholder's blob URL; the cache owns the final one
     setState((s) => ({ status: 'loading', ...(s.src ? { src: s.src } : {}) }));
     const size = opts.size ?? 64;
-    const show = (img: SigilImage) => {
+    const show = (img: SigilImage, final: boolean) => {
       const src = toDisplayUrl(img);
-      if (img.type === 'blob') objectUrl = src;
+      const blob = img.type === 'blob';
+      if (final) {
+        if (live) cache.set(cacheKey, src, blob);
+        else if (blob) URL.revokeObjectURL(src);
+      } else if (blob) {
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
+        objectUrl = src;
+      }
       if (live) setState({ status: 'ready', src });
     };
     (async () => {
@@ -79,21 +96,21 @@ export function useSigil(item: Item, opts: { size?: number; record?: SigilRecord
       const mod = await sigil.load(plan.selection.ref);
       // Slow/remote generators: show the instant placeholder first (B5), keep it on failure.
       if (mod.determinism === 'cached-nondeterministic' && sigil.config.policy.placeholder !== plan.selection.ref) {
-        show(await sigil.render(item, { ref: sigil.config.policy.placeholder, size }));
+        show(await sigil.render(item, { ref: sigil.config.policy.placeholder, size }), false);
         try {
-          show(await sigil.renderPlan(plan, size));
+          show(await sigil.renderPlan(plan, size), true);
         } catch {
           /* placeholder stays */
         }
         return;
       }
-      show(await sigil.renderPlan(plan, size));
+      show(await sigil.renderPlan(plan, size), true);
     })().catch((error) => live && setState({ status: 'error', error }));
     return () => {
       live = false;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [sigil, itemKey, storedUrl, recordRef, custom, user, attempt, opts.size]);
+  }, [sigil, cache, cacheKey, itemKey, storedUrl, recordRef, custom, user, attempt, opts.size]);
   const retry = useCallback(() => setAttempt((a) => a + 1), []);
   return { ...state, retry };
 }
