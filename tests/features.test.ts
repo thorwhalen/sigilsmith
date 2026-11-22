@@ -171,6 +171,17 @@ describe('feature sets in the config (files, validation, check, build)', () => {
     const env2 = await check(await loadConfig(undefined, coarse), { only: ['data'] });
     expect(env2.diagnostics.map((d) => `${d.code} ${d.message}`).join('\n')).toMatch(/SGS0803.*different features get the same params/);
   });
+  it('the wiring module carries no description or $comment prose (#11), while explain and the hash keep it', async () => {
+    const dir = project();
+    const sch = { $comment: 'SOURCE-NOTE', dims: { ...schema.dims, family: { ...schema.dims.family, description: 'PROSE-ONE' } } };
+    writeFileSync(join(dir, 'features.schema.json'), JSON.stringify(sch));
+    const loaded = await loadConfig(undefined, dir);
+    expect(JSON.stringify(loaded.resolved)).toContain('PROSE-ONE'); // the source keeps it
+    await build(loaded);
+    const gen = readFileSync(join(dir, 'src/sigilsmith.gen.ts'), 'utf8');
+    expect(gen).toContain('"family"');
+    expect(gen).not.toMatch(/PROSE-ONE|SOURCE-NOTE/);
+  });
   it('the wiring module passes the planner only when the config has feature sets, and explain shows the vector', async () => {
     const dir = project();
     const loaded = await loadConfig(undefined, dir);

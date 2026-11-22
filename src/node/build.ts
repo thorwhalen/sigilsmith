@@ -118,6 +118,20 @@ function importSpecifier(fromFile: string, dir: string, modulePath: string): str
   return rel.replace(/\.tsx?$/, '');
 }
 
+/** Prose keys the browser never reads; dropped from the inlined feature sets (they stay in the source files and in `explain`). */
+const PROSE_KEYS = new Set(['description', '$comment']);
+
+function stripProse(v: unknown): unknown {
+  if (Array.isArray(v)) return v.map(stripProse);
+  if (v && typeof v === 'object') return Object.fromEntries(Object.entries(v).filter(([k]) => !PROSE_KEYS.has(k)).map(([k, x]) => [k, stripProse(x)]));
+  return v;
+}
+
+/** The resolved config as shipped to the browser: feature sets without their prose. */
+export function wiringConfig(resolved: LoadedConfig['resolved']): unknown {
+  return resolved?.features ? { ...resolved, features: stripProse(resolved.features) } : resolved;
+}
+
 export function renderWiringModule(loaded: LoadedConfig, outFile: string): string {
   const cfg = loaded.config!;
   const refs = referencedRefs(cfg);
@@ -162,7 +176,7 @@ export function renderWiringModule(loaded: LoadedConfig, outFile: string): strin
     ...imports,
     ...extras,
     '',
-    `export const config = Object.freeze(${JSON.stringify(loaded.resolved, null, 2)}) as unknown as ResolvedConfig;`,
+    `export const config = Object.freeze(${JSON.stringify(wiringConfig(loaded.resolved), null, 2)}) as unknown as ResolvedConfig;`,
     '',
     '/** Lazy loaders for exactly the generators the config can select: one chunk each. */',
     'export const generators: Record<string, GeneratorLoader> = {',
