@@ -108,9 +108,25 @@ export interface SigilProps {
   /** Corner radius of the reserved box; the image itself carries its own shape. */
   radius?: number | string;
   sigil?: SigilApi;
+  /**
+   * On failure, show a retry `<button>` (default). Pass `false` inside a row that is itself
+   * a button/link: the failure renders the tinted placeholder with no focusable control,
+   * and the image is tried again on the next mount.
+   */
+  retry?: boolean;
 }
 
-export function Sigil({ item, size = 40, record, alt = '', className, style, radius = '20%', sigil }: SigilProps) {
+/** The failed-image view; split out so it can be rendered without running effects (tests). */
+export function SigilFailure({ box, className, size, alt, retry, onRetry }: { box: CSSProperties; className?: string | undefined; size: number; alt: string; retry: boolean; onRetry(): void }) {
+  if (!retry) return <span className={className} style={box} data-status="error" aria-hidden={alt === '' ? true : undefined} />;
+  return (
+    <button type="button" className={className} onClick={onRetry} title="Image failed to load. Click to retry." aria-label="Retry loading image" style={{ ...box, border: '1px dashed rgba(127,127,127,0.6)', padding: 0, cursor: 'pointer', fontSize: size * 0.4, lineHeight: 1, color: 'rgba(127,127,127,0.9)' }}>
+      ↻
+    </button>
+  );
+}
+
+export function Sigil({ item, size = 40, record, alt = '', className, style, radius = '20%', sigil, retry: showRetry = true }: SigilProps) {
   const { src, status: hookStatus, retry } = useSigil(item, { size, ...(record !== undefined ? { record } : {}), ...(sigil ? { sigil } : {}) });
   // Track the <img> load against the current src (a stored URL can 404 or be slow).
   const [loaded, setLoaded] = useState<{ src?: string; ok: boolean }>({ ok: false });
@@ -123,12 +139,7 @@ export function Sigil({ item, size = 40, record, alt = '', className, style, rad
   const status = hookStatus === 'ready' && loaded.src === src && !loaded.ok ? 'error' : hookStatus;
   const box: CSSProperties = { display: 'inline-block', width: size, height: size, flex: `0 0 ${size}px`, borderRadius: radius, overflow: 'hidden', background: status === 'ready' ? 'transparent' : 'rgba(127,127,127,0.18)', verticalAlign: 'middle', ...style };
   if (status === 'disabled') return <span className={className} style={box} aria-hidden={alt === '' ? true : undefined} />;
-  if (status === 'error')
-    return (
-      <button type="button" className={className} onClick={onRetry} title="Image failed to load. Click to retry." aria-label="Retry loading image" style={{ ...box, border: '1px dashed rgba(127,127,127,0.6)', padding: 0, cursor: 'pointer', fontSize: size * 0.4, lineHeight: 1, color: 'rgba(127,127,127,0.9)' }}>
-        ↻
-      </button>
-    );
+  if (status === 'error') return <SigilFailure box={box} className={className} size={size} alt={alt} retry={showRetry} onRetry={onRetry} />;
   return (
     <span className={className} style={box} data-status={status} aria-busy={status === 'loading' || undefined}>
       {src ? (
