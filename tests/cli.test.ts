@@ -161,6 +161,13 @@ describe('CLI surface (--json envelope, exit codes)', () => {
     expect(run(['frobnicate'], dir).status).toBe(2);
     expect(JSON.parse(run(['explain-code', 'SGS0701', '--json'], dir).stdout).data.title).toBe('key field missing from data');
   });
+  it('build with invalid params prints the diagnostics, not an internal error (#14)', () => {
+    const dir = makeProject({ ...BASIC, generators: { 'grid@1': { params: { cells: 42 } } } });
+    const r = run(['build'], dir);
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain('SGS0302');
+    expect(r.stderr).not.toContain('internal error');
+  });
   it('detect-key --write records the key in the config', () => {
     const dir = makeProject({ ...BASIC, key: { field: 'wrong' } }, [{ slug: 'a', type: 'video' }, { slug: 'b', type: 'audio' }]);
     const r = run(['detect-key', 'items.json', '--write', '--json'], dir);
