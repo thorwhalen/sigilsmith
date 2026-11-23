@@ -57,20 +57,21 @@ export const KNOWN_LIBRARIES: Record<string, string> = {
   'gradient-avatar': 'aura@1', 'random-gradient': 'aura@1',
 };
 
-const CODE_EXT = /\.(m?[jt]sx?|vue|svelte)$/;
-const SKIP_DIR = new Set(['node_modules', 'dist', 'build', 'out', 'coverage', '.git', '.next', '.svelte-kit', 'vendor']);
-const SKIP_FILE = /(\.gen\.[jt]s|\.(test|spec)\.[jt]sx?|\.d\.ts)$/;
+const CODE_EXT = /\.(m?[jt]sx?|vue|svelte|py)$/;
+const SKIP_DIR = new Set(['node_modules', 'dist', 'build', 'out', 'coverage', '.git', '.next', '.svelte-kit', 'vendor', '__pycache__', 'venv', '.venv', 'site-packages', 'tests']);
+const SKIP_FILE = /(\.gen\.[jt]s|\.(test|spec)\.[jt]sx?|\.d\.ts|(^|\/)test_[^/]*\.py|_test\.py)$/;
 /** A thumbnail-ish name: the word starts the name (`orbColors`, `avatarUrl`) or ends it (`SongOrb`, `UserAvatar`), as a whole camelCase word. */
 const THUMB_WORDS = 'orb|avatar|identicon|thumb|thumbnail|coverart|cover_art|artwork|sigil|glyph|monogram|initials|blockie|blockies|jazzicon';
 const CAPITAL = THUMB_WORDS.split('|').map((w) => w[0]!.toUpperCase() + w.slice(1)).join('|');
 const THUMB_NAME = new RegExp(`^(${THUMB_WORDS}|${CAPITAL})(?=[A-Z_]|$)|(${CAPITAL})(Art|Image|Colors|Colours|Svg|Url|Style)?$`);
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 /** Code with comments and string literals blanked (same length, so offsets keep their line numbers). */
-function codeOnly(text: string): string {
+function codeOnly(text: string, python = false): string {
   const blank = (m: string) => m.replace(/[^\n]/g, ' ');
+  if (python) text = text.replace(/"""[\s\S]*?"""|'''[\s\S]*?'''|#[^\n]*/g, blank);
   return text.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*|'(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"|`(?:\\.|[^`\\])*`/g, blank);
 }
-const HASH_SIGNAL = /charCodeAt|codePointAt|Math\.imul|hashCode|\bcyrb|\bfnv|\bmurmur|\bhash\w*\s*\(/;
+const HASH_SIGNAL = /charCodeAt|codePointAt|Math\.imul|\bimul\s*\(|hashCode|hashlib|\bord\s*\(|\bcyrb|\bfnv|\bmurmur|\bhash\w*\s*\(/;
 const COLOUR_SIGNAL = /hsla?\(|oklch\(|rgba?\(|#\$\{|radial-gradient|linear-gradient|fillStyle|\bhue\b/;
 const IMAGE_FIELD = /^(image|img|thumb|thumbnail|cover|coverart|cover_art|artwork|art|avatar|picture|photo|icon|poster|logo)([_-]?(url|uri|src|href|large|small))?$/i;
 const URLISH = /^(https?:\/\/|\/(?!\/)|data:image\/)/;
@@ -95,7 +96,7 @@ export function scanAdoption(cwd: string, o: { dirs?: string[]; samples?: Array<
   const texts = new Map(files.map((f) => [f, readFileSync(f, 'utf8')]));
   const rel = (f: string) => relative(cwd, f);
   const findings: AdoptFinding[] = [];
-  const code = new Map([...texts].map(([f, t]) => [f, codeOnly(t)]));
+  const code = new Map([...texts].map(([f, t]) => [f, codeOnly(t, f.endsWith('.py'))]));
   const usesOf = (names: string[], definedIn: string) => {
     const uses: Array<{ file: string; line: number }> = [];
     const alt = names.map(escapeRe).join('|');
@@ -113,7 +114,10 @@ export function scanAdoption(cwd: string, o: { dirs?: string[]; samples?: Array<
       if (pkg in KNOWN_LIBRARIES) findings.push({ kind: 'library', file: rel(f), line: lineOf(t, m.index!), name: pkg, detail: `imports ${m[1]}`, suggestion: `replace with ${KNOWN_LIBRARIES[pkg]}; preview both side by side before switching` });
     }
     // Hand-rolled identicons.
-    const exported = [...t.matchAll(/export\s+(?:default\s+)?(?:async\s+)?(?:function\*?|const|let|class)\s+([A-Za-z_$][\w$]*)/g)].filter((m) => THUMB_NAME.test(m[1]!));
+    const py = f.endsWith('.py');
+    // Public names: JS exports, or a Python module's top-level functions and classes not starting with `_`.
+    const declared = py ? t.matchAll(/^(?:async\s+)?(?:def|class)\s+([A-Za-z][\w]*)/gm) : t.matchAll(/export\s+(?:default\s+)?(?:async\s+)?(?:function\*?|const|let|class)\s+([A-Za-z_$][\w$]*)/g);
+    const exported = [...declared].filter((m) => THUMB_NAME.test(m[1]!));
     if (exported.length && HASH_SIGNAL.test(t) && COLOUR_SIGNAL.test(t)) {
       const names = exported.map((m) => m[1]!);
       const gradient = /radial-gradient|blur\(|createRadialGradient/.test(t);
@@ -124,7 +128,9 @@ export function scanAdoption(cwd: string, o: { dirs?: string[]; samples?: Array<
         name: names.join(', '),
         detail: `exports ${names.join(', ')}; hashes strings into colours${gradient ? ' (blurred gradient fields)' : ''}${/toDataURL\(/.test(t) ? '; paints a canvas' : ''}`,
         uses: usesOf(names, f),
-        suggestion: gradient
+        suggestion: py
+          ? 'a server-side copy of the item art (a page rendered without the browser): show the stored picture where the item has one (`item.sigil.url`), and keep the generated look in step with the generator the browser uses (for a gradient orb, aura@1 draws with this kind of cyrb53 orb algorithm), or serve PNGs rendered once with sigilsmith in Node (`sigilsmith targets --emit`, `materialized` delivery)'
+          : gradient
           ? 'aura@1 is this look (and, if this file hashes with cyrb53, the same colours per item): pin its `hues` to the palette here, in the same order, preview, then swap each call site for <Sigil item={…} record={….sigil} />'
           : 'pick the catalog generator closest in look (`sigilsmith catalog --implemented`), preview side by side, then swap each call site for <Sigil item={…} record={….sigil} />',
       });

@@ -8,7 +8,7 @@ An app that already shows an image per item (a hand-rolled gradient "orb", an av
 npx sigilsmith adopt [--dirs src,app] [--samples items.json] [--json]
 ```
 
-Read-only. It reports, with file, line and call sites:
+Read-only. It reads JS/TS, Vue, Svelte and Python sources (`--dirs` defaults to `src`; pass the server's package too, since a page rendered without the browser often keeps its own copy of the item art). It reports, with file, line and call sites:
 
 | finding | what it is | the move |
 |---|---|---|
