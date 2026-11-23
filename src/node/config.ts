@@ -11,7 +11,8 @@ import { dirname, resolve } from 'node:path';
 import { CONFIG_FILE } from '../meta.js';
 import { PRESETS } from '../presets.js';
 import type { Item, ResolvedConfig } from '../types.js';
-import { BUILTIN_BY_REF } from './builtins.js';
+import { BUILTINS, BUILTIN_BY_REF, registerExtensions } from './builtins.js';
+import { loadExtensions } from './extensions.js';
 import { diag, type Diagnostic } from './diagnostics.js';
 import { ConfigSchema, type Config } from './schema.js';
 import { sha256Hex } from '../hash.js';
@@ -152,6 +153,10 @@ export async function loadConfig(path?: string, cwd = process.cwd()): Promise<Lo
     return { ...base, raw, hash, diagnostics };
   }
   const cfg = parsed.data;
+  // Extensions first: validation below must know their refs and params.
+  const ext = await loadExtensions(cfg.extensions, dirname(file), new Set(BUILTINS.map((b) => b.manifest.ref!)));
+  registerExtensions(ext.manifests);
+  if (cfg.extensions.length) hash = await configHash({ config: raw, extensions: ext.manifests.map((m) => m.manifest.ref) });
   const inl = inlineFeatureSets(cfg.features, dirname(file));
   if (cfg.features.length) {
     // The schema, mapping and vector files are part of what the wiring module embeds.
@@ -160,6 +165,7 @@ export async function loadConfig(path?: string, cwd = process.cwd()): Promise<Lo
     cfg.features = cfg.features.map((s, i) => ({ ...s, ...(inl.aligned[i] ? { schema: inl.aligned[i]!.schema, mapping: inl.aligned[i]!.mapping } : {}) }));
   }
   const diagnostics = [
+    ...ext.diagnostics,
     ...validateSemantics(cfg, CONFIG_FILE),
     ...inl.diagnostics,
     ...validateFeatureSets(inl.aligned, (ref) => Boolean(BUILTIN_BY_REF[ref] || cfg.remote[ref]), { remoteRefs: Object.keys(cfg.remote) }),

@@ -5,7 +5,10 @@
  * (`src/mcp/server.ts`) are both thin layers over this list, so the two surfaces
  * cannot drift apart: there is no second list to keep in sync.
  */
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { z } from 'zod';
+import { CONFIG_FILE } from '../meta.js';
 import { PRESETS } from '../presets.js';
 import type { Item } from '../types.js';
 import { adoptCmd } from './adopt.js';
@@ -73,8 +76,10 @@ export const OPERATIONS = [
       presets: z.boolean().optional(),
     },
     annotations: READ,
-    run: async (i) => {
+    run: async (i, ctx) => {
       if (i.presets) return envelope('catalog', { presets: Object.values(PRESETS).map((p) => ({ name: p.name, description: p.description, types: Object.keys(p.byType) })) });
+      // The project's extensions belong in its catalog: load its config when there is one.
+      if (existsSync(resolve(ctx.cwd, CONFIG_FILE))) await loadConfig(undefined, ctx.cwd);
       const { presets: _p, ...q } = i;
       return catalog(Object.fromEntries(Object.entries(q).filter(([, v]) => v !== undefined)));
     },

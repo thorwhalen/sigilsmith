@@ -252,7 +252,8 @@ export async function check(loaded: LoadedConfig, opts: { only?: Section[] } = {
     const ds: Diagnostic[] = [];
     const sizes = readSizes();
     const refs = shippedRefs(cfg).filter((r) => BUILTIN_BY_REF[r]);
-    const generators = Object.fromEntries(refs.map((r) => [r, sizes.generators[r]?.gzipBytes ?? null]));
+    // An extension is not in the package's measurements: its author declares its size.
+    const generators = Object.fromEntries(refs.map((r) => [r, sizes.generators[r]?.gzipBytes ?? BUILTIN_BY_REF[r]?.manifest.bundleSize.minGzipBytes ?? null]));
     const kernelGzip = sizes.kernel?.gzipBytes ?? null;
     // Remote generators share one module (transports, cache, progressive placeholder).
     const remoteModule = (sizes as { modules?: { remote?: { gzipBytes: number } } }).modules?.remote?.gzipBytes ?? null;
