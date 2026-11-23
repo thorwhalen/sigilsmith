@@ -318,3 +318,45 @@ describe('downscaleImage (phone photos before upload)', () => {
     }
   });
 });
+
+describe('the item\'s own picture, the sigil as fallback (found migrating media_player)', () => {
+  it('pictureRecord makes a display record synchronously, or null for nothing or a refused URL', async () => {
+    const { pictureRecord } = await import('../src/delivery.js');
+    expect(pictureRecord('https://i.ytimg.com/vi/x/hq.jpg')).toMatchObject({ source: 'custom', url: 'https://i.ytimg.com/vi/x/hq.jpg', frozen: true, origin: 'adopted' });
+    expect(pictureRecord('/covers/1.png')?.url).toBe('/covers/1.png');
+    for (const none of [undefined, null, '', 'javascript:alert(1)', '/\\evil.example/x.png', 'https://x.example/a.svg']) expect(pictureRecord(none as string)).toBeNull();
+  });
+  it('a custom picture that failed to load gives way to the generated sigil, unless fallback is off', async () => {
+    const { shownRecord } = await import('../src/react/index.js');
+    const pic = { source: 'custom' as const, contentId: 'url:/a.png', inputsDigest: '', url: '/a.png' };
+    expect(shownRecord(pic, null)).toBe(pic);
+    expect(shownRecord(pic, '/a.png')).toBeNull();
+    expect(shownRecord(pic, '/a.png', false)).toBe(pic);
+    expect(shownRecord(pic, '/other.png')).toBe(pic); // a new picture is tried again
+    expect(shownRecord(undefined, '/a.png')).toBeUndefined();
+  });
+});
+
+describe('adopt points at an image field drawn with a plain <img>', () => {
+  it('lists where, and suggests pictureRecord', () => {
+    const dir = makeProject({ key: { field: 'id' }, policy: { default: 'rings@1' } }, [{ id: 'a', image_url: 'https://i.example/a.jpg' }]);
+    mkdirSync(join(dir, 'src'), { recursive: true });
+    writeFileSync(join(dir, 'src', 'Row.tsx'), "export const T = ({ item }) =>\n  item.image_url ? <img src={item.image_url} alt=\"\" /> : null;\n");
+    const f = scanAdoption(dir, { samples: [{ id: 'a', image_url: 'https://i.example/a.jpg' }] }).findings.find((x) => x.kind === 'image-field')!;
+    expect(f.uses).toEqual([{ file: join('src', 'Row.tsx'), line: 2 }]);
+    expect(f.suggestion).toMatch(/pictureRecord\(item\.image_url\)/);
+  });
+});
+
+describe('<Sigil> in a non-square box (found migrating costar: portrait posters)', () => {
+  it('takes a height and an object-position, and the image covers the box', async () => {
+    const { Sigil, displayCacheFor } = await import('../src/react/index.js').then(async (m) => ({ ...m, displayCacheFor: (await import('../src/react/display-cache.js')).displayCacheFor }));
+    const sigil = { subscribe: () => () => {}, getUser: () => undefined } as never;
+    const item = { id: 'tt1' };
+    displayCacheFor(sigil).set(JSON.stringify([JSON.stringify(item), 40, null, null, false, null]), 'data:image/svg+xml,x', false);
+    const html = renderToStaticMarkup(createElement(Sigil, { item, size: 40, height: 56, objectPosition: '50% 20%', sigil }));
+    expect(html).toMatch(/width:40px;height:56px/);
+    expect(html).toMatch(/height="56"/);
+    expect(html).toMatch(/object-fit:cover;object-position:50% 20%/);
+  });
+});

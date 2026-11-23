@@ -76,7 +76,14 @@ A candidate is a `record` to reuse (another item's image), a `url` to adopt (`co
 
 ## 5. Images the items already have
 
-A field of image URLs (provider cover art, avatars from sign-up) is kept, not regenerated: either offer it as a picker candidate (users opt in per item), or adopt it for every item up front:
+A field of image URLs (provider cover art, video thumbnails, avatars from sign-up) is kept, not regenerated. The picture wins when it exists; the sigil is its placeholder while it loads and its fallback when it fails or is missing. Replace an `item.image_url ? <img …> : <Sigil …>` branch with one call:
+
+```tsx
+<Sigil item={item} size={48} record={pictureRecord(item.image_url)} />   // picture, else (or on error) the sigil
+artwork: await mediaArtwork(sigil, item, { record: pictureRecord(item.image_url) })
+```
+
+A portrait box (a poster) takes `height` and `objectPosition` (`<Sigil item={film} size={40} height={56} objectPosition="50% 20%" record={…} />`). The app's own loading machinery (shimmer, fade-in, error placeholder) goes: `<Sigil>` reserves the box, fades the picture in, and falls back to the sigil. `pictureRecord` is synchronous and stores nothing (`null` for an empty or refused URL). To keep a copy of an expiring picture, or to let users replace it, adopt it into the store:
 
 ```ts
 item.sigil = await adoptImage(item.image_url, { store });  // copies: right for expiring or foreign URLs

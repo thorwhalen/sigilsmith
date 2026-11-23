@@ -229,6 +229,18 @@ function adoptable(url: string): string | null {
 }
 
 /**
+ * The item's own picture as a record, synchronously, for display: `<Sigil item={item}
+ * record={pictureRecord(item.image_url)} />` shows the picture, the sigil while it loads,
+ * and the sigil again if it fails (`<Sigil fallback>`). `null` (the generated sigil) for an
+ * empty or refused URL (the same rules as `adoptImage`). Nothing is stored; to keep a copy
+ * of an expiring picture, `adoptImage(url, { store })`.
+ */
+export function pictureRecord(url: string | null | undefined): SigilRecord | null {
+  const u = url ? adoptable(url) : null;
+  return u ? { source: 'custom', contentId: `url:${u}`, inputsDigest: '', url: u, frozen: true, origin: 'adopted' } : null;
+}
+
+/**
  * Adopt an image the app already shows for an item (a hand-made thumbnail it stored, a
  * provider's cover art, an avatar URL) as the item's custom sigil: the migration path
  * for existing thumbnails. The record is custom and frozen, so `deliver` and

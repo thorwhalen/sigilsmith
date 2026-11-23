@@ -65,7 +65,7 @@ Measured with esbuild + gzip -9 on 2026-11-23 (`npm run measure`); third-party l
 
 - **Keep the look.** Pin the old palette on the closest generator. `aura@1` draws a blurred gradient orb; when the old one hashed with cyrb53, each item keeps its colours.
 - **Lock screen.** `mediaArtwork(sigil, item, { record })` from `sigilsmith/targets` gives the same picture as the list.
-- **Pictures items already have.** `adoptImage(url, { store })` keeps them, copied when the link expires.
+- **Pictures items already have.** `<Sigil item={item} record={pictureRecord(item.image_url)} />` shows the picture, and the sigil while it loads or if it fails; `adoptImage(url, { store })` keeps a copy when the link expires.
 - **Let users pick.** `useSigilPicker` or `<SigilPicker>` from `sigilsmith/react`: upload, or choose among candidates such as a provider's cover art. Images go to your blob storage, for example a [zodal](https://github.com/i2mint/zodal) provider such as `@zodal/store-http`.
 
 The full recipe: [references/migrating.md](skills/sigilsmith/references/migrating.md).
