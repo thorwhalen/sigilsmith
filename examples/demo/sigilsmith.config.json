@@ -20,7 +20,7 @@
   },
   "delivery": { "strategy": "materialized", "format": "svg" },
   "regeneration": { "policy": "ask" },
-  "budget": { "maxGzipBytes": 15000 },
+  "budget": { "maxGzipBytes": 16000 },
   "userSettings": { "choices": ["grid@1", "rings@1", "shapes@1", "emoji@1"], "perType": true },
   "samples": "sigilsmith.samples.json",
   "output": { "gen": "src/sigilsmith.gen.ts" },

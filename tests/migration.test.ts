@@ -360,3 +360,40 @@ describe('<Sigil> in a non-square box (found migrating costar: portrait posters)
     expect(html).toMatch(/object-fit:cover;object-position:50% 20%/);
   });
 });
+
+describe('badge@1: a typed placeholder (sigilsmith#21, from costar\'s film-frame + year)', () => {
+  const render = async (fields: Record<string, string>, params: Record<string, unknown> = {}) => {
+    const { default: badge } = await import('../src/generators/badge/v1.js');
+    const { renderContext } = await import('../src/context.js');
+    return ((await badge.render(renderContext('badge@1', fields.key!, fields, { ...badge.defaults, ...params }, 64) as never)) as { svg: string }).svg;
+  };
+  it('draws the icon of the item kind and the caption under it', async () => {
+    const svg = await render({ key: 'tt0068646', caption: '1972' }, { icon: 'film' });
+    expect(svg).toContain('M7 4v16'); // the film frame's perforations
+    expect(svg).toMatch(/<text[^>]*>1972<\/text>/);
+  });
+  it('cuts a long caption with an ellipsis, centres the icon without one, and shows a caption alone with icon none', async () => {
+    const { captionOf } = await import('../src/generators/badge/v1.js');
+    expect(captionOf('markdown', 4)).toBe('mar…');
+    expect(captionOf('  1994 ', 6)).toBe('1994');
+    expect(await render({ key: 'a' }, { icon: 'music' })).toContain('translate(26 26) scale(2)');
+    const alone = await render({ key: 'a', caption: 'v2' }, { icon: 'none' });
+    expect(alone).not.toContain('<g ');
+    expect(alone).toMatch(/font-size="30"[^>]*>v2</);
+  });
+  it('escapes the caption (it comes from item data)', async () => {
+    expect(await render({ key: 'a', caption: '<b>' })).toContain('&lt;b&gt;');
+  });
+});
+
+describe('check budget counts the targets module when the app imports it (sigilsmith#21)', () => {
+  it('adds "(targets module)" only for sources importing sigilsmith/targets', async () => {
+    const { check, loadConfig } = await import('../src/node/index.js');
+    const dir = makeProject({ key: { field: 'id' }, policy: { default: 'rings@1' }, budget: { maxGzipBytes: 20000 } });
+    const before = await check(await loadConfig(undefined, dir), { only: ['budget'] });
+    expect(before.data.budget!.generators['(targets module)']).toBeUndefined();
+    writeFileSync(join(dir, 'src', 'session.ts'), "import { mediaArtwork } from 'sigilsmith/targets';\n");
+    const after = await check(await loadConfig(undefined, dir), { only: ['budget'] });
+    expect(after.data.budget!.generators).toHaveProperty('(targets module)');
+  });
+});

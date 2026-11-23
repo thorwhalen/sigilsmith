@@ -36,6 +36,8 @@ const react = await measure(`import { Sigil, SigilProvider } from './react/index
 // The picker (and the delivery code it uploads through), on top of the React adapter.
 const withPicker = await measure(`import { Sigil, SigilProvider, SigilPicker, useSigilPicker } from './react/index.js'; export { Sigil, SigilProvider, SigilPicker, useSigilPicker };`);
 const picker = { minBytes: withPicker.minBytes - react.minBytes, gzipBytes: withPicker.gzipBytes - react.gzipBytes, brotliBytes: withPicker.brotliBytes - react.brotliBytes };
-const out = { measuredAt: new Date().toISOString().slice(0, 10), method: 'esbuild minify esm browser; generator = (kernel+generator) - kernel', kernel, generators, modules: { remote, delivery, react, picker, features } };
+// Lock-screen art and the other browser-side target helpers.
+const targets = await measure(`import { mediaArtwork, browserPng, setMediaSessionArtwork } from './targets/index.js'; export { mediaArtwork, browserPng, setMediaSessionArtwork };`);
+const out = { measuredAt: new Date().toISOString().slice(0, 10), method: 'esbuild minify esm browser; generator = (kernel+generator) - kernel', kernel, generators, modules: { remote, delivery, react, picker, targets, features } };
 writeFileSync(new URL('../catalog/_sizes.json', import.meta.url), `${JSON.stringify(out, null, 2)}\n`);
 console.log(JSON.stringify(out, null, 2));

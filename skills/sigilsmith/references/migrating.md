@@ -22,7 +22,7 @@ and an ordered recipe. The rest of this page is that recipe in full.
 
 ## 2. Keep the look: a generator, with the old palette pinned
 
-Never port the app's drawing code into the app's own generator: pick the catalog generator with the same look and pin the old parameters in the config. For blurred gradient fields (hand-rolled "cover art" orbs) that is `aura@1`:
+Never port the app's drawing code into the app's own generator: pick the catalog generator with the same look and pin the old parameters in the config. A placeholder that says what kind of item it is plus one fact (a film frame with the year, a page with the file extension) is `badge@1`: an `icon` per item type by rule, the fact mapped to its caption (`"inputs": ["$key", { "field": "year", "as": "caption" }]`). Letters of the name are `initials@1`. For blurred gradient fields (hand-rolled "cover art" orbs) that is `aura@1`:
 
 ```json
 "generators": { "aura@1": { "params": { "hues": [268, 285, 300, 318, 330, 250, 225, 205, 185, 160, 40, 12], "shape": "square", "blurPx": 6, "highlight": 0 } } },

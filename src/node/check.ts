@@ -161,6 +161,7 @@ function sourcesUse(loaded: LoadedConfig, test: (text: string) => boolean): bool
   return false;
 }
 const usesReact = (loaded: LoadedConfig) => sourcesUse(loaded, (t) => t.includes(`${PKG_NAME}/react`));
+const usesTargets = (loaded: LoadedConfig) => sourcesUse(loaded, (t) => t.includes(`${PKG_NAME}/targets`));
 const usesPicker = (loaded: LoadedConfig) => sourcesUse(loaded, (t) => t.includes(`${PKG_NAME}/react`) && /\b(useSigilPicker|SigilPicker)\b/.test(t));
 
 export interface CheckData {
@@ -261,6 +262,7 @@ export async function check(loaded: LoadedConfig, opts: { only?: Section[] } = {
     if (usesReact(loaded)) generators['(react adapter)'] = modules.react?.gzipBytes ?? null;
     // The picker brings the upload and adopt code (most of the delivery module) with it.
     if (usesPicker(loaded)) generators['(picker)'] = modules.picker?.gzipBytes ?? null;
+    if (usesTargets(loaded)) generators['(targets module)'] = modules.targets?.gzipBytes ?? null;
     if (loaded.features.length) generators['(features module)'] = modules.features?.gzipBytes ?? null;
     const known = [kernelGzip, ...Object.values(generators)];
     const totalGzip = known.every((x) => x !== null) ? (known as number[]).reduce((a, b) => a + b, 0) : null;

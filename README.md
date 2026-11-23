@@ -27,7 +27,7 @@ sigilsmith is a *builder* package. You (or, more often, your coding agent) use i
 | Command | Does |
 |---|---|
 | `init [--samples f]` | starter config (key detected from your samples) and an `AGENTS.md` block |
-| `catalog [--style … --max-gzip N --no-network --implemented]` (`--max-gzip` is per generator) | the menu: 8 implemented generators, the screenshot extra and 61 surveyed technologies, filtered by your constraints, with reasons for exclusions |
+| `catalog [--style … --max-gzip N --no-network --implemented]` (`--max-gzip` is per generator) | the menu: 9 implemented generators, the screenshot extra and 61 surveyed technologies, filtered by your constraints, with reasons for exclusions |
 | `preview [--generators a@1,b@1]` | contact sheet (items × 16/32/64/128 px × light/dark) as HTML and PNG, plus near-duplicate metrics |
 | `detect-key <samples> [--write]` | finds the field (or composite) that identifies items; flags unstable choices |
 | `explain [--index N]` | for an item: key, generator and the rule that chose it, inputs, and the layer every param came from |
@@ -45,6 +45,7 @@ sigilsmith is a *builder* package. You (or, more often, your coding agent) use i
 | `rings@1` | abstract × hash | 586 B | concentric arcs, in-house |
 | `shapes@1` | abstract × hash | 699 B | Bauhaus shapes, in-house |
 | `aura@1` | abstract × hash | 1.4 kB | blurred colour fields on a dark base (a gradient "orb"); seeded with cyrb53 of the key, so an orb that hashed the same way keeps each item's colours ([tested](tests/migration.test.ts)) |
+| `badge@1` | geometric × metadata | 1.2 kB | an icon for the item's kind (film, music, doc, person, folder, image, video, book, mic, game) and an optional caption (a year, an extension): the typed placeholder apps hand-draw |
 | `initials@1` | geometric × metadata | 786 B | letters from the label, colour from the key |
 | `emoji@1` | illustrative × metadata | 1429 B | keyword match on title/tags, else hash |
 | `glyph@1` | geometric × metadata | ~2.1 kB | feature glyph: hue, shape, fill, rings, orbit, mark, tone and size are params a feature mapping drives |

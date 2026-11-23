@@ -1,0 +1,30 @@
+{
+  "ref": "badge@1",
+  "fingerprint": "9cb6fd0a485af9acea674b3f5a988ee8",
+  "hashes": {
+    "0": "870929ea9a7770ccae57d6cb22853df8c0cb930f7061b377e9ffc77a0748104e",
+    "a": "2c95cbfc98684a349243a87487f71337f558f77e79a528daaf63788dc14b1d81",
+    "sigil": "d4572f98ed3f74166d0ff7c4e815d2797321b59dd594f6a8e2f4b52ed188d657",
+    "Blue Monday": "f9b9594c4f68a029b5acc139187652064fbca4eb459c36b93c1ed11329b6c7ef",
+    "ada@example.com": "121d0a55b59f451f64142f9793cba10f17abff712bc139c5b8210a0d2654508f",
+    "Ωμέγα": "40b7bd56a6add2242b5c610f93f083bdfa72d3d68504654111c7ac4574ada089",
+    "🎵 song": "da649dfa68ed44f41f382cb8754d2f6222cf4c5139e3a8ca08554ebd7a1ab9d1",
+    "f47ac10b-58cc-4372-a567-0e02b2c3d479": "97a124493b38c6781ba3bf717cd5b225dd6119ea1e7c198c635b2ed1705ed9f1"
+  },
+  "altParams": {
+    "icon": "film",
+    "shape": "circle",
+    "tone": "soft",
+    "maxCaption": 3
+  },
+  "alt": {
+    "0": "79ec05c798016aa07e46e1fe33b6951161e2a5f6d2bc1fe165880ffa50b5ee9b",
+    "a": "4b4a8d74f0069a5c0f1deb086667792ee4a240c8b2cb7457f8b6d3ea2383ab4b",
+    "sigil": "a26aec602cb2abd896da3dc50ca625e317eadfe6ac0f16241af98adb90bcbf83",
+    "Blue Monday": "5a753a8e34e53e9f1757502b2a38f2357693aa53642c2b3eddea1c72da388057",
+    "ada@example.com": "21980a9359ccb27b65a0c4838b5d0b264806b2c0daa82c83f20110e33303f9a7",
+    "Ωμέγα": "a45893943465dd2aa683845c683f688e5bcc6a616c525c51c7913f5f891b39e2",
+    "🎵 song": "5ad9f359ca63506086a5060d39faa8dd0720c7c56c70c0998d8f6096e541d904",
+    "f47ac10b-58cc-4372-a567-0e02b2c3d479": "8a573fffcca9cd97c8a1fc5b3a910b9db5765525994eeb9fd87dc066cb846edf"
+  }
+}
