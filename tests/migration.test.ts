@@ -397,3 +397,17 @@ describe('check budget counts the targets module when the app imports it (sigils
     expect(after.data.budget!.generators).toHaveProperty('(targets module)');
   });
 });
+
+describe('adopt reads Python too (found after arioso\'s share page kept a Python copy of its orb)', () => {
+  it('finds a server-rendered orb by its public functions, ignoring private ones, tests and comments', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'sigilsmith-adopt-py-'));
+    const write = (p: string, t: string) => { mkdirSync(dirname(join(dir, p)), { recursive: true }); writeFileSync(join(dir, p), t); };
+    write('app/shares.py', "def _hash(s):\n    return sum(ord(c) for c in s)\n\ndef orb_background(id):\n    return f'radial-gradient(circle, hsl({_hash(id) % 360} 95% 62%), transparent)'\n\ndef _art(id):\n    # orb_background(id) in a comment\n    return orb_background(id)\n");
+    write('app/pages.py', "from .shares import orb_background\nbg = orb_background('x')\n");
+    write('app/tests/test_shares.py', "from app.shares import orb_background\norb_background('t')\n");
+    const home = scanAdoption(dir, { dirs: ['app'] }).findings.filter((f) => f.kind === 'home-grown');
+    expect(home.map((f) => [f.file, f.name])).toEqual([[join('app', 'shares.py'), 'orb_background']]);
+    expect(home[0]!.uses).toEqual([{ file: join('app', 'pages.py'), line: 2 }]);
+    expect(home[0]!.suggestion).toMatch(/server-side copy/);
+  });
+});
