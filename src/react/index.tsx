@@ -9,6 +9,7 @@
  *   The image is decorative next to a name, so `alt` defaults to "" (B14).
  * - `useSigil(item)` is the headless version.
  * - `useSigilSettings(store)` subscribes to a zodal-dials settings store (B15).
+ * - `useSigilPicker` / `<SigilPicker>` let a user change one item's image (`./picker.tsx`).
  *
  * Re-renders when end-user settings change the sigil's user layer.
  */
@@ -183,3 +184,5 @@ export function Sigil({ item, size = 40, record, alt = '', className, style, rad
 export function useSigilSettings<S>(store: { subscribe(fn: () => void): () => void; getState(): S }): S {
   return useSyncExternalStore(store.subscribe, store.getState, store.getState);
 }
+
+export { useSigilPicker, SigilPicker, pickerChoices, currentChoiceId, resolveChoice, type SigilCandidate, type SigilChoice, type SigilPickerProps, type SigilPickerState, type UseSigilPickerOptions } from './picker.js';

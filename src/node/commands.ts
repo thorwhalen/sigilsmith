@@ -32,12 +32,12 @@ export function agentsBlock(genPath: string): string {
 
 /**
  * Starter total budget, in gzip bytes, for everything sigilsmith adds to the app's
- * bundle: kernel (~3.9 kB) + React adapter (~1.5 kB) + the largest local generator
- * (~1.4 kB) is ~6.8 kB, so the documented React path passes with any one generator and
- * leaves room for a second small one. It is a total, not a per-generator cap (that is
+ * bundle: kernel (~4.2 kB) + React adapter (~1.9 kB) + the largest local generator
+ * (glyph@1, ~2.1 kB) is ~8.2 kB, so the documented React path passes with any one
+ * generator and leaves room for a second small one (re-measured 2026-11-23, 0.3.0). It is a total, not a per-generator cap (that is
  * `catalog --max-gzip`).
  */
-export const STARTER_BUDGET_GZIP = 8000;
+export const STARTER_BUDGET_GZIP = 9000;
 
 /** Fewer real items than this and key and type detection are guesses (SKILL.md asks for 20–200). */
 export const MIN_SAMPLES = 20;

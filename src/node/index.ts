@@ -17,6 +17,7 @@ export { check, SECTIONS, type Section } from './check.js';
 export { preview, DEFAULT_SAMPLE_ITEMS } from './preview.js';
 export { emitTargets, listTargetsCmd, checkTargets } from './targets.js';
 export { init, detectKeyCmd, agentsBlock } from './commands.js';
+export { scanAdoption, adoptCmd, KNOWN_LIBRARIES, type AdoptFinding, type AdoptResult, type FindingKind } from './adopt.js';
 export { CODES, diag, envelope, explainCode, formatDiagnostic, type Diagnostic, type Envelope } from './diagnostics.js';
 export { BUILTINS, BUILTIN_BY_REF } from './builtins.js';
 export { nodeSigil } from './runtime.js';

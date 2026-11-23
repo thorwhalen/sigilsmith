@@ -65,6 +65,8 @@ export interface SigilRecord {
   frozen?: boolean;
   /** Inputs digest the user was asked about and did not answer: do not ask again for it. */
   declinedDigest?: string;
+  /** For a custom image: uploaded by a user, or adopted from an image the app already had (`adoptImage`). */
+  origin?: 'upload' | 'adopted';
 }
 
 export type Rasterize = (svg: string, size: number) => Promise<{ bytes: Uint8Array; mime: string }>;
@@ -144,7 +146,7 @@ export async function deliver(sigil: Sigil, item: Item, o: DeliverOptions = {}):
  * SVG from users is refused unless `allowSvg`: a scripted SVG served from the app's
  * origin is stored XSS. This is a client-side courtesy; the server must check again.
  */
-export async function storeCustom(data: Uint8Array, mime: string, o: { store?: ImageStore; maxBytes?: number; allowSvg?: boolean } = {}): Promise<SigilRecord> {
+export async function storeCustom(data: Uint8Array, mime: string, o: { store?: ImageStore; maxBytes?: number; allowSvg?: boolean; origin?: SigilRecord['origin'] } = {}): Promise<SigilRecord> {
   const { maxBytes = 2_000_000, allowSvg = false } = o;
   if (data.length > maxBytes) throw new Error(`SGS0110: upload is ${data.length} bytes, over the ${maxBytes} byte limit`);
   const sniffed = sniffMime(data);
@@ -152,7 +154,39 @@ export async function storeCustom(data: Uint8Array, mime: string, o: { store?: I
   if (!sniffed && !(isSvg && allowSvg)) throw new Error(`SGS0110: upload is not a PNG, JPEG, GIF or WebP image${isSvg ? ' (SVG needs allowSvg and server-side sanitising)' : ''}`);
   const contentId = `sg_${(await sha256Hex(data)).slice(0, 32)}`;
   const url = await (o.store ?? defaultStore()).put(contentId, data, { mime: sniffed ?? 'image/svg+xml' });
-  return { source: 'custom', contentId, inputsDigest: '', url, frozen: true };
+  return { source: 'custom', contentId, inputsDigest: '', url, frozen: true, origin: o.origin ?? 'upload' };
+}
+
+/**
+ * Store an image file a user picked (an `<input type="file">` File, or any Blob): the
+ * one call behind an "Upload image" button. Same checks as `storeCustom`.
+ */
+export async function customFromFile(file: Blob, o: { store?: ImageStore; maxBytes?: number; allowSvg?: boolean } = {}): Promise<SigilRecord> {
+  return storeCustom(new Uint8Array(await file.arrayBuffer()), file.type, o);
+}
+
+/** URL schemes `adoptImage` accepts without copying. */
+const ADOPTABLE = /^(https?:\/\/|\/(?!\/)|data:image\/(png|jpeg|gif|webp);)/i;
+
+/**
+ * Adopt an image the app already shows for an item (a hand-made thumbnail it stored, a
+ * provider's cover art, an avatar URL) as the item's custom sigil: the migration path
+ * for existing thumbnails. The record is custom and frozen, so `deliver` and
+ * `onInputsChanged` never replace it, and `<Sigil record>` shows it as is.
+ *
+ * Without `store` the record points at the URL (no copy; right for URLs the app owns).
+ * With `store` the bytes are fetched, checked like an upload and stored under their
+ * content id, so a URL that expires (a provider CDN link) or sits on another origin no
+ * longer matters. Refuses `javascript:`, protocol-relative and SVG URLs.
+ */
+export async function adoptImage(url: string, o: { store?: ImageStore; fetch?: typeof fetch; maxBytes?: number } = {}): Promise<SigilRecord> {
+  const u = url.trim();
+  if (!ADOPTABLE.test(u)) throw new Error(`SGS0111: cannot adopt ${JSON.stringify(u.slice(0, 80))}: only http(s), root-relative or raster data: URLs`);
+  if (!o.store) return { source: 'custom', contentId: `url_${(await sha256Hex(u)).slice(0, 32)}`, inputsDigest: '', url: u, frozen: true, origin: 'adopted' };
+  const res = await (o.fetch ?? fetch)(u);
+  if (!res.ok) throw new Error(`SGS0111: could not fetch ${u}: HTTP ${res.status}`);
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  return storeCustom(bytes, res.headers.get('content-type') ?? '', { store: o.store, origin: 'adopted', ...(o.maxBytes ? { maxBytes: o.maxBytes } : {}) });
 }
 
 export type RegenerationPolicy = 'always' | 'never' | 'ask';

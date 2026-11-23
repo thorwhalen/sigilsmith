@@ -5,6 +5,7 @@
  * `sigilsmith/node` (`emitTargets`).
  */
 import type { SigilRecord } from '../delivery.js';
+import type { Item, SigilImage } from '../types.js';
 import { TARGETS, type TargetSpec } from './registry.js';
 
 export { TARGETS, getTarget } from './registry.js';
@@ -42,4 +43,61 @@ export function setMediaSessionArtwork(
   const artwork = Array.isArray(art) ? art : art.url ? [{ src: art.url, sizes: '512x512', type: art.url.includes('svg') ? 'image/svg+xml' : 'image/png' }] : [];
   nav.mediaSession.metadata = new MediaMetadata({ ...meta, artwork });
   return true;
+}
+
+/** One Media Session artwork entry. */
+export interface ArtworkImage {
+  src: string;
+  sizes: string;
+  type: string;
+}
+
+/** Rasterise an SVG to a PNG data URL in the browser (Image + canvas). Lock screens and notifications do not take SVG. */
+export function browserPng(svg: string, size: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = size;
+        canvas.getContext('2d')!.drawImage(img, 0, 0, size, size);
+        resolve(canvas.toDataURL('image/png'));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    img.onerror = () => reject(new Error('could not load the SVG to rasterise it'));
+    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  });
+}
+
+const typeOfUrl = (url: string) => (/^data:([^;,]+)/.exec(url)?.[1] ?? (/\.svg(\?|$)/i.test(url) ? 'image/svg+xml' : /\.jpe?g(\?|$)/i.test(url) ? 'image/jpeg' : /\.webp(\?|$)/i.test(url) ? 'image/webp' : 'image/png'));
+
+/**
+ * Artwork for the playing item, matching what `<Sigil>` shows: the record's stored URL
+ * when it has one (a custom image, or a materialized sigil), else a PNG of the item's
+ * sigil rendered in the browser. Replaces a hand-rolled canvas copy of an app's
+ * thumbnail, so the lock screen can never drift from the list. Never throws: returns
+ * `[]` when nothing can be drawn.
+ *
+ * ```ts
+ * navigator.mediaSession.metadata = new MediaMetadata({ title, artist, artwork: await mediaArtwork(sigil, song, { record: song.sigil }) });
+ * ```
+ */
+export async function mediaArtwork(
+  sigil: { render(item: Item, o?: { size?: number }): Promise<SigilImage> },
+  item: Item,
+  o: { record?: SigilRecord | null; size?: number; toPng?: (svg: string, size: number) => Promise<string> } = {},
+): Promise<ArtworkImage[]> {
+  const size = o.size ?? 256;
+  const sizes = `${size}x${size}`;
+  if (o.record?.url && (o.record.source === 'custom' || o.record.ref)) return [{ src: o.record.url, sizes, type: typeOfUrl(o.record.url) }];
+  try {
+    const img = await sigil.render(item, { size });
+    if (img.type === 'url') return [{ src: img.url, sizes, type: img.mime ?? typeOfUrl(img.url) }];
+    if (img.type === 'blob') return [{ src: URL.createObjectURL(img.blob), sizes, type: img.mime }];
+    return [{ src: await (o.toPng ?? browserPng)(img.svg, size), sizes, type: 'image/png' }];
+  } catch {
+    return [];
+  }
 }

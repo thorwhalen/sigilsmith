@@ -1,0 +1,40 @@
+{
+  "ref": "aura@1",
+  "fingerprint": "a8392abdedd5e0c0f42da29e6fd6ac24",
+  "hashes": {
+    "0": "1e7302ff38b0a554adadd06ba6cf77ac7fcab26eb008c25575466dea0bb79636",
+    "a": "c24f006e40eaccd79aa805e33532ea8426cd291fc8241fd542878f1a843f287e",
+    "sigil": "c88fa584ee9c8f8d9cbe616830e945578138a528debdbf3c0cf1c90efcb38053",
+    "Blue Monday": "c9707b7f6c358079a25f5099223c806e481a32d74a84baf003cc4af052618afa",
+    "ada@example.com": "d4e7968a025fa94d27775f2a955f022150d8191301751ce2f0f58f0b15c69e69",
+    "Ωμέγα": "09410676d43087210ac851436204ed9ab441ca788adfc437700b85c27afdf69f",
+    "🎵 song": "b44b75cab0e323e54369ca6eb0f102fc9880a51f8b610491b33a30acebff292e",
+    "f47ac10b-58cc-4372-a567-0e02b2c3d479": "826cdc7951e2280db09e026898a1d563d110429ceaa34ed64a6db249e78f5cbe"
+  },
+  "altParams": {
+    "hues": [
+      200,
+      20
+    ],
+    "spots": 5,
+    "saturation": 70,
+    "lightness": 50,
+    "opacity": 0.8,
+    "baseSaturation": 20,
+    "baseLightness": 30,
+    "blur": 0,
+    "saturate": 1,
+    "highlight": 0,
+    "shape": "circle"
+  },
+  "alt": {
+    "0": "73a1502b49e0e69d36caf64bc0c8aa08c5109c132656a9f6e930a3a212179bd3",
+    "a": "949e69d039a7361963a0f96993d89fa3b05a1dc00727600a47af968565f3c22a",
+    "sigil": "0556b2b3d29d24772172e6e90c780cc59697a2bf779d9d1d0a3c20ac040e5b5e",
+    "Blue Monday": "3f6eb4e6d589df212608966eb3fb94f4b5391b5c59164aa8cf33faaf09b1906e",
+    "ada@example.com": "fc250f32c48a986c5b7510507c185dc30adb26a82cdf816ae3bf935521f31df3",
+    "Ωμέγα": "22da69e21c8a4137e5e46868f9a081dffa8c501539bff06f9217bff09c198b2f",
+    "🎵 song": "911b3cdc31d274b039e04b42f39e28c1f8830c70278a9dab0699f66339ee1ec6",
+    "f47ac10b-58cc-4372-a567-0e02b2c3d479": "7097ea8850e83d2aa05c23dd46a6bf15c088faffd197f31588547fc0c931b292"
+  }
+}

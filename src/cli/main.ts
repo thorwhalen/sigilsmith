@@ -31,6 +31,8 @@ Commands
                                     list targets / emit files + snippets; never replaces
                                     a file it did not write unless --force
   check [--only a,b]                verify: ${SECTIONS.join(', ')}
+  adopt [--dirs src,app] [--samples f]   find the app's own thumbnail code and images;
+                                    findings with call sites + a migration recipe
   explain-code <SGSxxxx>            what a diagnostic means and how to fix it
   mcp [--cwd dir]                   the same operations as an MCP server over stdio
 
@@ -61,7 +63,7 @@ async function main(argv: string[]): Promise<number> {
       style: { type: 'string' }, semantic: { type: 'string' }, 'max-gzip': { type: 'string' }, 'no-network': { type: 'boolean' },
       'min-px': { type: 'string' }, implemented: { type: 'boolean' }, 'mit-only': { type: 'boolean' }, ref: { type: 'string' }, presets: { type: 'boolean' },
       generators: { type: 'string' }, out: { type: 'string' }, item: { type: 'string' }, index: { type: 'string' }, all: { type: 'boolean' },
-      accept: { type: 'boolean' }, emit: { type: 'boolean' }, ids: { type: 'string' }, only: { type: 'string' }, 'include-legacy': { type: 'boolean' }, cwd: { type: 'string' },
+      accept: { type: 'boolean' }, emit: { type: 'boolean' }, ids: { type: 'string' }, only: { type: 'string' }, dirs: { type: 'string' }, 'include-legacy': { type: 'boolean' }, cwd: { type: 'string' },
     },
   });
   const json = Boolean(v.json);
@@ -81,6 +83,7 @@ async function main(argv: string[]): Promise<number> {
     preview: (d) => `${Object.values(d.files).join('\n')}\n${Object.entries(d.metrics).map(([r, m]: any) => `${r}: min distance ${m.minDistance}, median ${m.medianDistance}, near-duplicates ${m.nearDuplicates}/${m.items}${m.caveat ? ` (${m.caveat})` : ''}`).join('\n')}`,
     targets: (d) => d.targets ? d.targets.map((t: any) => `${t.id.padEnd(24)} ${t.status.padEnd(8)} ${t.scope.padEnd(5)} ${t.requiresStoredUrl ? 'stored URL' : 'client-side'}  ${t.files.join(', ')}`).join('\n') : `${d.files.map((f: any) => `wrote ${f.path} (${f.bytes} B)`).join('\n')}\n\n${Object.entries(d.snippets).map(([k, x]) => `<!-- ${k} -->\n${x}`).join('\n\n')}`,
     check: (d) => Object.entries(d.sections).map(([x, r]) => `${r === 'pass' ? '✓' : r === 'fail' ? '✗' : r === 'warn' ? '!' : '-'} ${x}`).join('\n') + (d.budget?.totalGzip != null ? `\nbudget: ${d.budget.totalGzip} B gzip${d.budget.maxGzipBytes ? ` of ${d.budget.maxGzipBytes}` : ''}` : ''),
+    adopt: (d) => [`scanned ${d.scanned.files} files in ${d.scanned.dirs.join(', ')}, ${d.scanned.samples} sample items`, ...d.findings.map((f: any) => `${f.kind.padEnd(13)} ${f.file ? `${f.file}:${f.line} ` : ''}${f.name}: ${f.detail}${f.uses?.length ? ` (${f.uses.length} call sites)` : ''}\n    → ${f.suggestion}`), 'recipe:', ...d.recipe.map((r: string, i: number) => `  ${i + 1}. ${r}`)].join('\n'),
     explain_code: (d) => (d ? `${d.code}: ${d.title}\ncause: ${d.cause}\nfix: ${d.fix}` : ''),
   };
   const inputs: Record<string, () => Record<string, unknown> | null> = {
@@ -92,6 +95,7 @@ async function main(argv: string[]): Promise<number> {
     preview: () => ({ config, generators: list(v.generators), samples: opt('samples', String), out: opt('out', String) }),
     targets: () => ({ config, emit: opt('emit', Boolean), ids: list(v.ids), item: opt('item', (x) => JSON.parse(String(x))), out: opt('out', String), force: opt('force', Boolean), includeLegacy: opt('include-legacy', Boolean) }),
     check: () => ({ config, only: list(v.only) }),
+    adopt: () => ({ config, dirs: list(v.dirs), samples: opt('samples', String) }),
     'explain-code': () => (arg ? { code: arg } : null),
   };
   if (cmd === 'mcp') {

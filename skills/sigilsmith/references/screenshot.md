@@ -43,7 +43,7 @@ Params: `focus`, `zoom` (1 to 16), `shape` (`square`, `rounded`, `circle`), `rin
 - `derived` works: the extra is pure in its inputs and the file's bytes, so a thumbnail follows its file. Under `materialized`, a stored thumbnail only changes when the URL changes: use content-hashed file names (a bundler's `import shot from './pong.webp'` gives one).
 - The output is an SVG with the file embedded, so it shows anywhere an SVG does, including favicons and stored records. An `<img>` cannot load an external file from inside an SVG, which is why the file is embedded rather than linked.
 - `preview`, `check` and `build` run in Node without a web server: they read `/games/pong.webp` from `public/games/pong.webp` under the config's directory (then from that directory itself), also without a leading base segment (`/myapp/games/pong.webp`).
-- Budget: 2.3 kB gzip for the extra, plus its `fallback` generator (counted even when nothing else selects it). Over the 8 kB starter budget on the React path, so raise `budget.maxGzipBytes` by about 1 kB when you add it.
+- Budget: 2.3 kB gzip for the extra, plus its `fallback` generator (counted even when nothing else selects it). Near the 9 kB starter budget on the React path with a second generator, so raise `budget.maxGzipBytes` by about 1 kB when you add it.
 
 ## Failures
 
