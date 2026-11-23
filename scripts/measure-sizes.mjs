@@ -33,6 +33,9 @@ const delivery = await measure(`import { deliver, onInputsChanged, memoryStore }
 const features = await measure(`${KERNEL} import { planFeatures } from './features.js'; export { planFeatures };`);
 features.minBytes -= kernel.minBytes; features.gzipBytes -= kernel.gzipBytes; features.brotliBytes -= kernel.brotliBytes;
 const react = await measure(`import { Sigil, SigilProvider } from './react/index.js'; export { Sigil, SigilProvider };`);
-const out = { measuredAt: new Date().toISOString().slice(0, 10), method: 'esbuild minify esm browser; generator = (kernel+generator) - kernel', kernel, generators, modules: { remote, delivery, react, features } };
+// The picker (and the delivery code it uploads through), on top of the React adapter.
+const withPicker = await measure(`import { Sigil, SigilProvider, SigilPicker, useSigilPicker } from './react/index.js'; export { Sigil, SigilProvider, SigilPicker, useSigilPicker };`);
+const picker = { minBytes: withPicker.minBytes - react.minBytes, gzipBytes: withPicker.gzipBytes - react.gzipBytes, brotliBytes: withPicker.brotliBytes - react.brotliBytes };
+const out = { measuredAt: new Date().toISOString().slice(0, 10), method: 'esbuild minify esm browser; generator = (kernel+generator) - kernel', kernel, generators, modules: { remote, delivery, react, picker, features } };
 writeFileSync(new URL('../catalog/_sizes.json', import.meta.url), `${JSON.stringify(out, null, 2)}\n`);
 console.log(JSON.stringify(out, null, 2));

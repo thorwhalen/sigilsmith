@@ -8,6 +8,7 @@
 import { z } from 'zod';
 import { PRESETS } from '../presets.js';
 import type { Item } from '../types.js';
+import { adoptCmd } from './adopt.js';
 import { build } from './build.js';
 import { catalog } from './catalog.js';
 import { check, SECTIONS, type Section } from './check.js';
@@ -149,6 +150,19 @@ export const OPERATIONS = [
     input: { config, only: z.array(z.enum(SECTIONS as [Section, ...Section[]])).optional() },
     annotations: READ,
     run: async (i, ctx) => check(await loadConfig(i.config, ctx.cwd), i.only?.length ? { only: i.only } : {}),
+  }),
+  define({
+    name: 'adopt',
+    title: 'Plan moving an app\'s own thumbnails to sigilsmith',
+    description: 'Scan source dirs and sample items for home-grown thumbnail code (hash-to-colour components such as Orb/Avatar/Identicon), avatar libraries, hand-set Media Session artwork and per-item image URLs; return findings with file, line, call sites and a suggestion each, plus an ordered migration recipe. Read-only.',
+    input: { dirs: z.array(z.string()).optional().describe('Source dirs relative to the project (default ["src"]).'), samples: z.string().optional().describe('Sample items JSON (default: the config\'s samples, if any).'), config },
+    annotations: READ,
+    run: async (i, ctx) => {
+      const loaded = await loadConfig(i.config, ctx.cwd);
+      const path = i.samples ?? loaded.config?.samples;
+      const samples = path ? loadSamples(ctx.cwd, path).items : [];
+      return adoptCmd(ctx.cwd, { ...(i.dirs?.length ? { dirs: i.dirs } : {}), samples: samples as Array<Record<string, unknown>> });
+    },
   }),
   define({
     name: 'explain_code',

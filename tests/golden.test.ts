@@ -41,6 +41,7 @@ const ALT_PARAMS: Record<string, Record<string, unknown>> = {
   'minidenticons@1': { saturation: 30, lightness: 60, background: 'none' },
   // No `screenshot` field in the golden harness: this freezes the fallback path (the crop path is frozen in screenshot.test.ts).
   'screenshot@1': { fallback: 'rings', shape: 'circle', ring: 3 },
+  'aura@1': { hues: [200, 20], spots: 5, saturation: 70, lightness: 50, opacity: 0.8, baseSaturation: 20, baseLightness: 30, blur: 0, blurPx: 6, saturate: 1, highlight: 0, shape: 'circle' },
   'glyph@1': { hue: 200, chroma: 0.2, tone: 'dark', shape: 'star', size: 0.7, fill: 'stripes', rings: 2, orbit: 5, mark: 'pulse', rotation: 15, jitter: 0.5, tile: 'circle', accentShift: 30 },
 };
 

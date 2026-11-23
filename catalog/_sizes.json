@@ -1,5 +1,5 @@
 {
-  "measuredAt": "2026-11-15",
+  "measuredAt": "2026-11-23",
   "method": "esbuild minify esm browser; generator = (kernel+generator) - kernel",
   "kernel": {
     "minBytes": 8927,
@@ -7,6 +7,12 @@
     "brotliBytes": 3786
   },
   "generators": {
+    "aura@1": {
+      "minBytes": 3547,
+      "gzipBytes": 1530,
+      "brotliBytes": 1402,
+      "standaloneGzipBytes": 1711
+    },
     "emoji@1": {
       "minBytes": 3381,
       "gzipBytes": 1434,
@@ -17,7 +23,7 @@
       "minBytes": 4826,
       "gzipBytes": 2137,
       "brotliBytes": 2008,
-      "standaloneGzipBytes": 2844
+      "standaloneGzipBytes": 2848
     },
     "grid@1": {
       "minBytes": 1293,
@@ -29,13 +35,13 @@
       "minBytes": 1549,
       "gzipBytes": 784,
       "brotliBytes": 694,
-      "standaloneGzipBytes": 1595
+      "standaloneGzipBytes": 1597
     },
     "minidenticons@1": {
       "minBytes": 1480,
       "gzipBytes": 697,
       "brotliBytes": 615,
-      "standaloneGzipBytes": 1059
+      "standaloneGzipBytes": 1062
     },
     "rings@1": {
       "minBytes": 1261,
@@ -51,26 +57,31 @@
     },
     "screenshot@1": {
       "minBytes": 4992,
-      "gzipBytes": 2228,
-      "brotliBytes": 2046,
-      "standaloneGzipBytes": 3946
+      "gzipBytes": 2229,
+      "brotliBytes": 2054,
+      "standaloneGzipBytes": 3950
     }
   },
   "modules": {
     "remote": {
       "minBytes": 5693,
-      "gzipBytes": 2821,
-      "brotliBytes": 2516
+      "gzipBytes": 2818,
+      "brotliBytes": 2511
     },
     "delivery": {
       "minBytes": 3723,
-      "gzipBytes": 1673,
-      "brotliBytes": 1506
+      "gzipBytes": 1671,
+      "brotliBytes": 1505
     },
     "react": {
-      "minBytes": 2826,
-      "gzipBytes": 1460,
-      "brotliBytes": 1277
+      "minBytes": 3977,
+      "gzipBytes": 1880,
+      "brotliBytes": 1684
+    },
+    "picker": {
+      "minBytes": 6763,
+      "gzipBytes": 2744,
+      "brotliBytes": 2514
     },
     "features": {
       "minBytes": 2992,

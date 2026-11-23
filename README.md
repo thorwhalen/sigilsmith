@@ -1,6 +1,6 @@
 # sigilsmith
 
-Deterministic identity images (identicons, avatars, thumbnails, favicons) for every item in your app's lists, generated in the browser, stable across reloads, devices and deploys.
+Deterministic identity images (identicons, avatars, thumbnails, favicons) for every item in your app's lists, generated in the browser, stable across reloads, devices and deploys, with a picture of the user's own when they pick one.
 
 ```bash
 npm i sigilsmith && npx sigilsmith init --samples items.json && npx sigilsmith build
@@ -10,11 +10,13 @@ import { sigil } from './sigilsmith.gen';  import { SigilProvider, Sigil } from 
 <SigilProvider sigil={sigil}> … <Sigil item={song} size={40} /> … </SigilProvider>
 ```
 
+Already drawing your own thumbnails? `npx sigilsmith adopt` finds that code and says what replaces it.
+
 ![demo](docs/images/demo-list.png)
 
 ## What it is
 
-sigilsmith is a *builder* package. You (or, more often, your coding agent) use its CLI to choose generators from a catalog, preview them on your own items, pin the choice in one config file, and generate a small wiring module your app imports. What reaches the browser is a ~3.9 kB gzip kernel plus only the generators you chose (0.6–1.4 kB each), each lazily loaded.
+sigilsmith is a *builder* package. You (or, more often, your coding agent) use its CLI to choose generators from a catalog, preview them on your own items, pin the choice in one config file, and generate a small wiring module your app imports. What reaches the browser is a ~4.2 kB gzip kernel plus only the generators you chose (0.6–2.1 kB each), each lazily loaded.
 
 - **One source of truth.** `sigilsmith.config.json` decides the item key, which fields feed each generator, which generator draws which items, params, budgets and integration targets. App code never names a field or a generator; renaming a data field is a one-line config change, and `sigilsmith check` tells you which line.
 - **Same item, same image.** Generators are seeded from the item's inputs, never from `Math.random`. Each generator major (`grid@1`) is frozen: output changes ship as a new major you opt into. A lock file records what your sample items look like, and `check` fails if anything would change them.
@@ -25,13 +27,14 @@ sigilsmith is a *builder* package. You (or, more often, your coding agent) use i
 | Command | Does |
 |---|---|
 | `init [--samples f]` | starter config (key detected from your samples) and an `AGENTS.md` block |
-| `catalog [--style … --max-gzip N --no-network --implemented]` (`--max-gzip` is per generator) | the menu: 7 implemented generators, the screenshot extra and 61 surveyed technologies, filtered by your constraints, with reasons for exclusions |
+| `catalog [--style … --max-gzip N --no-network --implemented]` (`--max-gzip` is per generator) | the menu: 8 implemented generators, the screenshot extra and 61 surveyed technologies, filtered by your constraints, with reasons for exclusions |
 | `preview [--generators a@1,b@1]` | contact sheet (items × 16/32/64/128 px × light/dark) as HTML and PNG, plus near-duplicate metrics |
 | `detect-key <samples> [--write]` | finds the field (or composite) that identifies items; flags unstable choices |
 | `explain [--index N]` | for an item: key, generator and the rule that chose it, inputs, and the layer every param came from |
 | `build [--accept]` | writes the wiring module and the lock |
 | `targets [--emit]` | favicon, Apple touch icon, manifest icons, og:image, Media Session art: files and snippets |
 | `check` | config, freshness, data drift, identity, determinism, budget, peers, bypass, target registration |
+| `adopt [--dirs src]` | finds an app's own thumbnail code (hand-rolled orbs and identicons, avatar libraries, hand-set lock-screen art) and per-item image URLs, with call sites, and returns the migration recipe |
 | `mcp` | the same operations as MCP tools over stdio (`claude mcp add sigilsmith -- npx sigilsmith mcp`); `preview` returns the sheet as an image |
 
 ## Generators (implemented)
@@ -41,6 +44,7 @@ sigilsmith is a *builder* package. You (or, more often, your coding agent) use i
 | `grid@1` | geometric × hash | 626 B | mirrored grid identicon, in-house |
 | `rings@1` | abstract × hash | 586 B | concentric arcs, in-house |
 | `shapes@1` | abstract × hash | 699 B | Bauhaus shapes, in-house |
+| `aura@1` | abstract × hash | 1.4 kB | blurred colour fields on a dark base (a gradient "orb"); seeded with cyrb53 of the key, so an orb that hashed the same way keeps each item's colours ([tested](tests/migration.test.ts)) |
 | `initials@1` | geometric × metadata | 786 B | letters from the label, colour from the key |
 | `emoji@1` | illustrative × metadata | 1429 B | keyword match on title/tags, else hash |
 | `glyph@1` | geometric × metadata | ~2.1 kB | feature glyph: hue, shape, fill, rings, orbit, mark, tone and size are params a feature mapping drives |
@@ -48,7 +52,23 @@ sigilsmith is a *builder* package. You (or, more often, your coding agent) use i
 | `screenshot@1` (extra) | illustrative × metadata | 2.3 kB | the item's key screenshot, cropped to the region that identifies it (`screenshotFocus`), with a sigil when there is none; `sigilsmith/extras/screenshot/v1`, [details](skills/sigilsmith/references/screenshot.md) |
 | remote (`proxy`, `module`/BYOK, `dicebear`, `mock`) | any | 2.7 kB module | cached by content id, instant placeholder, keys never in the bundle; the public DiceBear API is free for non-commercial use only (`check` warns until you acknowledge it or self-host) |
 
-Measured with esbuild + gzip -9 on 2026-11-14 (`npm run measure`); third-party libraries are measured in `spikes/README.md`.
+Measured with esbuild + gzip -9 on 2026-11-23 (`npm run measure`); third-party libraries are measured in `spikes/README.md`.
+
+## Migrating an app's own thumbnails
+
+`npx sigilsmith adopt` finds what your app draws itself (hand-rolled identicons, avatar libraries, lock-screen art, per-item image URLs), with every call site, and says what replaces each.
+
+```tsx
+<Orb id={song.id} size={56} />                          // before: your own hash-to-colour component
+<Sigil item={song} size={56} record={song.sigil} />     // after: the same look from a generator, the old palette pinned
+```
+
+- **Keep the look.** Pin the old palette on the closest generator. `aura@1` draws a blurred gradient orb; when the old one hashed with cyrb53, each item keeps its colours.
+- **Lock screen.** `mediaArtwork(sigil, item, { record })` from `sigilsmith/targets` gives the same picture as the list.
+- **Pictures items already have.** `adoptImage(url, { store })` keeps them, copied when the link expires.
+- **Let users pick.** `useSigilPicker` or `<SigilPicker>` from `sigilsmith/react`: upload, or choose among candidates such as a provider's cover art. Images go to your blob storage, for example a [zodal](https://github.com/i2mint/zodal) provider such as `@zodal/store-http`.
+
+The full recipe: [references/migrating.md](skills/sigilsmith/references/migrating.md).
 
 ## Feature-driven sigils
 
