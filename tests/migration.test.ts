@@ -411,3 +411,17 @@ describe('adopt reads Python too (found after arioso\'s share page kept a Python
     expect(home[0]!.suggestion).toMatch(/server-side copy/);
   });
 });
+
+describe('adopt skips built bundles', () => {
+  it('ignores content-hashed and minified scripts in a build output dir', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'sigilsmith-adopt-dist-'));
+    mkdirSync(join(dir, 'app', 'frontend', 'assets'), { recursive: true });
+    const bundle = "navigator.mediaSession.metadata=new MediaMetadata({title:t,artwork:[{src:a}]});";
+    writeFileSync(join(dir, 'app', 'frontend', 'assets', 'index-D8zxAvO5.js'), bundle);
+    writeFileSync(join(dir, 'app', 'frontend', 'assets', 'vendor.min.js'), bundle);
+    writeFileSync(join(dir, 'app', 'player.js'), bundle);
+    writeFileSync(join(dir, 'app', 'use-tracking.js'), bundle); // a real name that is 8 letters after a dash
+    const ms = scanAdoption(dir, { dirs: ['app'] }).findings.filter((f) => f.kind === 'media-session');
+    expect(ms.map((f) => f.file).sort()).toEqual([join('app', 'player.js'), join('app', 'use-tracking.js')]);
+  });
+});

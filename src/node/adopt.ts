@@ -59,7 +59,8 @@ export const KNOWN_LIBRARIES: Record<string, string> = {
 
 const CODE_EXT = /\.(m?[jt]sx?|vue|svelte|py)$/;
 const SKIP_DIR = new Set(['node_modules', 'dist', 'build', 'out', 'coverage', '.git', '.next', '.svelte-kit', 'vendor', '__pycache__', 'venv', '.venv', 'site-packages', 'tests']);
-const SKIP_FILE = /(\.gen\.[jt]s|\.(test|spec)\.[jt]sx?|\.d\.ts|(^|\/)test_[^/]*\.py|_test\.py)$/;
+/** Generated, test and built files: a bundler's output (`.min.js`, content-hashed `index-D8zxAvO5.js`) is not source. */
+const SKIP_FILE = /(\.gen\.[jt]s|\.(test|spec)\.[jt]sx?|\.d\.ts|(^|\/)test_[^/]*\.py|_test\.py|\.min\.[cm]?js|-(?=[A-Za-z0-9_]*[0-9A-Z])[A-Za-z0-9_]{8}\.[cm]?js)$/;
 /** A thumbnail-ish name: the word starts the name (`orbColors`, `avatarUrl`) or ends it (`SongOrb`, `UserAvatar`), as a whole camelCase word. */
 const THUMB_WORDS = 'orb|avatar|identicon|thumb|thumbnail|coverart|cover_art|artwork|sigil|glyph|monogram|initials|blockie|blockies|jazzicon';
 const CAPITAL = THUMB_WORDS.split('|').map((w) => w[0]!.toUpperCase() + w.slice(1)).join('|');
