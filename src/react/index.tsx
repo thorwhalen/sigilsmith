@@ -132,6 +132,15 @@ export interface SigilProps {
    * and the image is tried again on the next mount.
    */
   retry?: boolean;
+  /**
+   * When a custom image (an upload, or the item's own picture through `pictureRecord`) fails
+   * to load, show the item's generated sigil instead (default). `false` shows the failure.
+   */
+  fallback?: boolean;
+  /** Box height in px when it is not square (a portrait poster: `height={size * 1.4}`); the image covers it. Default `size`. */
+  height?: number;
+  /** CSS `object-position` of the image in a non-square box (`'50% 20%'` keeps faces). Default centred. */
+  objectPosition?: string;
 }
 
 /** The failed-image view; split out so it can be rendered without running effects (tests). */
@@ -144,7 +153,24 @@ export function SigilFailure({ box, className, size, alt, retry, onRetry }: { bo
   );
 }
 
-export function Sigil({ item, size = 40, record, alt = '', className, style, radius = '20%', sigil, retry: showRetry = true }: SigilProps) {
+/**
+ * The record `<Sigil>` draws: a custom picture gives way to the generated sigil (`null`)
+ * once its URL failed to load, unless `fallback` is off. Pure; `<Sigil>` keeps `failedUrl`.
+ */
+export function shownRecord(record: SigilRecord | null | undefined, failedUrl: string | null, fallback = true): SigilRecord | null | undefined {
+  return fallback && record?.source === 'custom' && record.url !== undefined && record.url === failedUrl ? null : record;
+}
+
+export function Sigil(props: SigilProps) {
+  const [failed, setFailed] = useState<string | null>(null);
+  const { record, fallback = true } = props;
+  // The picture wins when it exists and loads; otherwise the generated sigil.
+  const shown = shownRecord(record, failed, fallback);
+  const canFail = fallback && shown?.source === 'custom' && shown.url !== undefined;
+  return <SigilImage {...props} {...(shown !== undefined ? { record: shown } : {})} onFail={canFail ? () => setFailed(shown.url ?? null) : undefined} />;
+}
+
+function SigilImage({ item, size = 40, height: boxHeight, objectPosition, record, alt = '', className, style, radius = '20%', sigil, retry: showRetry = true, onFail }: SigilProps & { onFail?: (() => void) | undefined }) {
   const { src, status: hookStatus, retry } = useSigil(item, { size, ...(record !== undefined ? { record } : {}), ...(sigil ? { sigil } : {}) });
   // Track the <img> load against the current src (a stored URL can 404 or be slow).
   const [loaded, setLoaded] = useState<{ src?: string; ok: boolean }>({ ok: false });
@@ -155,7 +181,8 @@ export function Sigil({ item, size = 40, record, alt = '', className, style, rad
     retry();
   };
   const status = hookStatus === 'ready' && loaded.src === src && !loaded.ok ? 'error' : hookStatus;
-  const box: CSSProperties = { display: 'inline-block', width: size, height: size, flex: `0 0 ${size}px`, borderRadius: radius, overflow: 'hidden', background: status === 'ready' ? 'transparent' : 'rgba(127,127,127,0.18)', verticalAlign: 'middle', ...style };
+  const h = boxHeight ?? size;
+  const box: CSSProperties = { display: 'inline-block', width: size, height: h, flex: `0 0 ${size}px`, borderRadius: radius, overflow: 'hidden', background: status === 'ready' ? 'transparent' : 'rgba(127,127,127,0.18)', verticalAlign: 'middle', ...style };
   if (status === 'disabled') return <span className={className} style={box} aria-hidden={alt === '' ? true : undefined} />;
   if (status === 'error') return <SigilFailure box={box} className={className} size={size} alt={alt} retry={showRetry} onRetry={onRetry} />;
   return (
@@ -166,11 +193,11 @@ export function Sigil({ item, size = 40, record, alt = '', className, style, rad
           src={src}
           alt={alt}
           width={size}
-          height={size}
+          height={h}
           decoding="async"
           onLoad={() => setLoaded({ src, ok: true })}
-          onError={() => setLoaded({ src, ok: false })}
-          style={{ display: 'block', width: size, height: size, objectFit: 'cover', opacity: loaded.src === src && loaded.ok ? 1 : 0, transition: 'opacity 120ms ease-out' }}
+          onError={() => (onFail ? onFail() : setLoaded({ src, ok: false }))}
+          style={{ display: 'block', width: size, height: h, objectFit: 'cover', ...(objectPosition ? { objectPosition } : {}), opacity: loaded.src === src && loaded.ok ? 1 : 0, transition: 'opacity 120ms ease-out' }}
         />
       ) : null}
     </span>

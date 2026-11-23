@@ -140,7 +140,19 @@ export function scanAdoption(cwd: string, o: { dirs?: string[]; samples?: Array<
   const samples = o.samples ?? [];
   const fieldHits = new Map<string, number>();
   for (const it of samples) for (const [k, val] of Object.entries(it ?? {})) if (IMAGE_FIELD.test(k) && typeof val === 'string' && URLISH.test(val)) fieldHits.set(k, (fieldHits.get(k) ?? 0) + 1);
-  for (const [k, n] of fieldHits) findings.push({ kind: 'image-field', name: k, detail: `${n} of ${samples.length} sample items have an image URL in \`${k}\``, suggestion: `keep them: record = await adoptImage(item.${k}, { store }) copies each into your store (drop \`store\` for URLs you own and keep); or offer it as a candidate in useSigilPicker; or show it by rule with screenshot@1 (field: "${k}")` });
+  for (const [k, n] of fieldHits) {
+    // Where the app draws that field itself (a plain <img> beside the sigil: no fallback when it fails).
+    const drawn: Array<{ file: string; line: number }> = [];
+    const re = new RegExp(`<img\\b[^>]*\\bsrc=\\{[^}]*\\.${escapeRe(k)}\\b`, 'g');
+    for (const [f, t] of texts) for (const m of t.matchAll(re)) drawn.push({ file: rel(f), line: lineOf(t, m.index!) });
+    findings.push({
+      kind: 'image-field',
+      name: k,
+      detail: `${n} of ${samples.length} sample items have an image URL in \`${k}\`${drawn.length ? `; drawn with a plain <img> at ${drawn.map((d) => `${d.file}:${d.line}`).join(', ')}` : ''}`,
+      ...(drawn.length ? { uses: drawn } : {}),
+      suggestion: `show the picture with the sigil as its placeholder and fallback: <Sigil item={item} record={pictureRecord(item.${k})} /> (and mediaArtwork with the same record); to keep a copy of an expiring URL, adoptImage(item.${k}, { store }); or offer it as a picker candidate`,
+    });
+  }
   // What is already wired.
   const configured = existsSync(join(cwd, CONFIG_FILE));
   const sigilUses: Array<{ file: string; line: number }> = [];
