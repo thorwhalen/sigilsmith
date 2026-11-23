@@ -26,6 +26,7 @@ export default defineConfig({
     'generators/minidenticons/v1': 'src/generators/minidenticons/v1.ts',
     'generators/glyph/v1': 'src/generators/glyph/v1.ts',
     'generators/aura/v1': 'src/generators/aura/v1.ts',
+    'generators/badge/v1': 'src/generators/badge/v1.ts',
     'extras/screenshot/v1': 'src/extras/screenshot/v1.ts',
   },
   format: ['esm'],

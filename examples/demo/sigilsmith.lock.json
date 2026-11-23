@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "package": "0.0.0",
-  "config": "92b6c41d740fd09b",
+  "package": "0.4.0",
+  "config": "47654e112cbe2010",
   "generators": {
     "emoji@1": {
       "fingerprint": "ac015b6a09e5ae7c5b67984e1b6c985f"

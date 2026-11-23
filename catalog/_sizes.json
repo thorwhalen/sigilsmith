@@ -13,6 +13,12 @@
       "brotliBytes": 1402,
       "standaloneGzipBytes": 1711
     },
+    "badge@1": {
+      "minBytes": 2614,
+      "gzipBytes": 1193,
+      "brotliBytes": 1066,
+      "standaloneGzipBytes": 1970
+    },
     "emoji@1": {
       "minBytes": 3381,
       "gzipBytes": 1434,
@@ -74,14 +80,19 @@
       "brotliBytes": 1504
     },
     "react": {
-      "minBytes": 4271,
-      "gzipBytes": 1990,
-      "brotliBytes": 1787
+      "minBytes": 4331,
+      "gzipBytes": 2022,
+      "brotliBytes": 1830
     },
     "picker": {
       "minBytes": 6767,
-      "gzipBytes": 2739,
-      "brotliBytes": 2507
+      "gzipBytes": 2745,
+      "brotliBytes": 2497
+    },
+    "targets": {
+      "minBytes": 1637,
+      "gzipBytes": 937,
+      "brotliBytes": 816
     },
     "features": {
       "minBytes": 2992,
