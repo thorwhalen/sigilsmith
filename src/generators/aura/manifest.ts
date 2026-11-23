@@ -27,6 +27,7 @@ export default defineGeneratorManifest(
     baseSaturation: z.number().min(0).max(100).default(mod.defaults.baseSaturation).describe('Saturation (%) of the base.'),
     baseLightness: z.number().min(0).max(100).default(mod.defaults.baseLightness).describe('Lightness (%) of the base.'),
     blur: z.number().min(0).max(30).default(mod.defaults.blur).describe('Blur of the fields (viewBox units; 0 for crisp discs).'),
+    blurPx: z.number().min(0).max(40).default(mod.defaults.blurPx).describe('Blur in display pixels (replaces `blur`, scaled by the render size; 0 to use `blur`).'),
     saturate: z.number().min(0).max(4).default(mod.defaults.saturate).describe('Saturation boost of the blurred fields (1 = none).'),
     highlight: z.number().min(0).max(1).default(mod.defaults.highlight).describe('Opacity of the top-left sheen (0 for none).'),
     shape: z.enum(['square', 'rounded', 'circle']).default(mod.defaults.shape).describe('Tile shape.'),

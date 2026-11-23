@@ -67,6 +67,8 @@ export interface SigilRecord {
   declinedDigest?: string;
   /** For a custom image: uploaded by a user, or adopted from an image the app already had (`adoptImage`). */
   origin?: 'upload' | 'adopted';
+  /** For a custom image picked among an app's candidates: that candidate's id (the picker matches on it). */
+  from?: string;
 }
 
 export type Rasterize = (svg: string, size: number) => Promise<{ bytes: Uint8Array; mime: string }>;
@@ -161,12 +163,70 @@ export async function storeCustom(data: Uint8Array, mime: string, o: { store?: I
  * Store an image file a user picked (an `<input type="file">` File, or any Blob): the
  * one call behind an "Upload image" button. Same checks as `storeCustom`.
  */
-export async function customFromFile(file: Blob, o: { store?: ImageStore; maxBytes?: number; allowSvg?: boolean } = {}): Promise<SigilRecord> {
-  return storeCustom(new Uint8Array(await file.arrayBuffer()), file.type, o);
+export async function customFromFile(file: Blob, o: { store?: ImageStore; maxBytes?: number; allowSvg?: boolean; maxSide?: number } = {}): Promise<SigilRecord> {
+  const { maxSide, ...rest } = o;
+  const blob = maxSide ? await downscaleImage(file, maxSide) : file;
+  return storeCustom(new Uint8Array(await blob.arrayBuffer()), blob.type || file.type, rest);
 }
 
-/** URL schemes `adoptImage` accepts without copying. */
-const ADOPTABLE = /^(https?:\/\/|\/(?!\/)|data:image\/(png|jpeg|gif|webp);)/i;
+/**
+ * Re-encode a picked photo so its longer side is at most `maxSide` px (a phone photo is
+ * 3-12 MB; a thumbnail needs a few hundred pixels). Browser only (`createImageBitmap` and a
+ * canvas); returns the file unchanged when it is already small, is a GIF (animation would
+ * be lost), or the environment cannot decode it, so the size check still applies after.
+ */
+export async function downscaleImage(file: Blob, maxSide: number, o: { type?: 'image/jpeg' | 'image/webp' | 'image/png'; quality?: number } = {}): Promise<Blob> {
+  if (file.type === 'image/gif' || typeof createImageBitmap !== 'function') return file;
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch {
+    return file;
+  }
+  const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+  if (scale === 1 && file.size <= 512_000) return (bitmap.close?.(), file);
+  const w = Math.max(1, Math.round(bitmap.width * scale));
+  const h = Math.max(1, Math.round(bitmap.height * scale));
+  const type = o.type ?? (file.type === 'image/png' ? 'image/png' : 'image/jpeg');
+  try {
+    if (typeof OffscreenCanvas !== 'undefined') {
+      const canvas = new OffscreenCanvas(w, h);
+      canvas.getContext('2d')!.drawImage(bitmap, 0, 0, w, h);
+      return await canvas.convertToBlob({ type, quality: o.quality ?? 0.88 });
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    canvas.getContext('2d')!.drawImage(bitmap, 0, 0, w, h);
+    return await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b ?? file), type, o.quality ?? 0.88));
+  } catch {
+    return file;
+  } finally {
+    bitmap.close?.();
+  }
+}
+
+/**
+ * The URL `adoptImage` accepts, or null: http(s) or root-relative (resolved the way a browser
+ * would, so `/\\host` and tab tricks that become another origin are caught), or a raster
+ * `data:` URL. Never `javascript:`, protocol-relative, backslashes, control characters or SVG.
+ */
+function adoptable(url: string): string | null {
+  const u = url.trim();
+  if (/[\\\u0000-\u001f\u007f]/.test(u)) return null;
+  if (/^data:/i.test(u)) return /^data:image\/(png|jpeg|gif|webp)[;,]/i.test(u) ? u : null;
+  const base = 'http://adopt.invalid';
+  let parsed: URL;
+  try {
+    parsed = new URL(u, base);
+  } catch {
+    return null;
+  }
+  const relative = u.startsWith('/') && !u.startsWith('//');
+  if (relative ? parsed.origin !== base : !/^https?:$/.test(parsed.protocol) || !/^https?:\/\//i.test(u)) return null;
+  if (/\.svgz?$/i.test(parsed.pathname)) return null;
+  return u;
+}
 
 /**
  * Adopt an image the app already shows for an item (a hand-made thumbnail it stored, a
@@ -175,18 +235,21 @@ const ADOPTABLE = /^(https?:\/\/|\/(?!\/)|data:image\/(png|jpeg|gif|webp);)/i;
  * `onInputsChanged` never replace it, and `<Sigil record>` shows it as is.
  *
  * Without `store` the record points at the URL (no copy; right for URLs the app owns).
- * With `store` the bytes are fetched, checked like an upload and stored under their
- * content id, so a URL that expires (a provider CDN link) or sits on another origin no
- * longer matters. Refuses `javascript:`, protocol-relative and SVG URLs.
+ * With `store` the bytes are fetched (refused past `maxBytes`, by the declared length before
+ * the body is read), checked like an upload and stored under their content id, so a URL
+ * that expires (a provider CDN link) or sits on another origin no longer matters.
  */
 export async function adoptImage(url: string, o: { store?: ImageStore; fetch?: typeof fetch; maxBytes?: number } = {}): Promise<SigilRecord> {
-  const u = url.trim();
-  if (!ADOPTABLE.test(u)) throw new Error(`SGS0111: cannot adopt ${JSON.stringify(u.slice(0, 80))}: only http(s), root-relative or raster data: URLs`);
+  const u = adoptable(url);
+  if (!u) throw new Error(`SGS0111: cannot adopt ${JSON.stringify(url.slice(0, 80))}: only http(s), root-relative or raster data: URLs of a raster image`);
   if (!o.store) return { source: 'custom', contentId: `url_${(await sha256Hex(u)).slice(0, 32)}`, inputsDigest: '', url: u, frozen: true, origin: 'adopted' };
+  const maxBytes = o.maxBytes ?? 2_000_000;
   const res = await (o.fetch ?? fetch)(u);
   if (!res.ok) throw new Error(`SGS0111: could not fetch ${u}: HTTP ${res.status}`);
+  const declared = Number(res.headers.get('content-length') ?? 0);
+  if (declared > maxBytes) throw new Error(`SGS0110: image is ${declared} bytes, over the ${maxBytes} byte limit`);
   const bytes = new Uint8Array(await res.arrayBuffer());
-  return storeCustom(bytes, res.headers.get('content-type') ?? '', { store: o.store, origin: 'adopted', ...(o.maxBytes ? { maxBytes: o.maxBytes } : {}) });
+  return storeCustom(bytes, res.headers.get('content-type') ?? '', { store: o.store, origin: 'adopted', maxBytes });
 }
 
 export type RegenerationPolicy = 'always' | 'never' | 'ask';

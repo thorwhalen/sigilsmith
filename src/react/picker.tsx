@@ -30,6 +30,8 @@ export interface SigilCandidate {
   copy?: boolean;
   /** Or the app's own way to turn it into a record (e.g. a server-side copy). */
   adopt?: () => Promise<SigilRecord>;
+  /** URL shown in the picker before it is picked (default: `url`); for an `adopt`-only candidate. */
+  preview?: string;
 }
 
 export interface SigilChoice {
@@ -49,6 +51,8 @@ export interface UseSigilPickerOptions {
   /** Persist the new record on the item (`null`: back to the generated sigil). May be async. */
   onChange(record: SigilRecord | null): unknown;
   maxBytes?: number;
+  /** Uploads are downscaled in the browser to this longer side first (px; default 512, 0 to keep the file as is). */
+  maxSide?: number;
   /** Label of the generated choice. */
   generatedLabel?: string;
 }
@@ -67,41 +71,51 @@ export interface SigilPickerState {
 const GENERATED = 'generated';
 const CURRENT = 'current';
 
+/** The candidate a record shows: one whose record has the same URL, else the one it was made from (`from`). */
+function matchCandidate(record: SigilRecord, candidates: SigilCandidate[]): SigilCandidate | undefined {
+  const sameUrl = (c: SigilCandidate) => record.url !== undefined && (c.record?.url ?? c.url) === record.url;
+  return candidates.find(sameUrl) ?? (record.from ? candidates.find((c) => !c.record && c.id === record.from) : undefined);
+}
+
 /** The choices for an item: the generated sigil, the current custom image when no candidate is it, then the candidates. Pure. */
 export function pickerChoices(record: SigilRecord | null | undefined, candidates: SigilCandidate[] = [], o: { generatedLabel?: string; currentLabel?: string } = {}): SigilChoice[] {
   const list: SigilChoice[] = [{ id: GENERATED, label: o.generatedLabel ?? 'Generated', record: null }];
   const custom = record?.source === 'custom' ? record : null;
-  let matched = false;
   for (const c of candidates) {
-    const r = c.record ?? (c.url ? ({ source: 'custom', contentId: `url:${c.url}`, inputsDigest: '', url: c.url, frozen: true, origin: 'adopted' } as SigilRecord) : null);
-    if (custom && r?.url === custom.url) matched = true;
+    const shown = c.preview ?? c.url;
+    const r = c.record ?? (shown ? ({ source: 'custom', contentId: `preview:${c.id}`, inputsDigest: '', url: shown, frozen: true, origin: 'adopted', from: c.id } as SigilRecord) : null);
     list.push({ id: c.id, label: c.label, record: r, candidate: c });
   }
-  if (custom && !matched) list.splice(1, 0, { id: CURRENT, label: o.currentLabel ?? 'Current image', record: custom });
+  if (custom && !matchCandidate(custom, candidates)) list.splice(1, 0, { id: CURRENT, label: o.currentLabel ?? 'Current image', record: custom });
   return list;
 }
 
 /** Id of the choice an item's record shows. Pure. */
 export function currentChoiceId(choices: SigilChoice[], record: SigilRecord | null | undefined): string {
   if (record?.source !== 'custom') return GENERATED;
-  return choices.find((c) => c.id !== GENERATED && c.record?.url === record.url)?.id ?? CURRENT;
+  const candidates = choices.flatMap((c) => (c.candidate ? [c.candidate] : []));
+  return matchCandidate(record, candidates)?.id ?? CURRENT;
 }
 
-/** The record a choice stands for: reused, adopted (copied into `store` when the candidate says `copy`), or the app's own `adopt`. */
+/**
+ * The record a choice stands for: reused, adopted (copied into `store` when the candidate says
+ * `copy`), or the app's own `adopt`. A record made from a candidate carries its id (`from`), so
+ * the picker still knows it once its URL is the store's, not the candidate's.
+ */
 export async function resolveChoice(choice: SigilChoice, o: { store?: ImageStore; maxBytes?: number } = {}): Promise<SigilRecord | null> {
   const c = choice.candidate;
   if (!c) return choice.record;
-  if (c.adopt) return c.adopt();
   if (c.record) return c.record;
-  if (c.url) return adoptImage(c.url, c.copy && o.store ? { store: o.store, ...(o.maxBytes ? { maxBytes: o.maxBytes } : {}) } : {});
-  return null;
+  if (c.copy && !c.adopt && !o.store) throw new Error(`SGS0111: candidate "${c.id}" asks for a copy, but the picker has no store`);
+  const made = c.adopt ? await c.adopt() : c.url ? await adoptImage(c.url, c.copy ? { store: o.store!, ...(o.maxBytes ? { maxBytes: o.maxBytes } : {}) } : {}) : null;
+  return made ? { ...made, from: c.id } : null;
 }
 
 export function useSigilPicker(_item: Item, o: UseSigilPickerOptions): SigilPickerState {
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const busy = useRef(false);
-  const { record, candidates, generatedLabel, onChange, store, maxBytes } = o;
+  const { record, candidates, generatedLabel, onChange, store, maxBytes, maxSide = 512 } = o;
   const choices = useMemo(() => pickerChoices(record, candidates, generatedLabel ? { generatedLabel } : {}), [record, candidates, generatedLabel]);
   const current = useMemo(() => currentChoiceId(choices, record), [choices, record]);
   const run = useCallback(
@@ -123,7 +137,7 @@ export function useSigilPicker(_item: Item, o: UseSigilPickerOptions): SigilPick
   );
   const opts = useMemo(() => ({ ...(store ? { store } : {}), ...(maxBytes ? { maxBytes } : {}) }), [store, maxBytes]);
   const pick = useCallback((choice: SigilChoice) => run(choice.id, () => resolveChoice(choice, opts)), [run, opts]);
-  const upload = useCallback((file: Blob) => run('upload', () => customFromFile(file, opts)), [run, opts]);
+  const upload = useCallback((file: Blob) => run('upload', () => customFromFile(file, { ...opts, ...(maxSide ? { maxSide } : {}) })), [run, opts, maxSide]);
   return { choices, current, pending, error, pick, upload };
 }
 

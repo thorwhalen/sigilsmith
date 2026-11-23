@@ -45,15 +45,17 @@ export function setMediaSessionArtwork(
   return true;
 }
 
-/** One Media Session artwork entry. */
+/** One Media Session artwork entry (`type` only when known). */
 export interface ArtworkImage {
   src: string;
   sizes: string;
-  type: string;
+  type?: string;
 }
 
 /** Rasterise an SVG to a PNG data URL in the browser (Image + canvas). Lock screens and notifications do not take SVG. */
 export function browserPng(svg: string, size: number): Promise<string> {
+  // An SVG with only a viewBox has no intrinsic size, which some browsers refuse to draw.
+  const sized = svg.replace(/^<svg(?![^>]*\swidth=)/, `<svg width="${size}" height="${size}"`);
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
@@ -67,18 +69,31 @@ export function browserPng(svg: string, size: number): Promise<string> {
       }
     };
     img.onerror = () => reject(new Error('could not load the SVG to rasterise it'));
-    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(sized)}`;
   });
 }
 
-const typeOfUrl = (url: string) => (/^data:([^;,]+)/.exec(url)?.[1] ?? (/\.svg(\?|$)/i.test(url) ? 'image/svg+xml' : /\.jpe?g(\?|$)/i.test(url) ? 'image/jpeg' : /\.webp(\?|$)/i.test(url) ? 'image/webp' : 'image/png'));
+/** The MIME type of an image URL when it can be told from the URL; undefined otherwise. */
+function typeOfUrl(url: string): string | undefined {
+  const data = /^data:([^;,]+)/i.exec(url)?.[1];
+  if (data) return data;
+  const ext = /\.(png|jpe?g|webp|gif|svg)(\?|#|$)/i.exec(url)?.[1]?.toLowerCase();
+  return ext ? ({ png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', gif: 'image/gif', svg: 'image/svg+xml' } as Record<string, string>)[ext] : undefined;
+}
+
+async function blobToDataUrl(blob: Blob): Promise<string> {
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  let s = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return `data:${blob.type || 'image/png'};base64,${btoa(s)}`;
+}
 
 /**
- * Artwork for the playing item, matching what `<Sigil>` shows: the record's stored URL
- * when it has one (a custom image, or a materialized sigil), else a PNG of the item's
- * sigil rendered in the browser. Replaces a hand-rolled canvas copy of an app's
- * thumbnail, so the lock screen can never drift from the list. Never throws: returns
- * `[]` when nothing can be drawn.
+ * Artwork for the playing item, matching what `<Sigil>` shows: a custom image's stored URL
+ * (an upload or an adopted picture: raster by construction), else a PNG of the item's sigil
+ * rendered in the browser (a stored generated image may be SVG, which lock screens refuse).
+ * Replaces a hand-rolled canvas copy of an app's thumbnail, so the lock screen can never
+ * drift from the list. Never throws: returns `[]` when nothing can be drawn.
  *
  * ```ts
  * navigator.mediaSession.metadata = new MediaMetadata({ title, artist, artwork: await mediaArtwork(sigil, song, { record: song.sigil }) });
@@ -91,12 +106,13 @@ export async function mediaArtwork(
 ): Promise<ArtworkImage[]> {
   const size = o.size ?? 256;
   const sizes = `${size}x${size}`;
-  if (o.record?.url && (o.record.source === 'custom' || o.record.ref)) return [{ src: o.record.url, sizes, type: typeOfUrl(o.record.url) }];
+  const entry = (src: string, type?: string): ArtworkImage[] => [{ src, sizes, ...(type ? { type } : {}) }];
+  if (o.record?.source === 'custom' && o.record.url) return entry(o.record.url, typeOfUrl(o.record.url));
   try {
     const img = await sigil.render(item, { size });
-    if (img.type === 'url') return [{ src: img.url, sizes, type: img.mime ?? typeOfUrl(img.url) }];
-    if (img.type === 'blob') return [{ src: URL.createObjectURL(img.blob), sizes, type: img.mime }];
-    return [{ src: await (o.toPng ?? browserPng)(img.svg, size), sizes, type: 'image/png' }];
+    if (img.type === 'url') return entry(img.url, img.mime ?? typeOfUrl(img.url));
+    if (img.type === 'blob') return entry(await blobToDataUrl(img.blob), img.mime); // a data URL: nothing to revoke
+    return entry(await (o.toPng ?? browserPng)(img.svg, size), 'image/png');
   } catch {
     return [];
   }

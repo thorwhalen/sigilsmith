@@ -8,10 +8,10 @@
   },
   "generators": {
     "aura@1": {
-      "minBytes": 3162,
-      "gzipBytes": 1382,
-      "brotliBytes": 1258,
-      "standaloneGzipBytes": 1552
+      "minBytes": 3547,
+      "gzipBytes": 1530,
+      "brotliBytes": 1402,
+      "standaloneGzipBytes": 1711
     },
     "emoji@1": {
       "minBytes": 3381,
@@ -70,13 +70,18 @@
     },
     "delivery": {
       "minBytes": 3723,
-      "gzipBytes": 1669,
-      "brotliBytes": 1506
+      "gzipBytes": 1671,
+      "brotliBytes": 1505
     },
     "react": {
-      "minBytes": 3959,
-      "gzipBytes": 1869,
-      "brotliBytes": 1673
+      "minBytes": 3977,
+      "gzipBytes": 1880,
+      "brotliBytes": 1684
+    },
+    "picker": {
+      "minBytes": 6763,
+      "gzipBytes": 2744,
+      "brotliBytes": 2514
     },
     "features": {
       "minBytes": 2992,

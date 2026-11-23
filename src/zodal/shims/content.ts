@@ -3,8 +3,8 @@
  * `@zodal/store` ships `headContent()` and write options (`mimeType`, `ifAbsent`).
  *
  * - `headViaUrl`: "is this content stored, and where?" without downloading it. Uses the
- *   provider's `headContent` when it exists, else `getUrl` + an HTTP HEAD for http(s)
- *   URLs, else `getContent`.
+ *   provider's `headContent` when it exists, else `getUrl` + an HTTP HEAD for any URL
+ *   that is not `data:`/`blob:` (root-relative ones included), else `getContent`.
  * - `toBlob`: carries the MIME type on the value itself, which the HTTP, S3 and
  *   IndexedDB providers honour, since `setContent` has no options argument yet.
  */
@@ -14,7 +14,9 @@ export async function headViaUrl(provider: DataProvider<any>, id: string, field:
   const p = provider as DataProvider<any> & { headContent?: (id: string, field: string) => Promise<{ url?: string } | null> };
   if (p.headContent) return (await p.headContent(id, field))?.url ?? null;
   const url = (await provider.getUrl?.(id, field)) ?? null;
-  if (url && /^https?:/.test(url)) {
+  // Any fetchable URL is asked (absolute or root-relative, as an app's own API gives them);
+  // only data: and blob: URLs, which hold their bytes, are taken as present.
+  if (url && !/^(data|blob):/i.test(url)) {
     const f = fetchFn ?? ((...a: Parameters<typeof fetch>) => fetch(...a));
     const res = await f(url, { method: 'HEAD' });
     return res.ok ? url : null;

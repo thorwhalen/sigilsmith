@@ -170,7 +170,7 @@ export function Sigil({ item, size = 40, record, alt = '', className, style, rad
           decoding="async"
           onLoad={() => setLoaded({ src, ok: true })}
           onError={() => setLoaded({ src, ok: false })}
-          style={{ display: 'block', width: size, height: size, opacity: loaded.src === src && loaded.ok ? 1 : 0, transition: 'opacity 120ms ease-out' }}
+          style={{ display: 'block', width: size, height: size, objectFit: 'cover', opacity: loaded.src === src && loaded.ok ? 1 : 0, transition: 'opacity 120ms ease-out' }}
         />
       ) : null}
     </span>

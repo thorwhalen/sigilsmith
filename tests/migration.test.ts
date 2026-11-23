@@ -19,6 +19,7 @@ import { meta } from '../src/generators/aura/meta.js';
 import { runOperation } from '../src/node/operations.js';
 import { currentChoiceId, pickerChoices, resolveChoice, SigilPicker } from '../src/react/picker.js';
 import { mediaArtwork } from '../src/targets/index.js';
+import { fromDataProvider } from '../src/zodal/index.js';
 import { baseConfig, loaders } from './fixtures.js';
 import { makeProject } from './project.js';
 
@@ -93,7 +94,7 @@ describe('adopting existing images (the migration path for stored thumbnails)', 
     expect(r.contentId).toMatch(/^url_[0-9a-f]{32}$/);
   });
   it('refuses scripts, protocol-relative and SVG URLs', async () => {
-    for (const bad of ['javascript:alert(1)', '//evil.example/x.png', 'data:image/svg+xml,<svg/>', 'ftp://x/y.png']) await expect(adoptImage(bad)).rejects.toThrow(/SGS0111/);
+    for (const bad of ['javascript:alert(1)', '//evil.example/x.png', 'data:image/svg+xml,<svg/>', 'ftp://x/y.png', '/\\evil.example/x.png', '/\t/evil.example/x.png', 'https://x.example/a.svg', 'HTTPS:x.example/a.png', ' javascript:x']) await expect(adoptImage(bad)).rejects.toThrow(/SGS0111/);
   });
   it('copies an expiring URL into the store, checked like an upload', async () => {
     const store = memoryStore();
@@ -121,6 +122,12 @@ describe('mediaArtwork (lock-screen art that matches the list)', () => {
   it('uses the stored URL of a custom image', async () => {
     const art = await mediaArtwork(auraSigil(), { id: 's' }, { record: await adoptImage('/covers/1.jpg') });
     expect(art).toEqual([{ src: '/covers/1.jpg', sizes: '256x256', type: 'image/jpeg' }]);
+  });
+  it('never hands a stored generated image (maybe SVG) to the lock screen, and omits unknown types', async () => {
+    const toPng = vi.fn(async () => 'data:image/png;base64,AA');
+    const art = await mediaArtwork(auraSigil(), { id: 's' }, { record: { source: 'generated', ref: 'aura@1', contentId: 'sg_g', inputsDigest: '', url: '/sigils/sg_g' }, toPng });
+    expect(art).toEqual([{ src: 'data:image/png;base64,AA', sizes: '256x256', type: 'image/png' }]);
+    expect(await mediaArtwork(auraSigil(), { id: 's' }, { record: await adoptImage('/sigils/sg_x') })).toEqual([{ src: '/sigils/sg_x', sizes: '256x256' }]);
   });
   it('rasterises the generated sigil when nothing is stored, and never throws', async () => {
     const toPng = vi.fn(async (svg: string, size: number) => `data:image/png;base64,${size}:${svg.length}`);
@@ -159,7 +166,33 @@ describe('the picker', () => {
     }
     const server = { source: 'custom' as const, contentId: 'sg_srv', inputsDigest: '', url: '/sigils/sg_srv', frozen: true };
     const [, viaServer] = pickerChoices(null, [{ id: 'p', label: 'Cover art', url: 'https://x/c.png', adopt: async () => server }]);
-    expect(await resolveChoice(viaServer!)).toBe(server);
+    expect(await resolveChoice(viaServer!)).toEqual({ ...server, from: 'p' });
+  });
+  it('still knows the picked candidate once its image lives in the store (review finding 1)', async () => {
+    const provider = { id: 'provider', label: 'Cover art', url: 'https://cdn.example.com/c.png', copy: true };
+    const fetch = vi.fn(async () => new Response(PNG, { headers: { 'content-type': 'image/png' } }));
+    vi.stubGlobal('fetch', fetch);
+    let picked;
+    try {
+      picked = await resolveChoice(pickerChoices(null, [provider])[1]!, { store: memoryStore() });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+    expect(picked!.url).not.toBe(provider.url);
+    const after = pickerChoices(picked, [provider]);
+    expect(after.map((c) => c.id)).toEqual(['generated', 'provider']); // no duplicate "Current image"
+    expect(currentChoiceId(after, picked)).toBe('provider');
+    // another item's reused picture is matched by its URL, not by the candidate it came from
+    const reused = { id: 'song:b', label: 'B', record: { ...picked!, from: 'provider' } };
+    expect(currentChoiceId(pickerChoices(reused.record, [provider, reused]), reused.record)).toBe('song:b');
+  });
+  it('refuses a copy with no store, and never matches two URL-less records (findings 9, 10)', async () => {
+    const copy = pickerChoices(null, [{ id: 'p', label: 'P', url: 'https://x.example/c.png', copy: true }])[1]!;
+    await expect(resolveChoice(copy)).rejects.toThrow(/SGS0111/);
+    const adoptOnly = { id: 'a', label: 'A', adopt: async () => ({ source: 'custom' as const, contentId: 'sg_a', inputsDigest: '' }), preview: '/p.png' };
+    expect(pickerChoices(null, [adoptOnly])[1]!.record?.url).toBe('/p.png');
+    const noUrl = { source: 'custom' as const, contentId: 'sg_z', inputsDigest: '' };
+    expect(currentChoiceId(pickerChoices(noUrl, [{ id: 'x', label: 'X', adopt: adoptOnly.adopt }]), noUrl)).toBe('current');
   });
   it('renders one radio per choice plus an upload button, the current one checked', () => {
     const sigil = { subscribe: () => () => {}, getUser: () => undefined } as never;
@@ -207,6 +240,25 @@ export function Orb({ id }: { id: string }) { return <div style={{ background: \
     expect(r.recipe.join('\n')).toMatch(/mediaArtwork[\s\S]*adoptImage[\s\S]*sigilsmith check/);
     expect(r.recipe[0]).not.toMatch(/init/); // already configured
   });
+  it('ignores look-alike names, comments and strings, and an app that already uses mediaArtwork (findings 7, 8)', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'sigilsmith-adopt-'));
+    write(dir, {
+      'src/theme.ts': "export function gradientFor(s: string) { return `hsl(${hash(s)} 50% 50%)`; }\nexport const coverLetterTemplate = (s: string) => s.charCodeAt(0);\nexport const orbital = 1;\n",
+      'src/Use.ts': "// gradientFor(x) in a comment\nconst s = 'coverLetterTemplate(1)';\n",
+      'src/Player.tsx': "import { mediaArtwork } from 'sigilsmith/targets';\nnavigator.mediaSession.metadata = new MediaMetadata({ title: 't', artwork: await mediaArtwork(sigil, song) });\n",
+      'src/$Orb.tsx': "export const $Orb = (id: string) => `hsl(${id.charCodeAt(0)} 50% 50%)`;\n",
+      'src/Row.tsx': "import { $Orb } from './$Orb';\nconst c = $Orb('a'); // $Orb('b')\n",
+    });
+    const r = scanAdoption(dir);
+    const found = r.findings.filter((f) => f.kind === 'home-grown');
+    expect(found.map((f) => f.name)).toEqual(['$Orb']); // gradientFor, coverLetterTemplate, orbital are not thumbnails
+    expect(found[0]!.uses).toEqual([{ file: join('src', 'Row.tsx'), line: 2 }]); // a name with $ is escaped; the comment is no call site
+    expect(r.findings.filter((f) => f.kind === 'media-session')).toEqual([]);
+    write(dir, { 'src/$Orb.tsx': 'export const unrelated = 1;\n', 'src/SongOrb.tsx': "export const SongOrb = (id: string) => `hsl(${id.charCodeAt(0)} 50% 50%)`;\n", 'src/List.tsx': "const a = SongOrb('x'); // SongOrb('y')\nconst t = 'SongOrb(z)';\n" });
+    const home = scanAdoption(dir).findings.filter((f) => f.kind === 'home-grown');
+    expect(home.map((f) => f.name)).toEqual(['SongOrb']);
+    expect(home[0]!.uses).toHaveLength(1);
+  });
   it('a plain app with no thumbnails gets init first and no swap step', () => {
     const dir = mkdtempSync(join(tmpdir(), 'sigilsmith-adopt-'));
     write(dir, { 'src/App.tsx': 'export const App = () => <div>hi</div>;\n' });
@@ -221,5 +273,48 @@ export function Orb({ id }: { id: string }) { return <div style={{ background: \
     const env = await runOperation('adopt', { dirs: ['app'] }, { cwd: dir });
     expect(env.ok).toBe(true);
     expect(env.data.findings[0].kind).toBe('home-grown');
+  });
+});
+
+describe('fromDataProvider over an app API with root-relative URLs (found migrating arioso_studio)', () => {
+  it('asks the server before skipping an upload, so a new image is really stored', async () => {
+    const stored = new Map<string, Blob>();
+    const calls: string[] = [];
+    const provider = {
+      getUrl: async (id: string) => `/api/app/sigils/${id}`,
+      setContent: async (id: string, field: string, blob: Blob) => (stored.set(id, blob), { _tag: 'ContentRef', field, itemId: id, url: `/api/app/sigils/${id}` }),
+    } as never;
+    const fetch = vi.fn(async (url: string, init?: RequestInit) => (calls.push(`${init?.method} ${url}`), new Response(null, { status: stored.has(url.split('/').pop()!) ? 200 : 404 })));
+    const store = fromDataProvider(provider, { fetch: fetch as unknown as typeof globalThis.fetch });
+    const rec = await customFromFile(new Blob([PNG], { type: 'image/png' }), { store });
+    expect(stored.has(rec.contentId)).toBe(true);
+    expect(rec.url).toBe(`/api/app/sigils/${rec.contentId}`);
+    expect(calls[0]).toBe(`HEAD /api/app/sigils/${rec.contentId}`);
+    await customFromFile(new Blob([PNG], { type: 'image/png' }), { store }); // present now: HEAD says so, no second PUT
+    expect(stored.size).toBe(1);
+  });
+});
+
+describe('downscaleImage (phone photos before upload)', () => {
+  it('re-encodes a large photo to maxSide on its longer side, keeps GIFs and undecodable files', async () => {
+    const { downscaleImage } = await import('../src/delivery.js');
+    const big = new Blob([new Uint8Array(600_000)], { type: 'image/jpeg' });
+    expect(await downscaleImage(big, 512)).toBe(big); // no createImageBitmap (Node): unchanged
+    const drawn: number[][] = [];
+    vi.stubGlobal('createImageBitmap', async () => ({ width: 4000, height: 3000, close() {} }));
+    vi.stubGlobal('OffscreenCanvas', class {
+      constructor(public w: number, public h: number) {}
+      getContext() { return { drawImage: (_b: unknown, _x: number, _y: number, w: number, h: number) => drawn.push([w, h]) }; }
+      async convertToBlob(o: { type: string }) { return new Blob([new Uint8Array(10)], { type: o.type }); }
+    });
+    try {
+      const out = await downscaleImage(big, 512);
+      expect(drawn).toEqual([[512, 384]]);
+      expect(out.type).toBe('image/jpeg');
+      const gif = new Blob([new Uint8Array(10)], { type: 'image/gif' });
+      expect(await downscaleImage(gif, 512)).toBe(gif);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

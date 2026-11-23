@@ -154,11 +154,14 @@ function hostDeclared(dir: string, name: string): string | undefined {
   return pkg.dependencies?.[name] ?? pkg.devDependencies?.[name];
 }
 
-function usesReact(loaded: LoadedConfig): boolean {
+/** Whether the app's sources match `test` (the React adapter, the picker). */
+function sourcesUse(loaded: LoadedConfig, test: (text: string) => boolean): boolean {
   const cfg = loaded.config!;
-  for (const src of cfg.check.src) for (const file of walk(resolve(loaded.dir, src), cfg.check.ignore)) if (readFileSync(file, 'utf8').includes(`${PKG_NAME}/react`)) return true;
+  for (const src of cfg.check.src) for (const file of walk(resolve(loaded.dir, src), cfg.check.ignore)) if (test(readFileSync(file, 'utf8'))) return true;
   return false;
 }
+const usesReact = (loaded: LoadedConfig) => sourcesUse(loaded, (t) => t.includes(`${PKG_NAME}/react`));
+const usesPicker = (loaded: LoadedConfig) => sourcesUse(loaded, (t) => t.includes(`${PKG_NAME}/react`) && /\b(useSigilPicker|SigilPicker)\b/.test(t));
 
 export interface CheckData {
   sections: Record<Section, 'pass' | 'fail' | 'warn' | 'skip'>;
@@ -256,6 +259,8 @@ export async function check(loaded: LoadedConfig, opts: { only?: Section[] } = {
     const modules = (sizes as { modules?: Record<string, { gzipBytes: number }> }).modules ?? {};
     if (cfg.delivery.strategy !== 'derived') generators['(delivery module)'] = modules.delivery?.gzipBytes ?? null;
     if (usesReact(loaded)) generators['(react adapter)'] = modules.react?.gzipBytes ?? null;
+    // The picker brings the upload and adopt code (most of the delivery module) with it.
+    if (usesPicker(loaded)) generators['(picker)'] = modules.picker?.gzipBytes ?? null;
     if (loaded.features.length) generators['(features module)'] = modules.features?.gzipBytes ?? null;
     const known = [kernelGzip, ...Object.values(generators)];
     const totalGzip = known.every((x) => x !== null) ? (known as number[]).reduce((a, b) => a + b, 0) : null;

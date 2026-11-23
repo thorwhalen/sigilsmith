@@ -60,7 +60,16 @@ export const KNOWN_LIBRARIES: Record<string, string> = {
 const CODE_EXT = /\.(m?[jt]sx?|vue|svelte)$/;
 const SKIP_DIR = new Set(['node_modules', 'dist', 'build', 'out', 'coverage', '.git', '.next', '.svelte-kit', 'vendor']);
 const SKIP_FILE = /(\.gen\.[jt]s|\.(test|spec)\.[jt]sx?|\.d\.ts)$/;
-const THUMB_NAME = /(orb|avatar|identicon|thumb|cover|artwork|gradient|swatch|sigil|glyph|monogram|initials|blockie|jazzicon|blob)/i;
+/** A thumbnail-ish name: the word starts the name (`orbColors`, `avatarUrl`) or ends it (`SongOrb`, `UserAvatar`), as a whole camelCase word. */
+const THUMB_WORDS = 'orb|avatar|identicon|thumb|thumbnail|coverart|cover_art|artwork|sigil|glyph|monogram|initials|blockie|blockies|jazzicon';
+const CAPITAL = THUMB_WORDS.split('|').map((w) => w[0]!.toUpperCase() + w.slice(1)).join('|');
+const THUMB_NAME = new RegExp(`^(${THUMB_WORDS}|${CAPITAL})(?=[A-Z_]|$)|(${CAPITAL})(Art|Image|Colors|Colours|Svg|Url|Style)?$`);
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+/** Code with comments and string literals blanked (same length, so offsets keep their line numbers). */
+function codeOnly(text: string): string {
+  const blank = (m: string) => m.replace(/[^\n]/g, ' ');
+  return text.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*|'(?:\\.|[^'\\\n])*'|"(?:\\.|[^"\\\n])*"|`(?:\\.|[^`\\])*`/g, blank);
+}
 const HASH_SIGNAL = /charCodeAt|codePointAt|Math\.imul|hashCode|\bcyrb|\bfnv|\bmurmur|\bhash\w*\s*\(/;
 const COLOUR_SIGNAL = /hsla?\(|oklch\(|rgba?\(|#\$\{|radial-gradient|linear-gradient|fillStyle|\bhue\b/;
 const IMAGE_FIELD = /^(image|img|thumb|thumbnail|cover|coverart|cover_art|artwork|art|avatar|picture|photo|icon|poster|logo)([_-]?(url|uri|src|href|large|small))?$/i;
@@ -86,10 +95,12 @@ export function scanAdoption(cwd: string, o: { dirs?: string[]; samples?: Array<
   const texts = new Map(files.map((f) => [f, readFileSync(f, 'utf8')]));
   const rel = (f: string) => relative(cwd, f);
   const findings: AdoptFinding[] = [];
+  const code = new Map([...texts].map(([f, t]) => [f, codeOnly(t)]));
   const usesOf = (names: string[], definedIn: string) => {
     const uses: Array<{ file: string; line: number }> = [];
-    const re = new RegExp(`<(${names.join('|')})\\b|\\b(${names.join('|')})\\s*\\(`, 'g');
-    for (const [f, t] of texts) {
+    const alt = names.map(escapeRe).join('|');
+    const re = new RegExp(`<(${alt})\\b|(?<![\\w$.])(${alt})\\s*\\(`, 'g');
+    for (const [f, t] of code) {
       if (f === definedIn) continue;
       for (const m of t.matchAll(re)) uses.push({ file: rel(f), line: lineOf(t, m.index!) });
     }
@@ -121,7 +132,8 @@ export function scanAdoption(cwd: string, o: { dirs?: string[]; samples?: Array<
     // Hand-set lock-screen artwork.
     for (const m of t.matchAll(/new\s+MediaMetadata\s*\(/g)) {
       const around = t.slice(m.index!, m.index! + 600);
-      if (/artwork/.test(around)) findings.push({ kind: 'media-session', file: rel(f), line: lineOf(t, m.index!), name: 'MediaMetadata', detail: 'sets lock-screen artwork by hand', suggestion: 'artwork: await mediaArtwork(sigil, item, { record: item.sigil }) (sigilsmith/targets): the stored image, else a PNG of the same sigil the list shows' });
+      // Already migrated: the artwork comes from sigilsmith.
+      if (/artwork/.test(around) && !/mediaArtwork\s*\(/.test(t)) findings.push({ kind: 'media-session', file: rel(f), line: lineOf(t, m.index!), name: 'MediaMetadata', detail: 'sets lock-screen artwork by hand', suggestion: 'artwork: await mediaArtwork(sigil, item, { record: item.sigil }) (sigilsmith/targets): the stored image, else a PNG of the same sigil the list shows' });
     }
   }
   // Images the items already have.

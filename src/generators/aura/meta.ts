@@ -19,6 +19,11 @@ export interface AuraParams {
   baseLightness: number;
   /** Gaussian blur of the fields (viewBox units; 0 for crisp edges). */
   blur: number;
+  /**
+   * Blur in display pixels instead (CSS `blur(Npx)`, the same at every size): when > 0 it
+   * replaces `blur`, scaled by the requested render size. 0 (default) uses `blur`.
+   */
+  blurPx: number;
   /** Saturation boost of the blurred fields (1 = none; CSS `saturate()`). */
   saturate: number;
   /** Opacity of a soft top-left sheen (0 for none). */
@@ -40,6 +45,7 @@ export const meta: GeneratorMeta<AuraParams> = {
     baseSaturation: 45,
     baseLightness: 12,
     blur: 8,
+    blurPx: 0,
     saturate: 1.3,
     highlight: 0.22,
     shape: 'rounded',
