@@ -3,7 +3,7 @@
  * catalog, build, explain and check like a built-in. The migration use: an app wraps its own
  * hand-rolled thumbnail so moving to sigilsmith changes no image.
  */
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { registerExtensions } from '../src/node/builtins.js';
@@ -37,11 +37,11 @@ const project = (cfg: Record<string, unknown>) => {
 describe('extensions', () => {
   it('load with the config, show in the catalog, and draw', async () => {
     const dir = project({});
-    registerExtensions([]); // a fresh process: the catalog command alone must find them
-    const cat = await runOperation('catalog', { implemented: true }, { cwd: dir });
-    expect(cat.data.results.find((r: { ref?: string }) => r.ref === 'app-orb@1')).toMatchObject({ name: 'App orb', tier: 'extension' });
     const loaded = await loadConfig(undefined, dir);
     expect(loaded.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    // once loaded (by a rendering command or the library), the catalog lists it
+    const cat = await runOperation('catalog', { implemented: true }, { cwd: dir });
+    expect(cat.data.results.find((r: { ref?: string }) => r.ref === 'app-orb@1')).toMatchObject({ name: 'App orb', tier: 'extension' });
     const ex = await runOperation('explain', { item: { id: 'song-1' } }, { cwd: dir });
     expect(ex.data.explanations[0].generator.ref).toBe('app-orb@1');
   });
@@ -68,6 +68,57 @@ describe('extensions', () => {
     writeFileSync(join(dir, 'clash.mjs'), ORB.replace("id: 'app-orb'", "id: 'grid'"));
     const codes = (await loadConfig(undefined, dir)).diagnostics.map((d) => d.code);
     expect(codes).toEqual(expect.arrayContaining(['SGS0112', 'SGS0113']));
+  });
+  it('a TypeScript extension with extensionless imports loads like the app\'s bundler sees it, and a strict TS build accepts the wiring', async () => {
+    const dir = project({ extensions: ['./src/sigils/orb.ts'] });
+    symlinkSync(join(process.cwd(), 'node_modules'), join(dir, 'node_modules')); // the host has esbuild, as a Vite app does
+    writeFileSync(join(dir, 'src', 'sigils', 'hash.ts'), 'export const hue = (s: string): number => s.length * 40;\n');
+    writeFileSync(join(dir, 'src', 'sigils', 'orb.ts'), ORB.replace('const hash = ', "import { hue } from './hash';\nconst hash = ").replace("const hue = params.hues[hash(seed) % params.hues.length];", "const h: number = hue(seed); const hue2 = params.hues[h % params.hues.length];").replace("hsl(' + hue + '", "hsl(' + hue2 + '"));
+    const loaded = await loadConfig(undefined, dir);
+    expect(loaded.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    await runOperation('build', {}, { cwd: dir });
+    expect(readFileSync(join(dir, 'src', 'sigilsmith.gen.ts'), 'utf8')).toMatch(/@ts-ignore[^\n]*\n\s*'app-orb@1': \(\) => import\('\.\/sigils\/orb'\)/);
+    // the budget sizes it when it declares no size: bundled for the browser and gzipped
+    writeFileSync(join(dir, 'src', 'sigils', 'orb.ts'), readFileSync(join(dir, 'src', 'sigils', 'orb.ts'), 'utf8').replace('gzipBytes: 420, ', ''));
+    const chk = await runOperation('check', { only: ['budget'] }, { cwd: dir });
+    expect(chk.data.budget.generators['app-orb@1']).toBeGreaterThan(50);
+  });
+  it('an edited extension is seen at once by a long-lived process (the MCP server)', async () => {
+    const dir = project({});
+    expect((await runOperation('build', {}, { cwd: dir })).ok).toBe(true);
+    writeFileSync(join(dir, 'src', 'sigils', 'orb.mjs'), ORB.replace('60% 40%', '60% 70%'));
+    await new Promise((r) => setTimeout(r, 20)); // a new mtime
+    const chk = await runOperation('check', { only: ['identity'] }, { cwd: dir });
+    expect(chk.diagnostics.map((d: { code: string }) => d.code)).toEqual(expect.arrayContaining(['SGS0504']));
+  });
+  it('is never run by the commands that do not render (catalog, detect-key, adopt)', async () => {
+    const dir = project({});
+    const marker = join(dir, 'ran.txt');
+    writeFileSync(join(dir, 'src', 'sigils', 'orb.mjs'), `import { writeFileSync } from 'node:fs';\nwriteFileSync(${JSON.stringify(marker)}, 'x');\n${ORB}`);
+    registerExtensions([]);
+    await runOperation('catalog', { implemented: true }, { cwd: dir });
+    const key = await runOperation('detect_key', { samples: 'items.json' }, { cwd: dir });
+    expect(key.diagnostics.filter((d: { code: string }) => d.code === 'SGS0104')).toEqual([]); // its ref is not called unknown
+    await runOperation('adopt', {}, { cwd: dir });
+    expect(existsSync(marker)).toBe(false);
+    await runOperation('explain', { item: { id: 'a' } }, { cwd: dir });
+    expect(existsSync(marker)).toBe(true); // rendering commands do load it
+  });
+  it('refuse user-settings params on an extension (the browser could not show them)', async () => {
+    const dir = project({ userSettings: { choices: ['app-orb@1', 'rings@1'], params: { 'app-orb@1': ['blur'] } } });
+    expect((await loadConfig(undefined, dir)).diagnostics.map((d) => d.code)).toContain('SGS0114');
+  });
+  it('a dual-format package resolves to its ESM build from the project', async () => {
+    const dir = project({ extensions: ['ext-dual'], policy: { default: 'dual-orb@1' } });
+    const pkg = join(dir, 'node_modules', 'ext-dual');
+    mkdirSync(pkg, { recursive: true });
+    writeFileSync(join(pkg, 'package.json'), JSON.stringify({ name: 'ext-dual', version: '1.2.3', exports: { import: './esm.mjs', require: './cjs.cjs' } }));
+    writeFileSync(join(pkg, 'esm.mjs'), ORB.replace("id: 'app-orb'", "id: 'dual-orb'"));
+    writeFileSync(join(pkg, 'cjs.cjs'), "module.exports = { __esModule: true, default: { id: 'dual-orb', major: 9 } };");
+    const loaded = await loadConfig(undefined, dir);
+    expect(loaded.diagnostics.filter((d) => d.severity === 'error')).toEqual([]);
+    const ex = await runOperation('explain', { item: { id: 'a' } }, { cwd: dir });
+    expect(ex.data.explanations[0].generator.ref).toBe('dual-orb@1'); // major 1: the ESM build, not the CJS one
   });
   it('belong to the project that named them: loading another config drops them', async () => {
     await loadConfig(undefined, project({}));

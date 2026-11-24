@@ -145,6 +145,8 @@ export function renderWiringModule(loaded: LoadedConfig, outFile: string): strin
     if (b) {
       // An extension that is a project file is imported relative to the wiring module.
       const path = b.manifest.tier === 'extension' && isPathSpecifier(b.manifest.importPath!) ? importSpecifier(outFile, loaded.dir, b.manifest.importPath!) : b.manifest.importPath;
+      // An app's .js extension has no types: a strict TS build must not fail on the generated file.
+      if (b.manifest.tier === 'extension') loaders.push('  // @ts-ignore -- an extension module (sigilsmith.config.json `extensions`)');
       loaders.push(`  '${ref}': () => import('${path}'),`);
       continue;
     }

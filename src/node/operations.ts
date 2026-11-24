@@ -5,10 +5,7 @@
  * (`src/mcp/server.ts`) are both thin layers over this list, so the two surfaces
  * cannot drift apart: there is no second list to keep in sync.
  */
-import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { z } from 'zod';
-import { CONFIG_FILE } from '../meta.js';
 import { PRESETS } from '../presets.js';
 import type { Item } from '../types.js';
 import { adoptCmd } from './adopt.js';
@@ -76,10 +73,8 @@ export const OPERATIONS = [
       presets: z.boolean().optional(),
     },
     annotations: READ,
-    run: async (i, ctx) => {
+    run: async (i) => {
       if (i.presets) return envelope('catalog', { presets: Object.values(PRESETS).map((p) => ({ name: p.name, description: p.description, types: Object.keys(p.byType) })) });
-      // The project's extensions belong in its catalog: load its config when there is one.
-      if (existsSync(resolve(ctx.cwd, CONFIG_FILE))) await loadConfig(undefined, ctx.cwd);
       const { presets: _p, ...q } = i;
       return catalog(Object.fromEntries(Object.entries(q).filter(([, v]) => v !== undefined)));
     },
@@ -103,7 +98,7 @@ export const OPERATIONS = [
     input: { samples: z.string().describe('Sample items JSON file.'), write: z.boolean().optional(), config },
     annotations: WRITE,
     run: async (i, ctx) => {
-      const loaded = await loadConfig(i.config, ctx.cwd);
+      const loaded = await loadConfig(i.config, ctx.cwd, { extensions: false });
       return detectKeyCmd(loaded.raw ? loaded : null, i.samples, { write: Boolean(i.write), cwd: ctx.cwd });
     },
   }),
@@ -163,7 +158,7 @@ export const OPERATIONS = [
     input: { dirs: z.array(z.string()).optional().describe('Source dirs relative to the project (default ["src"]).'), samples: z.string().optional().describe('Sample items JSON (default: the config\'s samples, if any).'), config },
     annotations: READ,
     run: async (i, ctx) => {
-      const loaded = await loadConfig(i.config, ctx.cwd);
+      const loaded = await loadConfig(i.config, ctx.cwd, { extensions: false });
       const path = i.samples ?? loaded.config?.samples;
       const samples = path ? loadSamples(ctx.cwd, path).items : [];
       return adoptCmd(ctx.cwd, { ...(i.dirs?.length ? { dirs: i.dirs } : {}), samples: samples as Array<Record<string, unknown>> });

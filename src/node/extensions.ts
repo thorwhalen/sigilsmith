@@ -11,21 +11,25 @@
  * An extension is a module whose default export is a `GeneratorModule` (id, major, kind,
  * defaults, defaultInputs, determinism, render), the same contract as `src/generators/<id>/v1.ts`,
  * with an optional `catalog` object for the catalog row (`name`, `description`, `style`,
- * `semanticLevel`, `license`, `gzipBytes`). It must not import zod or Node APIs: the wiring
- * module imports it into the browser. Node loads it with a dynamic `import()`, so it is
- * JavaScript, or TypeScript with erasable syntax only on Node 23.6 or later.
+ * `semanticLevel`, `license`, `gzipBytes`). Its id contains a hyphen (`app-orb`): built-in
+ * ids never do, so a later sigilsmith cannot take an app's ref. It must not import zod or
+ * Node APIs: the wiring module imports it into the browser. Node loads it like the host's
+ * bundler would (`host-module.ts`): TS, TSX and path aliases work when esbuild is installed.
+ *
+ * Loading an extension runs the project's code, as a custom key function or a module
+ * transport already did: only the commands that render (build, check, explain, preview,
+ * targets) load them; catalog, detect-key and adopt never do.
  *
  * Params are validated against a schema inferred from the module's `defaults` (each key's
  * type; no unknown keys), since an extension carries no zod.
  */
 import { existsSync } from 'node:fs';
-import { createRequire } from 'node:module';
-import { resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { isAbsolute, resolve } from 'node:path';
 import { z } from 'zod';
 import type { GeneratorModule } from '../types.js';
 import { defineGeneratorManifest, type BuiltinManifest } from './define.js';
 import { diag, type Diagnostic } from './diagnostics.js';
+import { importHostModule, importHostPackage } from './host-module.js';
 
 /** Catalog details an extension may export beside its module (all optional). */
 export interface ExtensionCatalog {
@@ -43,16 +47,17 @@ type ExtensionModule = GeneratorModule<any> & { catalog?: ExtensionCatalog };
 
 /** A zod schema from a module's defaults: each key keeps its type, no unknown keys. */
 export function schemaFromDefaults(defaults: Record<string, unknown>): z.ZodObject<any> {
+  const typeOf = (v: unknown): z.ZodType =>
+    typeof v === 'number' ? z.number() : typeof v === 'string' ? z.string() : typeof v === 'boolean' ? z.boolean() : Array.isArray(v) ? z.array(z.unknown())
+      : v && typeof v === 'object' ? z.object(Object.fromEntries(Object.entries(v).map(([k, x]) => [k, typeOf(x).optional()]))).strict()
+      : z.unknown();
   const shape: Record<string, z.ZodType> = {};
-  for (const [k, v] of Object.entries(defaults)) {
-    const base: z.ZodType = typeof v === 'number' ? z.number() : typeof v === 'string' ? z.string() : typeof v === 'boolean' ? z.boolean() : Array.isArray(v) ? z.array(z.unknown()) : z.unknown();
-    shape[k] = base.default(v as never).describe(`(from the extension's defaults: ${JSON.stringify(v)})`);
-  }
+  for (const [k, v] of Object.entries(defaults)) shape[k] = typeOf(v).default(v as never).describe(`(from the extension's defaults: ${JSON.stringify(v)})`);
   return z.object(shape).strict();
 }
 
 /** Whether a specifier names a file of the project (rather than a package). */
-export const isPathSpecifier = (spec: string) => /^\.{1,2}\//.test(spec) || spec.startsWith('/');
+export const isPathSpecifier = (spec: string) => /^\.{1,2}[\\/]/.test(spec) || isAbsolute(spec);
 
 /** Turn one extension module into a registry entry; `importPath` is how the wiring module imports it. */
 export function extensionManifest(mod: ExtensionModule, importPath: string, load: () => Promise<GeneratorModule<any>>): BuiltinManifest {
@@ -94,38 +99,36 @@ const isGeneratorModule = (m: unknown): m is ExtensionModule => {
 export async function loadExtensions(specs: string[], dir: string, taken: Set<string>): Promise<{ manifests: BuiltinManifest[]; diagnostics: Diagnostic[] }> {
   const manifests: BuiltinManifest[] = [];
   const diagnostics: Diagnostic[] = [];
-  for (const spec of specs) {
-    let url: string;
-    if (isPathSpecifier(spec)) {
-      const file = resolve(dir, spec);
-      if (!existsSync(file)) {
-        diagnostics.push(diag('SGS0112', 'error', `extension \`${spec}\` not found (looked at ${file})`, { where: { path: 'extensions' } }));
-        continue;
-      }
-      url = pathToFileURL(file).href;
-    } else {
-      // A package, resolved from the project (not from sigilsmith's own node_modules).
-      try {
-        url = createRequire(resolve(dir, 'package.json')).resolve(spec);
-        url = pathToFileURL(url).href;
-      } catch {
-        url = spec;
-      }
-    }
+  const fail = (code: 'SGS0112' | 'SGS0113', message: string) => diagnostics.push(diag(code, 'error', message, { where: { path: 'extensions' } }));
+  for (const spec of [...new Set(specs)]) {
     let mod: unknown;
     try {
-      mod = ((await import(url)) as { default?: unknown }).default;
+      if (isPathSpecifier(spec)) {
+        const file = resolve(dir, spec);
+        if (!existsSync(file)) {
+          fail('SGS0112', `extension \`${spec}\` not found (looked at ${file})`);
+          continue;
+        }
+        mod = ((await importHostModule(file, dir)) as { default?: unknown }).default;
+      } else mod = ((await importHostPackage(spec, dir)) as { default?: unknown }).default;
     } catch (e) {
-      diagnostics.push(diag('SGS0112', 'error', `extension \`${spec}\` could not be loaded: ${(e as Error).message}`, { where: { path: 'extensions' } }));
+      fail('SGS0112', `extension \`${spec}\` could not be loaded: ${(e as Error).message}`);
       continue;
     }
+    // A CommonJS build seen through ESM interop: the generator is one level down.
+    const inner = (mod as { __esModule?: boolean; default?: unknown } | undefined)?.default;
+    if (!isGeneratorModule(mod) && isGeneratorModule(inner)) mod = inner;
     if (!isGeneratorModule(mod)) {
-      diagnostics.push(diag('SGS0112', 'error', `extension \`${spec}\` does not default-export a generator module (id, major, kind, defaults, defaultInputs, determinism, render)`, { where: { path: 'extensions' } }));
+      fail('SGS0112', `extension \`${spec}\` does not default-export a generator module (id, major, kind, defaults, defaultInputs, determinism, render)`);
       continue;
     }
     const ref = `${mod.id}@${mod.major}`;
+    if (!mod.id.includes('-')) {
+      fail('SGS0113', `extension \`${spec}\` is \`${ref}\`: an extension id needs a hyphen (\`app-${mod.id}\`), so no sigilsmith generator can ever take it`);
+      continue;
+    }
     if (taken.has(ref)) {
-      diagnostics.push(diag('SGS0113', 'error', `extension \`${spec}\` declares \`${ref}\`, which is already a generator`, { where: { path: 'extensions' } }));
+      fail('SGS0113', `extension \`${spec}\` declares \`${ref}\`, which is already a generator`);
       continue;
     }
     taken.add(ref);
