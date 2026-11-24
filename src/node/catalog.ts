@@ -6,7 +6,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PKG_NAME } from '../meta.js';
-import { BUILTINS } from './builtins.js';
+import { allGenerators } from './builtins.js';
 import { ManifestSchema, type Manifest } from './schema.js';
 import { diag, envelope, type Diagnostic, type Envelope } from './diagnostics.js';
 
@@ -37,7 +37,7 @@ export function readSizes(): Sizes {
 export function loadCatalog(): { entries: Manifest[]; diagnostics: Diagnostic[] } {
   const sizes = readSizes();
   const diagnostics: Diagnostic[] = [];
-  const implemented = BUILTINS.map(({ manifest }) => {
+  const implemented = allGenerators().map(({ manifest }) => {
     const s = sizes.generators[manifest.ref!];
     return s ? { ...manifest, bundleSize: { minBytes: s.minBytes, minGzipBytes: s.gzipBytes, brotliBytes: s.brotliBytes, measured: true, source: `npm run measure (${sizes.measuredAt ?? 'unknown date'})` } } : manifest;
   });
@@ -86,7 +86,7 @@ export interface CatalogRow {
   verdict: string;
   importPath?: string;
   /** `extra`: outside the generator set, imported from `sigilsmith/extras/*`. */
-  tier?: 'extra';
+  tier?: 'extra' | 'extension';
   /** Licence and service-terms restrictions a developer must know before choosing this. */
   terms?: string[];
   /** How to wire it, for entries used through `remote` rather than a generator module. */
@@ -113,7 +113,7 @@ function row(m: Manifest, full: boolean): CatalogRow {
     sizeRange: [m.sizeRange.minPx, m.sizeRange.maxPx],
     verdict: m.verdict,
     ...(m.importPath ? { importPath: m.importPath } : {}),
-    ...(m.tier === 'extra' ? { tier: 'extra' as const } : {}),
+    ...(m.tier === 'extra' || m.tier === 'extension' ? { tier: m.tier } : {}),
     ...(m.license.restrictions.length ? { terms: m.license.restrictions } : {}),
     ...((m as { usage?: string }).usage ? { usage: (m as { usage?: string }).usage } : {}),
     ...(full ? { params: m.params } : {}),

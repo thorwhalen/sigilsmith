@@ -69,6 +69,8 @@ Measured with esbuild + gzip -9 on 2026-11-23 (`npm run measure`); third-party l
 - **Pictures items already have.** `<Sigil item={item} record={pictureRecord(item.image_url)} />` shows the picture, and the sigil while it loads or if it fails; `adoptImage(url, { store })` keeps a copy when the link expires.
 - **Let users pick.** `useSigilPicker` or `<SigilPicker>` from `sigilsmith/react`: upload, or choose among candidates such as a provider's cover art. Images go to your blob storage, for example a [zodal](https://github.com/i2mint/zodal) provider such as `@zodal/store-http`.
 
+- **Exact continuity.** Wrap the app's own drawing function as an extension (`"extensions": ["./src/sigils/orb.ts"]`, a module default-exporting a generator with a hyphenated id): sigilsmith wires it, sizes it and locks what it draws, so the migration day changes no image (when the function already drew that picture) until you switch generators.
+
 The full recipe: [references/migrating.md](skills/sigilsmith/references/migrating.md).
 
 ## Feature-driven sigils

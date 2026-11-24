@@ -16,6 +16,8 @@ import { LOCK_FILE, PKG_NAME } from '../meta.js';
 import type { InputSpec, Item } from '../types.js';
 import { computeLock, HEADER_HASH_RE, installedVersion, type Lock } from './build.js';
 import { BUILTIN_BY_REF } from './builtins.js';
+import { isPathSpecifier } from './extensions.js';
+import { measureHostModule } from './host-module.js';
 import { readSizes } from './catalog.js';
 import { CONFIG_FILE } from '../meta.js';
 import { loadSamples, referencedRefs, shippedRefs, type LoadedConfig } from './config.js';
@@ -252,7 +254,18 @@ export async function check(loaded: LoadedConfig, opts: { only?: Section[] } = {
     const ds: Diagnostic[] = [];
     const sizes = readSizes();
     const refs = shippedRefs(cfg).filter((r) => BUILTIN_BY_REF[r]);
-    const generators = Object.fromEntries(refs.map((r) => [r, sizes.generators[r]?.gzipBytes ?? null]));
+    // An extension is not in the package's measurements: its declared size, else measured now.
+    const generators: Record<string, number | null> = {};
+    for (const r of refs) {
+      const b = BUILTIN_BY_REF[r]!;
+      let size = sizes.generators[r]?.gzipBytes ?? b.manifest.bundleSize.minGzipBytes ?? null;
+      if (size === null && b.manifest.tier === 'extension') {
+        const spec = b.manifest.importPath!;
+        size = await measureHostModule(isPathSpecifier(spec) ? { file: resolve(loaded.dir, spec) } : { spec }, loaded.dir).catch(() => null);
+        if (size === null) ds.push(diag('SGS0401', 'error', `cannot size the extension \`${r}\`: install esbuild in the project, or declare \`catalog.gzipBytes\` in its module`, { fix: { summary: 'npm i -D esbuild', applicability: 'maybe-incorrect', commands: ['npm i -D esbuild'] } }));
+      }
+      generators[r] = size;
+    }
     const kernelGzip = sizes.kernel?.gzipBytes ?? null;
     // Remote generators share one module (transports, cache, progressive placeholder).
     const remoteModule = (sizes as { modules?: { remote?: { gzipBytes: number } } }).modules?.remote?.gzipBytes ?? null;

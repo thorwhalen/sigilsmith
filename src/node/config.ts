@@ -11,7 +11,8 @@ import { dirname, resolve } from 'node:path';
 import { CONFIG_FILE } from '../meta.js';
 import { PRESETS } from '../presets.js';
 import type { Item, ResolvedConfig } from '../types.js';
-import { BUILTIN_BY_REF } from './builtins.js';
+import { BUILTINS, BUILTIN_BY_REF, registerExtensions } from './builtins.js';
+import { loadExtensions } from './extensions.js';
 import { diag, type Diagnostic } from './diagnostics.js';
 import { ConfigSchema, type Config } from './schema.js';
 import { sha256Hex } from '../hash.js';
@@ -67,19 +68,24 @@ export function shippedRefs(cfg: Config): string[] {
   return [...refs].sort();
 }
 
-export function validateSemantics(cfg: Config, file: string): Diagnostic[] {
+export function validateSemantics(cfg: Config, file: string, opts: { unloadedExtensions?: boolean } = {}): Diagnostic[] {
   const out: Diagnostic[] = [];
+  // Refs that no built-in or remote spec explains may be extensions this command did not load.
+  const unknownRef = (ref: string) => !BUILTIN_BY_REF[ref] && !cfg.remote[ref] && !(opts.unloadedExtensions && ref.split('@')[0]!.includes('-'));
+  for (const ref of Object.keys(cfg.userSettings.params)) {
+    if (BUILTIN_BY_REF[ref]?.manifest.tier === 'extension') out.push(diag('SGS0114', 'error', `\`userSettings.params\` names the extension \`${ref}\`, whose params the browser settings cannot offer`, { where: { file, path: `userSettings.params.${ref}` } }));
+  }
   for (const name of cfg.presets) {
     if (!PRESETS[name]) out.push(diag('SGS0103', 'error', `unknown preset \`${name}\``, { where: { file, path: 'presets' }, fix: { summary: `known presets: ${Object.keys(PRESETS).join(', ')}`, applicability: 'has-placeholders' } }));
   }
   for (const ref of referencedRefs(cfg)) {
-    if (!BUILTIN_BY_REF[ref] && !cfg.remote[ref]) {
+    if (unknownRef(ref)) {
       out.push(diag('SGS0104', 'error', `unknown generator ref \`${ref}\``, { where: { file }, fix: { summary: `implemented: ${Object.keys(BUILTIN_BY_REF).join(', ')}; or declare it under \`remote\``, applicability: 'has-placeholders', commands: ['npx sigilsmith catalog --implemented'] } }));
     }
   }
   const known = new Set(referencedRefs(cfg));
   for (const ref of [...Object.keys(cfg.generators), ...Object.keys(cfg.userSettings.params)]) {
-    if (!BUILTIN_BY_REF[ref] && !cfg.remote[ref]) out.push(diag('SGS0104', 'error', `unknown generator ref \`${ref}\` in the config`, { where: { file } }));
+    if (unknownRef(ref)) out.push(diag('SGS0104', 'error', `unknown generator ref \`${ref}\` in the config`, { where: { file } }));
     else if (!known.has(ref)) out.push(diag('SGS0104', 'warning', `\`${ref}\` is configured but no rule, default or user choice can select it`, { where: { file } }));
   }
   const checkParams = (ref: string, params: Record<string, unknown> | undefined, path: string) => {
@@ -135,7 +141,13 @@ export async function configHash(raw: unknown): Promise<string> {
   return (await sha256Hex(stableStringify(raw))).slice(0, 16);
 }
 
-export async function loadConfig(path?: string, cwd = process.cwd()): Promise<LoadedConfig> {
+/**
+ * Read, validate and resolve the config. `extensions: false` does not load the extension
+ * modules it names (loading runs the project's code): the read-only commands that do not
+ * render (detect-key, adopt) pass it, and then do not report extension refs as unknown.
+ */
+export async function loadConfig(path?: string, cwd = process.cwd(), opts: { extensions?: boolean } = {}): Promise<LoadedConfig> {
+  registerExtensions([]); // whatever happens below, no other project's extensions stay known
   const file = resolve(cwd, path ?? CONFIG_FILE);
   const base = { path: file, dir: dirname(file), raw: null, config: null, resolved: null, hash: '', features: [] as FeatureSet[] };
   if (!existsSync(file)) return { ...base, diagnostics: [diag('SGS0101', 'error', `no config at \`${file}\``, { fix: { summary: 'create one', applicability: 'machine-applicable', commands: ['npx sigilsmith init'] } })] };
@@ -152,15 +164,20 @@ export async function loadConfig(path?: string, cwd = process.cwd()): Promise<Lo
     return { ...base, raw, hash, diagnostics };
   }
   const cfg = parsed.data;
+  // Extensions first: validation below must know their refs and params.
+  const loadExt = opts.extensions !== false;
+  const ext = loadExt ? await loadExtensions(cfg.extensions, dirname(file), new Set([...BUILTINS.map((b) => b.manifest.ref!), ...Object.keys(cfg.remote)])) : { manifests: [], diagnostics: [] };
+  registerExtensions(ext.manifests);
   const inl = inlineFeatureSets(cfg.features, dirname(file));
-  if (cfg.features.length) {
-    // The schema, mapping and vector files are part of what the wiring module embeds.
-    hash = await configHash({ config: raw, features: inl.sets });
+  if (cfg.features.length || cfg.extensions.length) {
+    // The feature files and the extension refs are part of what the wiring module embeds.
+    hash = await configHash({ config: raw, ...(cfg.features.length ? { features: inl.sets } : {}), ...(cfg.extensions.length ? { extensions: ext.manifests.map((m) => m.manifest.ref) } : {}) });
     // Later steps (referencedRefs, validation) see the inlined mappings, not file paths.
     cfg.features = cfg.features.map((s, i) => ({ ...s, ...(inl.aligned[i] ? { schema: inl.aligned[i]!.schema, mapping: inl.aligned[i]!.mapping } : {}) }));
   }
   const diagnostics = [
-    ...validateSemantics(cfg, CONFIG_FILE),
+    ...ext.diagnostics,
+    ...validateSemantics(cfg, CONFIG_FILE, { unloadedExtensions: !loadExt && cfg.extensions.length > 0 }),
     ...inl.diagnostics,
     ...validateFeatureSets(inl.aligned, (ref) => Boolean(BUILTIN_BY_REF[ref] || cfg.remote[ref]), { remoteRefs: Object.keys(cfg.remote) }),
   ];

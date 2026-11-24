@@ -16,6 +16,7 @@ import { GEN_FILE, LOCK_FILE, PKG_NAME } from '../meta.js';
 import { renderContext } from '../context.js';
 import type { GeneratorModule, Item, SigilImage } from '../types.js';
 import { BUILTIN_BY_REF } from './builtins.js';
+import { isPathSpecifier } from './extensions.js';
 import type { Fixture } from './define.js';
 import { PACKAGE_ROOT } from './catalog.js';
 import { loadSamples, referencedRefs, shippedRefs, type LoadedConfig } from './config.js';
@@ -142,7 +143,11 @@ export function renderWiringModule(loaded: LoadedConfig, outFile: string): strin
   for (const ref of refs) {
     const b = BUILTIN_BY_REF[ref];
     if (b) {
-      loaders.push(`  '${ref}': () => import('${b.manifest.importPath}'),`);
+      // An extension that is a project file is imported relative to the wiring module.
+      const path = b.manifest.tier === 'extension' && isPathSpecifier(b.manifest.importPath!) ? importSpecifier(outFile, loaded.dir, b.manifest.importPath!) : b.manifest.importPath;
+      // An app's .js extension has no types: a strict TS build must not fail on the generated file.
+      if (b.manifest.tier === 'extension') loaders.push('  // @ts-ignore -- an extension module (sigilsmith.config.json `extensions`)');
+      loaders.push(`  '${ref}': () => import('${path}'),`);
       continue;
     }
     const spec = cfg.remote[ref];

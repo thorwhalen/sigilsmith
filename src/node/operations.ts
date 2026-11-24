@@ -98,7 +98,7 @@ export const OPERATIONS = [
     input: { samples: z.string().describe('Sample items JSON file.'), write: z.boolean().optional(), config },
     annotations: WRITE,
     run: async (i, ctx) => {
-      const loaded = await loadConfig(i.config, ctx.cwd);
+      const loaded = await loadConfig(i.config, ctx.cwd, { extensions: false });
       return detectKeyCmd(loaded.raw ? loaded : null, i.samples, { write: Boolean(i.write), cwd: ctx.cwd });
     },
   }),
@@ -158,7 +158,7 @@ export const OPERATIONS = [
     input: { dirs: z.array(z.string()).optional().describe('Source dirs relative to the project (default ["src"]).'), samples: z.string().optional().describe('Sample items JSON (default: the config\'s samples, if any).'), config },
     annotations: READ,
     run: async (i, ctx) => {
-      const loaded = await loadConfig(i.config, ctx.cwd);
+      const loaded = await loadConfig(i.config, ctx.cwd, { extensions: false });
       const path = i.samples ?? loaded.config?.samples;
       const samples = path ? loadSamples(ctx.cwd, path).items : [];
       return adoptCmd(ctx.cwd, { ...(i.dirs?.length ? { dirs: i.dirs } : {}), samples: samples as Array<Record<string, unknown>> });

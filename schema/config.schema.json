@@ -220,6 +220,15 @@
         "additionalProperties": false
       }
     },
+    "extensions": {
+      "default": [],
+      "description": "Generator modules outside sigilsmith: a project file (`./src/sigils/orb.js`) or a package, each default-exporting a generator module. Seen by catalog, build, explain, preview and check like the built-ins.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
     "remote": {
       "default": {},
       "description": "Remote/async generators and their transports. Keys never go here.",

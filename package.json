@@ -1,6 +1,6 @@
 {
   "name": "sigilsmith",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "Agent-first builder for deterministic identity images (identicons, avatars, thumbnails, favicons): a catalog of generators behind one facade, an SSOT config, and a CLI that chooses, previews, explains and checks.",
   "author": "Thor Whalen",
   "license": "MIT",
